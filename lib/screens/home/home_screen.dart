@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -19,18 +20,30 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late List<Map<String, dynamic>> _reminders;
+  late ScrollController _scrollController;
+  double _scrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _reminders = List.from(PlaceholderData.sampleReminders);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
+  void _onScroll() {
+    setState(() {
+      _scrollOffset = _scrollController.offset;
+    });
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -55,29 +68,50 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     final greeting = _getGreeting(now.hour);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Blobs
-          Positioned(
-            top: -100,
-            right: -50,
-            child: _buildBlob(AppTheme.primaryColor.withOpacity(0.05), 300),
-          ),
-          Positioned(
-            bottom: 100,
-            left: -100,
-            child: _buildBlob(AppTheme.secondaryColor.withOpacity(0.05), 400),
-          ),
+    // Calculate background color based on scroll offset
+    final scrollProgress = (_scrollOffset / 400).clamp(0.0, 1.0);
+    final backgroundColor = Color.lerp(
+      AppTheme.backgroundColor,
+      const Color(0xFFE8E4F8), // Slightly darker lavender tint
+      scrollProgress,
+    )!;
 
-          SafeArea(
-            bottom: false,
-            child: RefreshIndicator(
-              onRefresh: _loadData,
-              color: AppTheme.primaryColor,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
+    return Scaffold(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.backgroundColor,
+              backgroundColor,
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Background Blobs
+            Positioned(
+              top: -100,
+              right: -50,
+              child: _buildBlob(AppTheme.primaryColor.withOpacity(0.05), 300),
+            ),
+            Positioned(
+              bottom: 100,
+              left: -100,
+              child: _buildBlob(AppTheme.secondaryColor.withOpacity(0.05), 400),
+            ),
+
+            SafeArea(
+              bottom: false,
+              child: RefreshIndicator(
+                onRefresh: _loadData,
+                color: AppTheme.primaryColor,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
                   // Header
                   SliverToBoxAdapter(
                     child: _buildHeader(greeting, userName, now)
@@ -120,7 +154,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Upcoming Reminders
                         _buildRemindersSection()
                             .animate()
-                            .fadeIn(delay: 800.ms),
+                            .fadeIn(delay: 700.ms),
+
+                        const SizedBox(height: 32),
+
+                        // Activity Graph (moved below reminders)
+                        _buildActivityGraphSection(activityProvider)
+                            .animate()
+                            .fadeIn(delay: 800.ms)
+                            .scale(begin: const Offset(0.95, 0.95)),
 
                         const SizedBox(height: 32),
 
@@ -138,7 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 90),
@@ -239,170 +282,107 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPetSection(PetProvider petProvider, ActivityProvider activityProvider) {
+    final hasPets = petProvider.pets.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('My Pets', onSeeAll: () => context.push('/pets')),
+        _buildSectionHeader('My Pets', onSeeAll: hasPets ? () => context.push('/pets') : null),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: petProvider.pets.isEmpty
-              ? _buildSamplePetsCarousel(petProvider, activityProvider)
-              : _buildPetsCarousel(petProvider, activityProvider),
-        ),
+        if (hasPets)
+          // Show pet cards when pets exist (no add pet card here)
+          SizedBox(
+            height: 120,
+            child: _buildPetsCarousel(petProvider, activityProvider),
+          )
+        else
+          // Show add pet card when no pets
+          _buildEmptyPetState(),
       ],
     );
   }
 
-  Widget _buildSamplePetsCarousel(PetProvider petProvider, ActivityProvider activityProvider) {
-    // Show sample pets when no real pets exist
-    final samplePets = PlaceholderData.samplePets;
-
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      itemCount: samplePets.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return _buildAddPetCard();
-        }
-        final pet = samplePets[index - 1];
-        return _buildSamplePetCard(pet, index - 1);
-      },
-    );
-  }
-
-  Widget _buildPetsCarousel(PetProvider petProvider, ActivityProvider activityProvider) {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      itemCount: petProvider.pets.length + 1,
-      itemBuilder: (context, index) {
-        if (index == petProvider.pets.length) {
-          return _buildAddPetCard();
-        }
-        final pet = petProvider.pets[index];
-        final isSelected = petProvider.selectedPet?.id == pet.id;
-        return _buildPetCard(pet, isSelected, () {
-          petProvider.selectPet(pet);
-          activityProvider.loadActivities(pet.id, limit: 10);
-        });
-      },
-    );
-  }
-
-  Widget _buildSamplePetCard(Map<String, dynamic> pet, int index) {
-    final colors = [
-      AppTheme.primaryColor,
-      AppTheme.accentLavender,
-      AppTheme.accentColor,
-    ];
-    final color = colors[index % colors.length];
-
+  Widget _buildEmptyPetState() {
     return GestureDetector(
       onTap: () => context.push('/add-pet'),
       child: Container(
-        width: 140,
-        margin: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              color.withOpacity(0.15),
-              color.withOpacity(0.05),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 2,
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          border: AppTheme.thickBorder,
+          boxShadow: AppTheme.softShadow,
         ),
-        child: Stack(
+        child: Row(
           children: [
-            // Decorative circle
-            Positioned(
-              top: -20,
-              right: -20,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withOpacity(0.1),
-                ),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                gradient: AppTheme.playfulGradient,
+                borderRadius: BorderRadius.circular(20),
               ),
+              child: const Icon(Icons.pets_rounded, color: Colors.white, size: 36),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
+            const SizedBox(width: 20),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        pet['emoji'] ?? '🐾',
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    pet['name'],
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                  const Text(
+                    'Add Your First Pet',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    pet['breed'] ?? pet['species'],
+                    'Start tracking activities, health & more!',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       color: AppTheme.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Sample',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: color,
-                        fontWeight: FontWeight.w600,
-                      ),
                     ),
                   ),
                 ],
               ),
+            ),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: 28),
             ),
           ],
         ),
       ),
     );
   }
+
+
+  Widget _buildPetsCarousel(PetProvider petProvider, ActivityProvider activityProvider) {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      itemCount: petProvider.pets.length,
+      itemBuilder: (context, index) {
+        final pet = petProvider.pets[index];
+        final isSelected = petProvider.selectedPet?.id == pet.id;
+        return _buildPetCard(pet, isSelected, () {
+          petProvider.selectPet(pet);
+          // Use post frame callback to avoid setState during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            activityProvider.loadActivities(pet.id, limit: 10);
+          });
+        });
+      },
+    );
+  }
+
 
   Widget _buildPetCard(dynamic pet, bool isSelected, VoidCallback onTap) {
     final color = AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
@@ -412,116 +392,99 @@ class _HomeScreenState extends State<HomeScreen> {
       child: AnimatedContainer(
         duration: 400.ms,
         curve: Curves.easeOutBack,
-        width: 160,
-        margin: const EdgeInsets.only(right: 20),
+        width: 200,
+        margin: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: isSelected ? AppTheme.coloredShadow(color) : AppTheme.softShadow,
-          border: isSelected 
+          border: isSelected
             ? Border.all(color: Colors.white.withOpacity(0.3), width: 2)
             : AppTheme.thickBorder,
         ),
-        child: Stack(
+        child: Row(
           children: [
-            if (isSelected)
-              Positioned(
-                top: -20,
-                right: -20,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.15),
-                  ),
-                ),
+            // Pet photo/avatar
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(18),
+                image: pet.photoUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(pet.photoUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
+              child: pet.photoUrl == null
+                  ? Center(
                       child: Icon(
                         Icons.pets_rounded,
                         color: isSelected ? Colors.white : color,
                         size: 32,
                       ),
-                    ),
-                  ),
-                  const Spacer(),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            // Pet info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Text(
                     pet.name,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: isSelected ? Colors.white : AppTheme.textPrimary,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     pet.species,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: isSelected ? Colors.white.withOpacity(0.8) : AppTheme.textSecondary,
                     ),
                   ),
+                  if (pet.breed != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      pet.breed,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isSelected ? Colors.white.withOpacity(0.6) : AppTheme.textLight,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),
+            // Selection indicator
+            if (isSelected)
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check, color: color, size: 16),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAddPetCard() {
-    return GestureDetector(
-      onTap: () => context.push('/add-pet'),
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-          border: AppTheme.thickBorder,
-          boxShadow: AppTheme.softShadow,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: 36),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Add New',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.primaryColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildStatsSection(ActivityProvider activityProvider) {
     return Row(
@@ -595,7 +558,124 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _showEndActivityDialog(ActivityProvider activityProvider) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.timer_off_rounded,
+                  color: AppTheme.warningColor,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'End Activity?',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You\'ve been doing ${activityProvider.activeActivityType} for ${activityProvider.formattedTimer}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context, false),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'No',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context, true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Yes',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await activityProvider.stopTimer();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Activity logged successfully!'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildQuickActionsSection(PetProvider petProvider, ActivityProvider activityProvider) {
+    final activeType = activityProvider.activeActivityType;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -608,18 +688,40 @@ class _HomeScreenState extends State<HomeScreen> {
             physics: const BouncingScrollPhysics(),
             children: [
               _buildActionItem('🚶', 'Walk', AppTheme.secondaryColor, () {
-                if (petProvider.selectedPet != null) {
+                if (activeType == 'Walk') {
+                  _showEndActivityDialog(activityProvider);
+                } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Walk', petProvider.selectedPet!.id);
                 }
-              }),
+              }, isActive: activeType == 'Walk'),
               _buildActionItem('🎾', 'Play', AppTheme.accentColor, () {
-                if (petProvider.selectedPet != null) {
+                if (activeType == 'Play') {
+                  _showEndActivityDialog(activityProvider);
+                } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Play', petProvider.selectedPet!.id);
                 }
-              }),
-              _buildActionItem('🍖', 'Feed', AppTheme.accentMint, () {}),
-              _buildActionItem('✂️', 'Groom', AppTheme.accentPeach, () {}),
-              _buildActionItem('🏥', 'Vet', AppTheme.primaryColor, () {}),
+              }, isActive: activeType == 'Play'),
+              _buildActionItem('🍖', 'Feed', AppTheme.accentMint, () {
+                if (activeType == 'Feed') {
+                  _showEndActivityDialog(activityProvider);
+                } else if (petProvider.selectedPet != null) {
+                  activityProvider.startTimer('Feed', petProvider.selectedPet!.id);
+                }
+              }, isActive: activeType == 'Feed'),
+              _buildActionItem('✂️', 'Groom', AppTheme.accentPeach, () {
+                if (activeType == 'Groom') {
+                  _showEndActivityDialog(activityProvider);
+                } else if (petProvider.selectedPet != null) {
+                  activityProvider.startTimer('Groom', petProvider.selectedPet!.id);
+                }
+              }, isActive: activeType == 'Groom'),
+              _buildActionItem('🏥', 'Vet', AppTheme.primaryColor, () {
+                if (activeType == 'Vet Visit') {
+                  _showEndActivityDialog(activityProvider);
+                } else if (petProvider.selectedPet != null) {
+                  activityProvider.startTimer('Vet Visit', petProvider.selectedPet!.id);
+                }
+              }, isActive: activeType == 'Vet Visit'),
               _buildActionItem('📝', 'Log', AppTheme.accentLavender, () => context.push('/log-activity')),
             ],
           ),
@@ -628,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionItem(String emoji, String label, Color color, VoidCallback onTap) {
+  Widget _buildActionItem(String emoji, String label, Color color, VoidCallback onTap, {bool isActive = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -640,9 +742,10 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 70,
               height: 70,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: color.withOpacity(0.2), width: 2),
+                color: isActive ? color : color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 2.5),
+                boxShadow: isActive ? AppTheme.coloredShadow(color) : null,
               ),
               child: Center(
                 child: Text(emoji, style: const TextStyle(fontSize: 32)),
@@ -654,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: color.withOpacity(0.9),
+                color: isActive ? color : AppTheme.textPrimary,
               ),
             ),
           ],
@@ -690,6 +793,233 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildActivityGraphSection(ActivityProvider activityProvider) {
+    // Generate sample data if no real data exists
+    final weeklySummary = activityProvider.weeklySummary.isNotEmpty
+        ? activityProvider.weeklySummary
+        : _generateSampleWeeklyData();
+
+    final sortedKeys = weeklySummary.keys.toList()..sort();
+    final maxValue = weeklySummary.values.fold<int>(
+      0,
+      (max, value) => value > max ? value : max,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Weekly Activity', onSeeAll: () => context.push('/activity-history')),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            border: AppTheme.thickBorder,
+            boxShadow: AppTheme.softShadow,
+          ),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: weeklySummary.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.bar_chart_rounded,
+                              size: 48,
+                              color: AppTheme.primaryColor.withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Start logging activities!',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : BarChart(
+                        BarChartData(
+                          alignment: BarChartAlignment.spaceAround,
+                          maxY: (maxValue == 0 ? 100 : maxValue * 1.2).toDouble(),
+                          barTouchData: BarTouchData(
+                            enabled: true,
+                            touchTooltipData: BarTouchTooltipData(
+                              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                return BarTooltipItem(
+                                  '${rod.toY.toInt()} pts',
+                                  const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          titlesData: FlTitlesData(
+                            show: true,
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  if (value.toInt() >= sortedKeys.length) {
+                                    return const SizedBox();
+                                  }
+                                  final dateStr = sortedKeys[value.toInt()];
+                                  final date = DateTime.parse(dateStr);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      DateFormat('E').format(date),
+                                      style: const TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                reservedSize: 30,
+                              ),
+                            ),
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 40,
+                                getTitlesWidget: (value, meta) {
+                                  return Text(
+                                    value.toInt().toString(),
+                                    style: const TextStyle(
+                                      color: AppTheme.textLight,
+                                      fontSize: 11,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                          ),
+                          gridData: FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                            horizontalInterval: maxValue > 0 ? maxValue / 4 : 25,
+                            getDrawingHorizontalLine: (value) {
+                              return FlLine(
+                                color: AppTheme.dividerColor,
+                                strokeWidth: 1,
+                              );
+                            },
+                          ),
+                          borderData: FlBorderData(
+                            show: true,
+                            border: const Border(
+                              bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
+                              left: BorderSide(color: AppTheme.dividerColor, width: 1),
+                            ),
+                          ),
+                          barGroups: sortedKeys.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final dateStr = entry.value;
+                            final value = weeklySummary[dateStr] ?? 0;
+                            final isToday = _isToday(dateStr);
+
+                            return BarChartGroupData(
+                              x: index,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: value.toDouble(),
+                                  gradient: isToday
+                                      ? AppTheme.playfulGradient
+                                      : LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [
+                                            AppTheme.primaryLight.withOpacity(0.4),
+                                            AppTheme.primaryLight.withOpacity(0.7),
+                                          ],
+                                        ),
+                                  width: 28,
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(8),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 16),
+              // Legend
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLegendItem(AppTheme.primaryColor, 'Today'),
+                  const SizedBox(width: 24),
+                  _buildLegendItem(AppTheme.primaryLight.withOpacity(0.6), 'This Week'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  bool _isToday(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  Map<String, int> _generateSampleWeeklyData() {
+    final now = DateTime.now();
+    final data = <String, int>{};
+    final random = math.Random();
+
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      data[dateStr] = random.nextInt(80) + 20; // Random value between 20-100
+    }
+
+    return data;
   }
 
   Widget _buildRemindersSection() {

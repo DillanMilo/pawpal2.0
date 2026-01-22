@@ -59,7 +59,7 @@ class MainShell extends StatelessWidget {
 
   Widget _buildCentralPawButton(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/log-activity'),
+      onTap: () => context.push('/quick-actions'),
       child: Container(
         width: 72,
         height: 72,

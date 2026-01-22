@@ -20,6 +20,10 @@ import '../screens/medical/medical_records_screen.dart';
 import '../screens/medical/add_medical_record_screen.dart';
 import '../screens/pets/pet_passport_screen.dart';
 import '../screens/activity/activity_history_screen.dart';
+import '../screens/quick_actions/quick_actions_screen.dart';
+import '../screens/quick_actions/add_medication_screen.dart';
+import '../screens/quick_actions/add_vet_visit_screen.dart';
+import '../screens/quick_actions/add_grooming_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -137,6 +141,26 @@ class AppRouter {
             final petId = state.pathParameters['id']!;
             return EditPetScreen(petId: petId);
           },
+        ),
+
+        // Quick actions menu
+        GoRoute(
+          path: '/quick-actions',
+          builder: (context, state) => const QuickActionsScreen(),
+        ),
+
+        // Quick action sub-screens
+        GoRoute(
+          path: '/add-medication',
+          builder: (context, state) => const AddMedicationScreen(),
+        ),
+        GoRoute(
+          path: '/add-vet-visit',
+          builder: (context, state) => const AddVetVisitScreen(),
+        ),
+        GoRoute(
+          path: '/add-grooming',
+          builder: (context, state) => const AddGroomingScreen(),
         ),
 
         // Activity logging

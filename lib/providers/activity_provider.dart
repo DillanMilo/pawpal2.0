@@ -114,6 +114,13 @@ class ActivityProvider with ChangeNotifier {
     return DateTime.now().difference(_timerStartTime!);
   }
 
+  String get formattedTimer {
+    final duration = timerDuration;
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   Future<Activity?> stopTimer({String? notes}) async {
     if (_timerStartTime == null ||
         _activeActivityType == null ||

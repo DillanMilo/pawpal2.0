@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/theme.dart';
@@ -18,8 +19,7 @@ class PetDetailScreen extends StatefulWidget {
   State<PetDetailScreen> createState() => _PetDetailScreenState();
 }
 
-class _PetDetailScreenState extends State<PetDetailScreen>
-    with SingleTickerProviderStateMixin {
+class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   Pet? _pet;
   bool _isLoading = true;
@@ -49,9 +49,8 @@ class _PetDetailScreenState extends State<PetDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -62,88 +61,131 @@ class _PetDetailScreenState extends State<PetDetailScreen>
       );
     }
 
-    final categoryColor =
-        AppTheme.petCategoryColors[_pet!.species] ?? AppTheme.primaryColor;
+    final categoryColor = AppTheme.petCategoryColors[_pet!.species] ?? AppTheme.primaryColor;
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 280,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildHeader(categoryColor),
+      body: Stack(
+        children: [
+          // Background Blob
+          Positioned(
+            top: -100,
+            right: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: categoryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () =>
-                      context.push('/edit-pet/${_pet!.id}').then((_) => _loadPet()),
+            ).animate(onPlay: (c) => c.repeat(reverse: true)).move(begin: const Offset(-20, -20), end: const Offset(20, 20), duration: 5.seconds),
+          ),
+
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  expandedHeight: 340,
+                  pinned: true,
+                  stretch: true,
+                  backgroundColor: categoryColor,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                    onPressed: () => context.pop(),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                      onPressed: () => context.push('/edit-pet/${_pet!.id}').then((_) => _loadPet()),
+                    ),
+                    _buildPopupMenu(),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    stretchModes: const [StretchMode.zoomBackground],
+                    background: _buildHeader(categoryColor),
+                  ),
                 ),
-                PopupMenuButton(
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'share',
-                      child: Row(
-                        children: [
-                          Icon(Icons.share),
-                          SizedBox(width: 12),
-                          Text('Share Pet Passport'),
+                SliverPersistentHeader(
+                  delegate: _TabBarDelegate(
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundColor,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                      ),
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: AppTheme.primaryColor,
+                        unselectedLabelColor: AppTheme.textLight,
+                        indicatorColor: AppTheme.primaryColor,
+                        indicatorWeight: 4,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        dividerColor: Colors.transparent,
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        tabs: const [
+                          Tab(text: 'Info'),
+                          Tab(text: 'Health'),
+                          Tab(text: 'Activity'),
+                          Tab(text: 'ID'),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, color: AppTheme.errorColor),
-                          SizedBox(width: 12),
-                          Text('Delete Pet',
-                              style: TextStyle(color: AppTheme.errorColor)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'delete') {
-                      _showDeleteDialog();
-                    } else if (value == 'share') {
-                      _showShareDialog();
-                    }
-                  },
+                  ),
+                  pinned: true,
                 ),
-              ],
-            ),
-            SliverPersistentHeader(
-              delegate: _TabBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: AppTheme.textSecondary,
-                  indicatorColor: AppTheme.primaryColor,
-                  tabs: const [
-                    Tab(text: 'Info'),
-                    Tab(text: 'Medical'),
-                    Tab(text: 'Activity'),
-                    Tab(text: 'Passport'),
-                  ],
-                ),
+              ];
+            },
+            body: Container(
+              color: AppTheme.backgroundColor,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildInfoTab(),
+                  _buildMedicalTab(),
+                  _buildActivityTab(),
+                  _buildPassportTab(),
+                ],
               ),
-              pinned: true,
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildInfoTab(),
-            _buildMedicalTab(),
-            _buildActivityTab(),
-            _buildPassportTab(),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildPopupMenu() {
+    return PopupMenuButton(
+      icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'share',
+          child: Row(
+            children: [
+              Icon(Icons.share_rounded, size: 20),
+              SizedBox(width: 12),
+              Text('Share Passport'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor, size: 20),
+              SizedBox(width: 12),
+              Text('Delete Pet', style: TextStyle(color: AppTheme.errorColor)),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) {
+        if (value == 'delete') {
+          _showDeleteDialog();
+        } else if (value == 'share') {
+          _showShareDialog();
+        }
+      },
     );
   }
 
@@ -153,35 +195,42 @@ class _PetDetailScreenState extends State<PetDetailScreen>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            categoryColor.withValues(alpha: 0.3),
-            categoryColor.withValues(alpha: 0.1),
-          ],
+          colors: [categoryColor, categoryColor.withOpacity(0.8)],
         ),
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Decorative circles
+          Positioned(
+            left: -50,
+            bottom: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
               Hero(
                 tag: 'pet-photo-${_pet!.id}',
                 child: Container(
-                  width: 120,
-                  height: 120,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 4,
-                    ),
+                    border: Border.all(color: Colors.white, width: 6),
                     boxShadow: [
                       BoxShadow(
-                        color: categoryColor.withValues(alpha: 0.3),
+                        color: Colors.black.withOpacity(0.2),
                         blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
@@ -190,268 +239,231 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                         ? CachedNetworkImage(
                             imageUrl: _pet!.photoUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: categoryColor.withValues(alpha: 0.2),
-                              child: Icon(
-                                Icons.pets,
-                                color: categoryColor,
-                                size: 50,
-                              ),
-                            ),
                           )
                         : Container(
-                            color: categoryColor.withValues(alpha: 0.2),
-                            child: Icon(
-                              Icons.pets,
-                              color: categoryColor,
-                              size: 50,
-                            ),
+                            color: Colors.white.withOpacity(0.2),
+                            child: const Icon(Icons.pets_rounded, color: Colors.white, size: 60),
                           ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              const SizedBox(height: 20),
               Text(
                 _pet!.name,
                 style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -1,
                 ),
-              ),
+              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: categoryColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      _pet!.species,
-                      style: TextStyle(
-                        color: categoryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _pet!.breed ?? _pet!.species,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
-                  if (_pet!.breed != null) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      _pet!.breed!,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                ),
+              ).animate().fadeIn(delay: 400.ms).scale(),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildInfoTab() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+      physics: const BouncingScrollPhysics(),
       children: [
-        _InfoCard(
-          title: 'Basic Information',
-          children: [
-            _InfoRow(label: 'Name', value: _pet!.name),
-            _InfoRow(label: 'Species', value: _pet!.species),
-            if (_pet!.breed != null) _InfoRow(label: 'Breed', value: _pet!.breed!),
-            _InfoRow(label: 'Gender', value: _pet!.gender),
-            _InfoRow(label: 'Age', value: _pet!.ageDisplay),
+        _buildInfoCard(
+          'About ${_pet!.name}',
+          [
+            _buildInfoRow('Species', _pet!.species, Icons.category_rounded),
+            _buildInfoRow('Gender', _pet!.gender, Icons.transgender_rounded),
+            _buildInfoRow('Age', _pet!.ageDisplay, Icons.cake_rounded),
             if (_pet!.dateOfBirth != null)
-              _InfoRow(
-                label: 'Birthday',
-                value: DateFormat('MMMM d, y').format(_pet!.dateOfBirth!),
-              ),
+              _buildInfoRow('Birthday', DateFormat('MMMM d, y').format(_pet!.dateOfBirth!), Icons.event_rounded),
           ],
-        ),
-        const SizedBox(height: 16),
-        _InfoCard(
-          title: 'Physical Details',
-          children: [
-            if (_pet!.weight != null)
-              _InfoRow(label: 'Weight', value: '${_pet!.weight} kg'),
-            if (_pet!.colorMarkings != null)
-              _InfoRow(label: 'Color/Markings', value: _pet!.colorMarkings!),
-            _InfoRow(
-              label: 'Spayed/Neutered',
-              value: _pet!.spayedNeutered ? 'Yes' : 'No',
-            ),
+        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+        const SizedBox(height: 24),
+        _buildInfoCard(
+          'Physical Details',
+          [
+            if (_pet!.weight != null) _buildInfoRow('Weight', '${_pet!.weight} kg', Icons.monitor_weight_rounded),
+            if (_pet!.colorMarkings != null) _buildInfoRow('Color', _pet!.colorMarkings!, Icons.palette_rounded),
+            _buildInfoRow('Spayed/Neutered', _pet!.spayedNeutered ? 'Yes' : 'No', Icons.check_circle_rounded),
           ],
-        ),
-        const SizedBox(height: 16),
-        _InfoCard(
-          title: 'Identification',
-          children: [
-            if (_pet!.microchipNumber != null)
-              _InfoRow(label: 'Microchip', value: _pet!.microchipNumber!),
+        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
+        const SizedBox(height: 24),
+        _buildInfoCard(
+          'Identification',
+          [
+            if (_pet!.microchipNumber != null) _buildInfoRow('Microchip', _pet!.microchipNumber!, Icons.qr_code_rounded),
             if (_pet!.adoptionDate != null)
-              _InfoRow(
-                label: 'Adoption Date',
-                value: DateFormat('MMMM d, y').format(_pet!.adoptionDate!),
-              ),
+              _buildInfoRow('Adoption', DateFormat('MMMM d, y').format(_pet!.adoptionDate!), Icons.favorite_rounded),
           ],
-        ),
+        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
       ],
     );
   }
 
-  Widget _buildMedicalTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.medical_services_outlined,
-              size: 64,
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+  Widget _buildInfoCard(String title, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: AppTheme.softShadow,
+        border: AppTheme.thickBorder,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textPrimary,
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Medical Records',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppTheme.primaryColor, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Track vaccinations, medications, and vet visits',
-              style: TextStyle(color: AppTheme.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MedicalRecordsScreen(petId: _pet!.id),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.folder_open),
-              label: const Text('View Records'),
-            ),
-          ],
-        ),
+              Text(
+                value,
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMedicalTab() {
+    return _buildEmptyTab(
+      Icons.medical_services_rounded,
+      'Health Records',
+      'Keep track of vaccinations, meds, and vet visits.',
+      'View Records',
+      () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MedicalRecordsScreen(petId: _pet!.id)),
       ),
     );
   }
 
   Widget _buildActivityTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.trending_up,
-              size: 64,
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Activity History',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'View walks, play sessions, and more',
-              style: TextStyle(color: AppTheme.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return _buildEmptyTab(
+      Icons.auto_graph_rounded,
+      'Activity History',
+      'See all the fun things you\'ve done together!',
+      'View History',
+      () {},
     );
   }
 
   Widget _buildPassportTab() {
+    return _buildEmptyTab(
+      Icons.badge_rounded,
+      'Pet Passport',
+      'A digital ID for your pet to share with others.',
+      'View Passport',
+      () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PetPassportScreen(petId: _pet!.id)),
+      ),
+    );
+  }
+
+  Widget _buildEmptyTab(IconData icon, String title, String subtitle, String buttonText, VoidCallback onPressed) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.qr_code_2,
-              size: 64,
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Pet Passport',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.05),
+                shape: BoxShape.circle,
               ),
+              child: Icon(icon, size: 64, color: AppTheme.primaryColor),
+            ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds),
+            const SizedBox(height: 32),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Share your pet\'s important info with caregivers',
-              style: TextStyle(color: AppTheme.textSecondary),
+            const SizedBox(height: 12),
+            Text(
+              subtitle,
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PetPassportScreen(petId: _pet!.id),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.qr_code),
-              label: const Text('View Passport'),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: onPressed,
+              child: Text(buttonText),
             ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
   void _showDeleteDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: const Text('Delete Pet?'),
-        content: Text(
-          'Are you sure you want to delete ${_pet!.name}? This action cannot be undone.',
-        ),
+        content: Text('Are you sure you want to delete ${_pet!.name}? This action cannot be undone.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
               final petProvider = context.read<PetProvider>();
               final success = await petProvider.deletePet(_pet!.id);
-              if (success && mounted) {
-                context.pop();
-              }
+              if (success && mounted) context.pop();
             },
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
             child: const Text('Delete'),
@@ -465,15 +477,11 @@ class _PetDetailScreenState extends State<PetDetailScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: const Text('Share Pet Passport'),
-        content: const Text(
-          'Generate a shareable profile with your pet\'s info, vaccinations, and emergency contacts.',
-        ),
+        content: const Text('Generate a shareable profile with your pet\'s info, vaccinations, and emergency contacts.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -488,98 +496,16 @@ class _PetDetailScreenState extends State<PetDetailScreen>
 }
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-
-  _TabBarDelegate(this.tabBar);
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: tabBar,
-    );
-  }
+  final Widget child;
+  _TabBarDelegate(this.child);
 
   @override
-  double get maxExtent => tabBar.preferredSize.height;
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
 
   @override
-  double get minExtent => tabBar.preferredSize.height;
-
+  double get maxExtent => 64;
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-
-  const _InfoCard({
-    required this.title,
-    required this.children,
-  });
-
+  double get minExtent => 64;
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }

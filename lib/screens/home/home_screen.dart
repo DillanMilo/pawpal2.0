@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math' as math;
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -16,50 +17,20 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late List<Animation<double>> _itemAnimations;
+class _HomeScreenState extends State<HomeScreen> {
+  late List<Map<String, dynamic>> _reminders;
 
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
-    // Defer data loading to avoid setState during build
+    _reminders = List.from(PlaceholderData.sampleReminders);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
-  void _setupAnimations() {
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-
-    // Create staggered animations for each section
-    _itemAnimations = List.generate(6, (index) {
-      final start = index * 0.1;
-      final end = start + 0.4;
-      return CurvedAnimation(
-        parent: _slideController,
-        curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOutCubic),
-      );
-    });
-
-    _fadeController.forward();
-    _slideController.forward();
-  }
-
   @override
   void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
     super.dispose();
   }
 
@@ -85,112 +56,115 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final greeting = _getGreeting(now.hour);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFFBF5),
-              Color(0xFFFFE8D6),
-              Color(0xFFFFFBF5),
-            ],
-            stops: [0.0, 0.3, 1.0],
+      body: Stack(
+        children: [
+          // Background Blobs
+          Positioned(
+            top: -100,
+            right: -50,
+            child: _buildBlob(AppTheme.primaryColor.withOpacity(0.05), 300),
           ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: _loadData,
-            color: AppTheme.primaryColor,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // Animated Header
-                SliverToBoxAdapter(
-                  child: FadeTransition(
-                    opacity: _fadeController,
-                    child: _buildHeader(greeting, userName, now),
+          Positioned(
+            bottom: 100,
+            left: -100,
+            child: _buildBlob(AppTheme.secondaryColor.withOpacity(0.05), 400),
+          ),
+
+          SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              onRefresh: _loadData,
+              color: AppTheme.primaryColor,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Header
+                  SliverToBoxAdapter(
+                    child: _buildHeader(greeting, userName, now)
+                        .animate()
+                        .fadeIn(duration: 600.ms)
+                        .slideY(begin: -0.2, end: 0, curve: Curves.easeOutQuad),
                   ),
-                ),
 
-                // Content
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Pet Carousel Section
-                      _buildAnimatedSection(
-                        index: 0,
-                        child: _buildPetSection(petProvider, activityProvider),
-                      ),
+                  // Content
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 8),
 
-                      const SizedBox(height: 28),
+                        // Pet Carousel Section
+                        _buildPetSection(petProvider, activityProvider)
+                            .animate()
+                            .fadeIn(delay: 200.ms)
+                            .slideX(begin: 0.1, end: 0),
 
-                      // Stats Cards
-                      _buildAnimatedSection(
-                        index: 1,
-                        child: _buildStatsSection(activityProvider),
-                      ),
+                        const SizedBox(height: 32),
 
-                      const SizedBox(height: 28),
+                        // Stats Cards
+                        _buildStatsSection(activityProvider)
+                            .animate()
+                            .fadeIn(delay: 400.ms)
+                            .scale(begin: const Offset(0.9, 0.9)),
 
-                      // Quick Actions
-                      _buildAnimatedSection(
-                        index: 2,
-                        child: _buildQuickActionsSection(petProvider, activityProvider),
-                      ),
+                        const SizedBox(height: 32),
 
-                      const SizedBox(height: 28),
+                        // Quick Actions
+                        _buildQuickActionsSection(petProvider, activityProvider)
+                            .animate()
+                            .fadeIn(delay: 600.ms)
+                            .slideY(begin: 0.2, end: 0),
 
-                      // Upcoming Reminders
-                      _buildAnimatedSection(
-                        index: 3,
-                        child: _buildRemindersSection(),
-                      ),
+                        const SizedBox(height: 32),
 
-                      const SizedBox(height: 28),
+                        // Upcoming Reminders
+                        _buildRemindersSection()
+                            .animate()
+                            .fadeIn(delay: 800.ms),
 
-                      // Daily Tip
-                      _buildAnimatedSection(
-                        index: 4,
-                        child: _buildDailyTipCard(),
-                      ),
+                        const SizedBox(height: 32),
 
-                      const SizedBox(height: 120),
-                    ]),
+                        // Daily Tip
+                        _buildDailyTipCard()
+                            .animate()
+                            .fadeIn(delay: 1000.ms)
+                            .shimmer(delay: 2000.ms, duration: 1500.ms),
+
+                        const SizedBox(height: 140),
+                      ]),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
-      floatingActionButton: activityProvider.hasActiveTimer
-          ? _buildActiveTimerFAB(activityProvider)
-          : _buildMainFAB(),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90),
+        child: activityProvider.hasActiveTimer
+            ? _buildActiveTimerFAB(activityProvider)
+            : _buildMainFAB(),
+      ),
     );
   }
 
-  Widget _buildAnimatedSection({required int index, required Widget child}) {
-    if (index >= _itemAnimations.length) return child;
-
-    return AnimatedBuilder(
-      animation: _itemAnimations[index],
-      builder: (context, _) {
-        return Transform.translate(
-          offset: Offset(0, 30 * (1 - _itemAnimations[index].value)),
-          child: Opacity(
-            opacity: _itemAnimations[index].value,
-            child: child,
-          ),
-        );
-      },
-    );
+  Widget _buildBlob(Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+     .move(begin: const Offset(-20, -20), end: const Offset(20, 20), duration: 5.seconds, curve: Curves.easeInOut);
   }
+
 
   Widget _buildHeader(String greeting, String userName, DateTime now) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -200,8 +174,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 Text(
                   '$greeting,',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: const TextStyle(
+                    fontSize: 18,
                     color: AppTheme.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
@@ -210,83 +184,58 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Text(
                   userName,
                   style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
                     color: AppTheme.textPrimary,
-                    letterSpacing: -1,
+                    letterSpacing: -1.5,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('🔥', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              '7 day streak!',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () => context.push('/reminders'),
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.softShadow,
-              ),
-              child: Stack(
-                children: [
-                  const Center(
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: AppTheme.textPrimary,
-                      size: 26,
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildNotificationBadge(),
         ],
       ),
     );
+  }
+
+  Widget _buildNotificationBadge() {
+    return GestureDetector(
+      onTap: () => context.push('/reminders'),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppTheme.softShadow,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Icon(
+              Icons.notifications_none_rounded,
+              color: AppTheme.textPrimary,
+              size: 30,
+            ),
+            Positioned(
+              top: 15,
+              right: 15,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2.5),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+     .shake(hz: 2, delay: 5.seconds);
   }
 
   Widget _buildPetSection(PetProvider petProvider, ActivityProvider activityProvider) {
@@ -461,61 +410,75 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        width: 140,
-        margin: const EdgeInsets.only(right: 16),
+        duration: 400.ms,
+        curve: Curves.easeOutBack,
+        width: 160,
+        margin: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isSelected
-                ? [color.withOpacity(0.2), color.withOpacity(0.1)]
-                : [Colors.white, const Color(0xFFFFFBF5)],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? color : AppTheme.dividerColor,
-            width: isSelected ? 2.5 : 1.5,
-          ),
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(32),
           boxShadow: isSelected ? AppTheme.coloredShadow(color) : AppTheme.softShadow,
+          border: isSelected 
+            ? Border.all(color: Colors.white.withOpacity(0.3), width: 2)
+            : AppTheme.thickBorder,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: color.withOpacity(0.3), width: 3),
-                ),
-                child: Center(
-                  child: Icon(Icons.pets, color: color, size: 28),
+        child: Stack(
+          children: [
+            if (isSelected)
+              Positioned(
+                top: -20,
+                right: -20,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.15),
+                  ),
                 ),
               ),
-              const Spacer(),
-              Text(
-                pet.name,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? color : AppTheme.textPrimary,
-                ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.pets_rounded,
+                        color: isSelected ? Colors.white : color,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    pet.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    pet.species,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white.withOpacity(0.8) : AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                pet.species,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -525,37 +488,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () => context.push('/add-pet'),
       child: Container(
-        width: 140,
-        margin: const EdgeInsets.only(right: 16),
+        width: 160,
+        margin: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.3),
-            width: 2,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
+          borderRadius: BorderRadius.circular(32),
+          border: AppTheme.thickBorder,
           boxShadow: AppTheme.softShadow,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
+                color: AppTheme.primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
-                boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
+              child: const Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: 36),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Add Pet',
+              'Add New',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.primaryColor,
               ),
             ),
@@ -571,22 +529,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Expanded(
           child: _buildStatCard(
             icon: Icons.local_fire_department_rounded,
-            iconGradient: AppTheme.sunsetGradient,
+            color: AppTheme.accentRose,
             value: '${activityProvider.currentStreak > 0 ? activityProvider.currentStreak : 7}',
             label: 'Day Streak',
-            suffix: ' 🔥',
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 20),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.star_rounded,
-            iconGradient: const LinearGradient(
-              colors: [Color(0xFFFFE66D), Color(0xFFFFB347)],
-            ),
+            icon: Icons.auto_awesome_rounded,
+            color: AppTheme.accentColor,
             value: '${activityProvider.totalPoints > 0 ? activityProvider.totalPoints : 2450}',
-            label: 'Points',
-            suffix: ' ⭐',
+            label: 'Paw Points',
           ),
         ),
       ],
@@ -595,64 +549,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildStatCard({
     required IconData icon,
-    required Gradient iconGradient,
+    required Color color,
     required String value,
     required String label,
-    String? suffix,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: AppTheme.softShadow,
+        border: AppTheme.thickBorder,
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: iconGradient,
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: Colors.white, size: 28),
+            child: Icon(icon, color: color, size: 28),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -1,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (suffix != null)
-                      Text(
-                        suffix,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                  ],
-                ),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppTheme.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 20),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.textPrimary,
+              letterSpacing: -1,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -665,28 +600,66 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Quick Actions'),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _buildActionChip('🚶', 'Walk', AppTheme.secondaryColor, () {
-              if (petProvider.selectedPet != null) {
-                activityProvider.startTimer('Walk', petProvider.selectedPet!.id);
-              }
-            }),
-            _buildActionChip('🎾', 'Play', AppTheme.accentColor, () {
-              if (petProvider.selectedPet != null) {
-                activityProvider.startTimer('Play', petProvider.selectedPet!.id);
-              }
-            }),
-            _buildActionChip('🍖', 'Feed', AppTheme.accentMint, () {}),
-            _buildActionChip('✂️', 'Groom', AppTheme.accentPeach, () {}),
-            _buildActionChip('🏥', 'Vet', AppTheme.primaryColor, () {}),
-            _buildActionChip('📝', 'Log', AppTheme.accentLavender, () => context.push('/log-activity')),
-          ],
+        const SizedBox(height: 20),
+        SizedBox(
+          height: 110,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _buildActionItem('🚶', 'Walk', AppTheme.secondaryColor, () {
+                if (petProvider.selectedPet != null) {
+                  activityProvider.startTimer('Walk', petProvider.selectedPet!.id);
+                }
+              }),
+              _buildActionItem('🎾', 'Play', AppTheme.accentColor, () {
+                if (petProvider.selectedPet != null) {
+                  activityProvider.startTimer('Play', petProvider.selectedPet!.id);
+                }
+              }),
+              _buildActionItem('🍖', 'Feed', AppTheme.accentMint, () {}),
+              _buildActionItem('✂️', 'Groom', AppTheme.accentPeach, () {}),
+              _buildActionItem('🏥', 'Vet', AppTheme.primaryColor, () {}),
+              _buildActionItem('📝', 'Log', AppTheme.accentLavender, () => context.push('/log-activity')),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildActionItem(String emoji, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 90,
+        margin: const EdgeInsets.only(right: 16),
+        child: Column(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: color.withOpacity(0.2), width: 2),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 32)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: color.withOpacity(0.9),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -720,138 +693,149 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildRemindersSection() {
-    final reminders = PlaceholderData.sampleReminders;
-
+    final activeReminders = _reminders.where((r) => r['completed'] != true).take(2).toList();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Upcoming', onSeeAll: () => context.push('/reminders')),
         const SizedBox(height: 16),
-        ...reminders.asMap().entries.map((entry) {
-          final index = entry.key;
-          final reminder = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(bottom: index < reminders.length - 1 ? 12 : 0),
-            child: _buildReminderCard(reminder),
-          );
-        }),
+        if (activeReminders.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: AppTheme.thickBorder,
+            ),
+            child: const Center(
+              child: Text(
+                'All caught up! 🎉',
+                style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
+              ),
+            ),
+          )
+        else
+          ...activeReminders.map((reminder) => _buildReminderCard(reminder)),
       ],
     );
   }
 
   Widget _buildReminderCard(Map<String, dynamic> reminder) {
     final color = Color(reminder['color'] as int);
+    final isCompleted = reminder['completed'] == true;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          reminder['completed'] = !isCompleted;
+        });
+        if (!isCompleted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Completed: ${reminder['title']}! 🐾'),
+              duration: const Duration(seconds: 1),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Center(
-              child: Text(
-                reminder['icon'],
-                style: const TextStyle(fontSize: 24),
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: AppTheme.softShadow,
+          border: AppTheme.thickBorder,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Center(child: Text(reminder['icon'], style: const TextStyle(fontSize: 28))),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    reminder['title'],
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                      decoration: isCompleted ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    reminder['time'],
+                    style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reminder['title'],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isCompleted ? AppTheme.successColor : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCompleted ? AppTheme.successColor : AppTheme.textLight.withOpacity(0.5),
+                  width: 2,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  reminder['time'],
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+              ),
+              child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
             ),
-          ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: AppTheme.textLight,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDailyTipCard() {
-    final tip = PlaceholderData.petTips[DateTime.now().day % PlaceholderData.petTips.length];
-
+    final tip = PlaceholderData.petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        borderRadius: BorderRadius.circular(28),
+        gradient: AppTheme.playfulGradient,
+        borderRadius: BorderRadius.circular(32),
         boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
       ),
       child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Center(
-              child: Text(
-                tip['emoji']!,
-                style: const TextStyle(fontSize: 28),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Daily Tip',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.8),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
+                Text(
+                  tip['title']!,
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
                 Text(
                   tip['tip']!,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 16),
+          Text(tip['emoji']!, style: const TextStyle(fontSize: 48)),
         ],
       ),
     );
@@ -871,32 +855,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         if (onSeeAll != null)
-          GestureDetector(
-            onTap: onSeeAll,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'See all',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 16,
+          TextButton(
+            onPressed: onSeeAll,
+            child: Row(
+              children: [
+                Text(
+                  'See All',
+                  style: TextStyle(
                     color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
                   ),
-                ],
-              ),
+                ),
+                const Icon(Icons.chevron_right_rounded, size: 20),
+              ],
             ),
           ),
       ],
@@ -904,40 +876,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   String _getGreeting(int hour) {
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
   Widget _buildMainFAB() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
-      ),
-      child: FloatingActionButton(
-        onPressed: () => context.push('/log-activity'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: const Icon(Icons.add_rounded, size: 32),
-      ),
-    );
+    return FloatingActionButton.extended(
+      onPressed: () => context.push('/log-activity'),
+      icon: const Icon(Icons.add_rounded),
+      label: const Text('Log Activity', style: TextStyle(fontWeight: FontWeight.w700)),
+    ).animate().scale(delay: 1200.ms, curve: Curves.easeOutBack);
   }
 
   Widget _buildActiveTimerFAB(ActivityProvider activityProvider) {
     return FloatingActionButton.extended(
-      onPressed: () async {
-        await activityProvider.stopTimer();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Activity logged! 🎉')),
-          );
-        }
-      },
-      backgroundColor: AppTheme.successColor,
-      icon: const Icon(Icons.stop_rounded),
-      label: Text('Stop ${activityProvider.activeActivityType}'),
-    );
+      onPressed: () => context.push('/log-activity'),
+      backgroundColor: AppTheme.secondaryColor,
+      icon: const Icon(Icons.timer_rounded),
+      label: Text(
+        '${activityProvider.activeActivityType}: ${activityProvider.formattedTimer}',
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds);
   }
+}
+
+class _MapToPet {
+  final Map<String, dynamic> map;
+  _MapToPet(this.map);
+  String get id => map['id'];
+  String get name => map['name'];
+  String get species => map['species'];
 }

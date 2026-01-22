@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="#E8E8E8"/>
+  <!-- Pet silhouette - dog -->
+  <path d="M30 70 Q25 55 30 45 Q35 35 45 35 L50 30 Q55 25 60 30 L65 35 Q75 35 80 45 Q85 55 80 70 Q75 75 50 75 Q25 75 30 70 Z" fill="#BDBDBD"/>
+  <!-- Ears -->
+  <ellipse cx="35" cy="35" rx="8" ry="12" fill="#BDBDBD"/>
+  <ellipse cx="65" cy="35" rx="8" ry="12" fill="#BDBDBD"/>
+  <!-- Eyes -->
+  <circle cx="42" cy="50" r="3" fill="#757575"/>
+  <circle cx="58" cy="50" r="3" fill="#757575"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="58" rx="5" ry="4" fill="#757575"/>
+</svg>

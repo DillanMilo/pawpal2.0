@@ -21,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late List<Map<String, dynamic>> _reminders;
   late ScrollController _scrollController;
+  late Map<String, String> _dailyTip;
   double _scrollOffset = 0;
 
   @override
@@ -29,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _reminders = List.from(PlaceholderData.sampleReminders);
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    // Select a daily tip once on init - won't change during scrolling
+    _dailyTip = PlaceholderData.petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -292,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (hasPets)
           // Show pet cards when pets exist (no add pet card here)
           SizedBox(
-            height: 120,
+            height: 130,
             child: _buildPetsCarousel(petProvider, activityProvider),
           )
         else
@@ -373,9 +376,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final pet = petProvider.pets[index];
         final isSelected = petProvider.selectedPet?.id == pet.id;
         return _buildPetCard(pet, isSelected, () {
-          petProvider.selectPet(pet);
           // Use post frame callback to avoid setState during build
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            petProvider.selectPet(pet);
             activityProvider.loadActivities(pet.id, limit: 10);
           });
         });
@@ -386,15 +389,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPetCard(dynamic pet, bool isSelected, VoidCallback onTap) {
     final color = AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
+    // Get screen width and calculate card width (leaving some padding on sides)
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth - 64; // 24px padding on each side + 16px for scroll hint
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: 400.ms,
         curve: Curves.easeOutBack,
-        width: 200,
+        width: cardWidth,
         margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -407,11 +413,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Pet photo/avatar
             Container(
-              width: 72,
-              height: 72,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 image: pet.photoUrl != null
                     ? DecorationImage(
                         image: NetworkImage(pet.photoUrl),
@@ -424,12 +430,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Icon(
                         Icons.pets_rounded,
                         color: isSelected ? Colors.white : color,
-                        size: 32,
+                        size: 36,
                       ),
                     )
                   : null,
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 20),
             // Pet info
             Expanded(
               child: Column(
@@ -439,45 +445,58 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     pet.name,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: isSelected ? Colors.white : AppTheme.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    pet.species,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white.withOpacity(0.8) : AppTheme.textSecondary,
-                    ),
-                  ),
-                  if (pet.breed != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      pet.breed,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isSelected ? Colors.white.withOpacity(0.6) : AppTheme.textLight,
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          pet.species,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : color,
+                          ),
+                        ),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                      if (pet.breed != null) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            pet.breed,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isSelected ? Colors.white.withOpacity(0.7) : AppTheme.textSecondary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
             // Selection indicator
             if (isSelected)
               Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
+                width: 28,
+                height: 28,
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check, color: color, size: 16),
+                child: Icon(Icons.check, color: color, size: 18),
               ),
           ],
         ),
@@ -1133,7 +1152,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDailyTipCard() {
-    final tip = PlaceholderData.petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -1153,19 +1171,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  tip['title']!,
+                  _dailyTip['title']!,
                   style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  tip['tip']!,
+                  _dailyTip['tip']!,
                   style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 16),
-          Text(tip['emoji']!, style: const TextStyle(fontSize: 48)),
+          Text(_dailyTip['emoji']!, style: const TextStyle(fontSize: 48)),
         ],
       ),
     );

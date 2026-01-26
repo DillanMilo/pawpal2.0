@@ -12,28 +12,30 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       extendBody: true,
       body: child,
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: AppTheme.mediumShadow,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.5),
-            width: 1.5,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Row(
+        margin: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding > 0 ? bottomPadding : 12),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Navbar background
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: AppTheme.mediumShadow,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildNavItem(context, 0, Icons.home_rounded, 'Home', selectedIndex == 0),
@@ -43,12 +45,13 @@ class MainShell extends StatelessWidget {
                   _buildNavItem(context, 3, Icons.person_rounded, 'Profile', selectedIndex == 3),
                 ],
               ),
-              Positioned(
-                top: -28,
-                child: _buildCentralPawButton(context),
-              ),
-            ],
-          ),
+            ),
+            // Paw button positioned above navbar
+            Positioned(
+              top: -32,
+              child: _buildCentralPawButton(context),
+            ),
+          ],
         ),
       )
           .animate()

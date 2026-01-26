@@ -68,21 +68,32 @@ class ActivityIcon extends StatelessWidget {
 
   Color _getIconColor() {
     if (color != null) return color!;
-    
+
     switch (type.toLowerCase()) {
       case 'walk':
-        return AppTheme.secondaryColor;
+        return AppTheme.secondaryColor; // Teal
       case 'play':
-        return AppTheme.accentColor;
+        return AppTheme.accentColor; // Yellow
       case 'feed':
-        return AppTheme.accentMint;
+        return AppTheme.accentMint; // Mint green
       case 'groom':
-        return AppTheme.accentPeach;
+      case 'grooming':
+        return AppTheme.accentPeach; // Peach/Orange
       case 'vet':
       case 'vet visit':
-        return AppTheme.primaryColor;
+        return AppTheme.errorColor; // Red for medical
+      case 'medication':
+        return AppTheme.accentRose; // Pink
       case 'log':
-        return AppTheme.accentLavender;
+        return AppTheme.accentLavender; // Lavender
+      case 'add':
+        return AppTheme.primaryColor; // Purple for add pet
+      case 'social':
+        return const Color(0xFF74B9FF); // Light blue
+      case 'rest':
+        return AppTheme.textLight; // Gray
+      case 'train':
+        return AppTheme.primaryColor; // Purple
       default:
         return AppTheme.primaryColor;
     }

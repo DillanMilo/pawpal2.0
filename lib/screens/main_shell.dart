@@ -39,7 +39,7 @@ class MainShell extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildNavItem(context, 0, Icons.home_rounded, 'Home', selectedIndex == 0),
-                  _buildNavItem(context, 1, Icons.pets_rounded, 'Pets', selectedIndex == 1),
+                  _buildNavItem(context, 1, Icons.store_rounded, 'Services', selectedIndex == 1),
                   const SizedBox(width: 72), // Space for central button
                   _buildNavItem(context, 2, Icons.calendar_today_rounded, 'Events', selectedIndex == 2),
                   _buildNavItem(context, 3, Icons.person_rounded, 'Profile', selectedIndex == 3),
@@ -126,7 +126,7 @@ class MainShell extends StatelessWidget {
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/pets')) return 1;
+    if (location.startsWith('/services')) return 1;
     if (location.startsWith('/calendar')) return 2;
     if (location.startsWith('/profile')) return 3;
     return 0;
@@ -138,7 +138,7 @@ class MainShell extends StatelessWidget {
         context.go('/home');
         break;
       case 1:
-        context.go('/pets');
+        context.go('/services');
         break;
       case 2:
         context.go('/calendar');

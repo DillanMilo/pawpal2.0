@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/activity.dart';
 import '../../services/activity_service.dart';
 import '../../utils/theme.dart';
+import '../../widgets/activity_icon.dart';
 
 class ActivityHistoryScreen extends StatefulWidget {
   final String? petId;
@@ -459,47 +460,6 @@ class _ActivityCard extends StatelessWidget {
 
   const _ActivityCard({required this.activity});
 
-  IconData get _typeIcon {
-    switch (activity.type) {
-      case 'Walk':
-        return Icons.directions_walk;
-      case 'Play':
-        return Icons.sports_baseball;
-      case 'Training':
-        return Icons.school;
-      case 'Feeding':
-        return Icons.restaurant;
-      case 'Grooming':
-        return Icons.content_cut;
-      case 'Vet Visit':
-        return Icons.local_hospital;
-      case 'Medication':
-        return Icons.medication;
-      default:
-        return Icons.pets;
-    }
-  }
-
-  Color get _typeColor {
-    switch (activity.type) {
-      case 'Walk':
-        return Colors.green;
-      case 'Play':
-        return Colors.orange;
-      case 'Training':
-        return Colors.blue;
-      case 'Feeding':
-        return Colors.brown;
-      case 'Grooming':
-        return Colors.purple;
-      case 'Vet Visit':
-        return Colors.red;
-      case 'Medication':
-        return Colors.teal;
-      default:
-        return AppTheme.primaryColor;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -509,14 +469,10 @@ class _ActivityCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _typeColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(_typeIcon, color: _typeColor, size: 22),
+            ActivityIcon(
+              type: activity.type,
+              size: 22,
+              showBorder: false,
             ),
             const SizedBox(width: 12),
             Expanded(

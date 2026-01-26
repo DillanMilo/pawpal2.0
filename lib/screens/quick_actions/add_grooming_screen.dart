@@ -7,6 +7,7 @@ import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../services/medical_service.dart';
 import '../../utils/theme.dart';
+import '../../widgets/activity_icon.dart';
 
 class AddGroomingScreen extends StatefulWidget {
   const AddGroomingScreen({super.key});
@@ -30,14 +31,14 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _groomingServices = [
-    {'name': 'Bath', 'emoji': '🛁'},
-    {'name': 'Haircut', 'emoji': '✂️'},
-    {'name': 'Nail Trim', 'emoji': '💅'},
-    {'name': 'Ear Cleaning', 'emoji': '👂'},
-    {'name': 'Teeth Brushing', 'emoji': '🦷'},
-    {'name': 'Deshedding', 'emoji': '🧹'},
-    {'name': 'Flea Treatment', 'emoji': '🐛'},
-    {'name': 'Full Groom', 'emoji': '✨'},
+    {'name': 'Bath'},
+    {'name': 'Haircut'},
+    {'name': 'Nail Trim'},
+    {'name': 'Ear Cleaning'},
+    {'name': 'Teeth Brushing'},
+    {'name': 'Deshedding'},
+    {'name': 'Flea Treatment'},
+    {'name': 'Full Groom'},
   ];
 
   @override
@@ -184,16 +185,10 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         padding: const EdgeInsets.all(24),
         children: [
           // Header icon
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppTheme.accentPeach.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Text('✂️', style: TextStyle(fontSize: 40)),
-            ),
+          ActivityIcon(
+            type: 'Groom',
+            size: 40,
+            showBorder: false,
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 24),
 
@@ -411,8 +406,13 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(service['emoji'], style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
+                ActivityIcon(
+                  type: service['name'],
+                  size: 16,
+                  showBorder: false,
+                  isActive: isSelected,
+                ),
+                const SizedBox(width: 8),
                 Text(
                   service['name'],
                   style: TextStyle(

@@ -7,6 +7,7 @@ import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../services/medical_service.dart';
 import '../../utils/theme.dart';
+import '../../widgets/activity_icon.dart';
 
 class AddVetVisitScreen extends StatefulWidget {
   const AddVetVisitScreen({super.key});
@@ -174,16 +175,10 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
           padding: const EdgeInsets.all(24),
           children: [
             // Header icon
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Text('🏥', style: TextStyle(fontSize: 40)),
-              ),
+            ActivityIcon(
+              type: 'Vet',
+              size: 40,
+              showBorder: false,
             ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
             const SizedBox(height: 24),
 

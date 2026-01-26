@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../utils/theme.dart';
+import '../../widgets/activity_icon.dart';
 
 class QuickActionsScreen extends StatefulWidget {
   const QuickActionsScreen({super.key});
@@ -15,40 +16,35 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
     {
       'title': 'Medication',
       'subtitle': 'Track medications & doses',
-      'icon': Icons.medication_rounded,
-      'emoji': '💊',
+      'type': 'Medication',
       'color': AppTheme.accentRose,
       'route': '/add-medication',
     },
     {
       'title': 'Vet Visit',
       'subtitle': 'Schedule & log vet appointments',
-      'icon': Icons.local_hospital_rounded,
-      'emoji': '🏥',
+      'type': 'Vet Visit',
       'color': AppTheme.primaryColor,
       'route': '/add-vet-visit',
     },
     {
       'title': 'Grooming',
       'subtitle': 'Track grooming sessions',
-      'icon': Icons.content_cut_rounded,
-      'emoji': '✂️',
+      'type': 'Grooming',
       'color': AppTheme.accentPeach,
       'route': '/add-grooming',
     },
     {
       'title': 'Activity',
       'subtitle': 'Log activities with your pet',
-      'icon': Icons.directions_walk_rounded,
-      'emoji': '🚶',
+      'type': 'Walk',
       'color': AppTheme.secondaryColor,
       'route': '/log-activity',
     },
     {
       'title': 'Add New Pet',
       'subtitle': 'Add another furry friend',
-      'icon': Icons.add_rounded,
-      'emoji': '🐾',
+      'type': 'Add',
       'color': AppTheme.accentLavender,
       'route': '/add-pet',
     },
@@ -139,8 +135,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
                         return _buildActionCard(
                           title: card['title'],
                           subtitle: card['subtitle'],
-                          icon: card['icon'],
-                          emoji: card['emoji'],
+                          type: card['type'],
                           color: card['color'],
                           isAddPet: isAddPet,
                           onTap: () => context.push(card['route']),
@@ -172,8 +167,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
   Widget _buildActionCard({
     required String title,
     required String subtitle,
-    required IconData icon,
-    required String emoji,
+    required String type,
     required Color color,
     required VoidCallback onTap,
     bool isAddPet = false,
@@ -194,19 +188,10 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
         child: Row(
           children: [
             // Icon container
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: isAddPet ? color.withOpacity(0.2) : color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  emoji,
-                  style: const TextStyle(fontSize: 32),
-                ),
-              ),
+            ActivityIcon(
+              type: type,
+              size: 32,
+              showBorder: false,
             ),
             const SizedBox(width: 16),
 

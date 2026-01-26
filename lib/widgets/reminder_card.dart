@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/reminder.dart';
 import '../utils/theme.dart';
+import 'activity_icon.dart';
 
 class ReminderCard extends StatelessWidget {
   final Reminder reminder;
@@ -15,20 +16,6 @@ class ReminderCard extends StatelessWidget {
     this.onTap,
   });
 
-  IconData get _icon {
-    switch (reminder.type) {
-      case 'Medication':
-        return Icons.medication;
-      case 'Vaccination':
-        return Icons.vaccines;
-      case 'Appointment':
-        return Icons.calendar_today;
-      case 'Grooming':
-        return Icons.content_cut;
-      default:
-        return Icons.notifications;
-    }
-  }
 
   Color get _color {
     if (reminder.isDue) return AppTheme.errorColor;
@@ -48,18 +35,10 @@ class ReminderCard extends StatelessWidget {
           child: Row(
             children: [
               // Icon
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _icon,
-                  color: _color,
-                  size: 24,
-                ),
+              ActivityIcon(
+                type: reminder.type,
+                size: 24,
+                color: _color,
               ),
               const SizedBox(width: 16),
               // Content

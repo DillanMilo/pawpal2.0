@@ -10,6 +10,7 @@ import '../../providers/pet_provider.dart';
 import '../../providers/activity_provider.dart';
 import '../../utils/theme.dart';
 import '../../utils/placeholder_data.dart';
+import '../../widgets/activity_icon.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -706,42 +707,42 @@ class _HomeScreenState extends State<HomeScreen> {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             children: [
-              _buildActionItem('🚶', 'Walk', AppTheme.secondaryColor, () {
+              _buildActionItem('Walk', AppTheme.secondaryColor, () {
                 if (activeType == 'Walk') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Walk', petProvider.selectedPet!.id);
                 }
               }, isActive: activeType == 'Walk'),
-              _buildActionItem('🎾', 'Play', AppTheme.accentColor, () {
+              _buildActionItem('Play', AppTheme.accentColor, () {
                 if (activeType == 'Play') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Play', petProvider.selectedPet!.id);
                 }
               }, isActive: activeType == 'Play'),
-              _buildActionItem('🍖', 'Feed', AppTheme.accentMint, () {
+              _buildActionItem('Feed', AppTheme.accentMint, () {
                 if (activeType == 'Feed') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Feed', petProvider.selectedPet!.id);
                 }
               }, isActive: activeType == 'Feed'),
-              _buildActionItem('✂️', 'Groom', AppTheme.accentPeach, () {
+              _buildActionItem('Groom', AppTheme.accentPeach, () {
                 if (activeType == 'Groom') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Groom', petProvider.selectedPet!.id);
                 }
               }, isActive: activeType == 'Groom'),
-              _buildActionItem('🏥', 'Vet', AppTheme.primaryColor, () {
+              _buildActionItem('Vet', AppTheme.primaryColor, () {
                 if (activeType == 'Vet Visit') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
                   activityProvider.startTimer('Vet Visit', petProvider.selectedPet!.id);
                 }
               }, isActive: activeType == 'Vet Visit'),
-              _buildActionItem('📝', 'Log', AppTheme.accentLavender, () => context.push('/log-activity')),
+              _buildActionItem('Log', AppTheme.accentLavender, () => context.push('/log-activity')),
             ],
           ),
         ),
@@ -749,7 +750,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionItem(String emoji, String label, Color color, VoidCallback onTap, {bool isActive = false}) {
+  Widget _buildActionItem(String label, Color color, VoidCallback onTap, {bool isActive = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -757,18 +758,10 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.only(right: 16),
         child: Column(
           children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: isActive ? color : color.withOpacity(0.15),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black, width: 2.5),
-                boxShadow: isActive ? AppTheme.coloredShadow(color) : null,
-              ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 32)),
-              ),
+            ActivityIcon(
+              type: label,
+              isActive: isActive,
+              size: 32,
             ),
             const SizedBox(height: 8),
             Text(
@@ -1101,14 +1094,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Center(child: Text(reminder['icon'], style: const TextStyle(fontSize: 28))),
+            ActivityIcon(
+              type: reminder['type'],
+              size: 28,
             ),
             const SizedBox(width: 16),
             Expanded(

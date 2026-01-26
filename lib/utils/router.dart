@@ -24,6 +24,9 @@ import '../screens/quick_actions/quick_actions_screen.dart';
 import '../screens/quick_actions/add_medication_screen.dart';
 import '../screens/quick_actions/add_vet_visit_screen.dart';
 import '../screens/quick_actions/add_grooming_screen.dart';
+import '../screens/services/services_screen.dart';
+import '../screens/services/business_listing_screen.dart';
+import '../services/places_service.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,6 +100,12 @@ class AppRouter {
               ),
             ),
             GoRoute(
+              path: '/services',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: ServicesScreen(),
+              ),
+            ),
+            GoRoute(
               path: '/pets',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: PetListScreen(),
@@ -121,6 +130,15 @@ class AppRouter {
               ),
             ),
           ],
+        ),
+
+        // Services business listing (outside shell for full-screen)
+        GoRoute(
+          path: '/services/listing',
+          builder: (context, state) {
+            final serviceType = state.extra as ServiceType;
+            return BusinessListingScreen(serviceType: serviceType);
+          },
         ),
 
         // Pet routes (outside shell for full-screen)

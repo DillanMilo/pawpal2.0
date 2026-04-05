@@ -116,6 +116,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddRecordDialog(),
+        tooltip: 'Add medical record',
         child: const Icon(Icons.add),
       ),
     );
@@ -239,6 +240,18 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
     ).then((_) => _loadRecords());
   }
 
+  void _editRecord(MedicalRecord record) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMedicalRecordScreen(
+          petId: widget.petId,
+          existingRecord: record,
+        ),
+      ),
+    ).then((_) => _loadRecords());
+  }
+
   void _showRecordDetails(MedicalRecord record) {
     showModalBottomSheet(
       context: context,
@@ -350,7 +363,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.pop(context);
-                              // TODO: Edit record
+                              _editRecord(record);
                             },
                             icon: const Icon(Icons.edit),
                             label: const Text('Edit'),
@@ -484,18 +497,21 @@ class _MedicalRecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: AppTheme.thickBorder,
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
+    return Semantics(
+      label: 'View ${record.title} record',
+      button: true,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: AppTheme.thickBorder,
+          boxShadow: AppTheme.softShadow,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
@@ -573,6 +589,7 @@ class _MedicalRecordCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

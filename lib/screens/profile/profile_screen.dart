@@ -1,13 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../providers/activity_provider.dart';
+import '../../services/notification_service.dart';
 import '../../utils/theme.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _notificationsEnabled = true;
+  bool _reminderNotifications = true;
+  bool _streakNotifications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationPreferences();
+  }
+
+  Future<void> _loadNotificationPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      _reminderNotifications = prefs.getBool('reminder_notifications') ?? true;
+      _streakNotifications = prefs.getBool('streak_notifications') ?? true;
+    });
+  }
+
+  Future<void> _setNotificationPref(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
+  void _onMasterToggle(bool value) {
+    setState(() {
+      _notificationsEnabled = value;
+      if (!value) {
+        _reminderNotifications = false;
+        _streakNotifications = false;
+      }
+    });
+    _setNotificationPref('notifications_enabled', value);
+    if (!value) {
+      _setNotificationPref('reminder_notifications', false);
+      _setNotificationPref('streak_notifications', false);
+      NotificationService().cancelAllNotifications();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +69,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
             onPressed: () {
               _showSettingsDialog(context);
             },
@@ -136,13 +184,37 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
                 trailing: Switch(
-                  value: user?.notificationsEnabled ?? true,
-                  onChanged: (value) {
-                    // TODO: Update notification preference
-                  },
+                  value: _notificationsEnabled,
+                  onChanged: _onMasterToggle,
                 ),
                 onTap: () {},
               ),
+              if (_notificationsEnabled) ...[
+                _MenuItem(
+                  icon: Icons.alarm_outlined,
+                  title: 'Reminder Alerts',
+                  trailing: Switch(
+                    value: _reminderNotifications,
+                    onChanged: (value) {
+                      setState(() => _reminderNotifications = value);
+                      _setNotificationPref('reminder_notifications', value);
+                    },
+                  ),
+                  onTap: () {},
+                ),
+                _MenuItem(
+                  icon: Icons.local_fire_department_outlined,
+                  title: 'Streak Reminders',
+                  trailing: Switch(
+                    value: _streakNotifications,
+                    onChanged: (value) {
+                      setState(() => _streakNotifications = value);
+                      _setNotificationPref('streak_notifications', value);
+                    },
+                  ),
+                  onTap: () {},
+                ),
+              ],
               _MenuItem(
                 icon: Icons.lock_outline,
                 title: 'Change Password',
@@ -614,40 +686,43 @@ class _AchievementBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: isUnlocked
-                ? AppTheme.accentColor.withValues(alpha: 0.1)
-                : AppTheme.backgroundColor,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isUnlocked ? AppTheme.accentColor : AppTheme.dividerColor,
-              width: 2,
+    return Semantics(
+      label: '$title achievement, ${isUnlocked ? 'unlocked' : 'locked'}',
+      child: Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: isUnlocked
+                  ? AppTheme.accentColor.withValues(alpha: 0.1)
+                  : AppTheme.backgroundColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isUnlocked ? AppTheme.accentColor : AppTheme.dividerColor,
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: isUnlocked ? AppTheme.accentColor : AppTheme.textLight,
+              size: 28,
             ),
           ),
-          child: Icon(
-            icon,
-            color: isUnlocked ? AppTheme.accentColor : AppTheme.textLight,
-            size: 28,
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isUnlocked ? AppTheme.textPrimary : AppTheme.textLight,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isUnlocked ? AppTheme.textPrimary : AppTheme.textLight,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

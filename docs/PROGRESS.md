@@ -1,6 +1,7 @@
 # PawPal Development Progress
 
 ## Current Status
+
 - [x] Phase 1: Foundation (COMPLETE)
   - [x] Project setup
   - [x] User authentication (email/password, Google, Apple)
@@ -23,13 +24,59 @@
   - [x] Reminders screen (create, filter, complete, delete)
   - [x] All routes connected in router
 
+- [x] Phase 4: Stability & Security (COMPLETE - 2026-04-04)
+  - [x] Fixed build-breaking geolocator API
+  - [x] Pinned `intl` dependency (was `any`)
+  - [x] Migrated hardcoded API keys to flutter_dotenv (.env file)
+  - [x] Added .env to .gitignore, created .env.example
+  - [x] Optimized getCurrentStreak() to single DB query (was 365 queries)
+  - [x] Global error handler (ErrorWidget.builder for release mode)
+  - [x] 404/error route in GoRouter (`/not-found`)
+  - [x] Improved input validation (email regex, 8-char password minimum)
+
+- [x] Phase 5: Accessibility & UX (COMPLETE - 2026-04-04)
+  - [x] Added Semantics widgets to all interactive elements (~26 files)
+  - [x] Replaced 40+ GestureDetectors with InkWell + Semantics
+  - [x] Added tooltips to all icon-only buttons
+  - [x] Fixed color contrast (WCAG AA compliant)
+  - [x] Dark theme (auto-switches with system settings)
+  - [x] HomeScreen decomposed into 3 widgets + scroll perf fix
+
+- [x] Phase 6: Feature Completion (COMPLETE - 2026-04-04)
+  - [x] Notification tap navigation (payload-based routing)
+  - [x] Medical record editing (reused add screen)
+  - [x] Pet sharing (text summary via share_plus)
+  - [x] Passport export (formatted text via share_plus)
+  - [x] Notification preference persistence (SharedPreferences)
+  - [x] Full Google Places API integration (location + zipcode search)
+  - [x] Offline mode (connectivity helper + graceful degradation + banner)
+  - [x] Data caching with 5-min TTL in providers
+  - [x] Comprehensive backend documentation (docs/BACKEND.md)
+
+- [x] Phase 7: Testing & CI/CD (COMPLETE - 2026-04-04)
+  - [x] 127 tests passing (models, providers, widgets, services, constants)
+  - [x] GitHub Actions CI/CD (analyze, test, build Android/iOS)
+  - [x] PR template
+  - [x] Test helpers (FakeAuthProvider, Supabase test setup)
+
+- [x] Phase 8: Dependency Maintenance (COMPLETE - 2026-04-04)
+  - [x] Updated share_plus (7->10), mobile_scanner (4->6), notifications (17->19), connectivity (5->6)
+  - [x] Replaced abandoned qr_flutter with pretty_qr_code
+  - [x] Migrated 50 withOpacity() calls to withValues(alpha:)
+
 ## Iteration Log
 | Iteration | Task Completed | Files Changed |
 |-----------|---------------|---------------|
-| 1         | Phase 1 + Phase 2 Complete | 50+ files created |
-| 2         | Phase 3 Complete | 10+ files added/updated |
+| 1 | Phase 1 + Phase 2 Complete | 50+ files created |
+| 2 | Phase 3 Complete | 10+ files added/updated |
+| 3 | Phase 4: Stability & security | 8 files modified |
+| 4 | Phase 5: Accessibility & UX | 30+ files modified, 3 created |
+| 5 | Phase 6: Feature completion | 15+ files modified, 2 created |
+| 6 | Phase 7: Testing & CI/CD | 15+ test files created, CI workflow |
+| 7 | Phase 8: Dependency maintenance | pubspec.yaml + 15 files migrated |
 
 ## Files Created
+
 ### Models (lib/models/)
 - user_profile.dart
 - pet.dart
@@ -49,7 +96,8 @@
 - activity_service.dart
 - appointment_service.dart
 - reminder_service.dart
-- notification_service.dart (NEW)
+- notification_service.dart
+- places_service.dart
 - services.dart (exports)
 
 ### Providers (lib/providers/)
@@ -65,6 +113,9 @@
 - auth/register_screen.dart
 - auth/forgot_password_screen.dart
 - home/home_screen.dart
+- home/home_header.dart (Phase 5)
+- home/daily_tip_card.dart (Phase 5)
+- home/stats_overview.dart (Phase 5)
 - pets/pet_list_screen.dart
 - pets/pet_detail_screen.dart
 - pets/add_pet_screen.dart
@@ -73,22 +124,64 @@
 - medical/medical_records_screen.dart
 - medical/add_medical_record_screen.dart
 - activity/log_activity_screen.dart
-- activity/activity_history_screen.dart (NEW)
-- reminders/reminders_screen.dart (NEW)
+- activity/activity_history_screen.dart
+- reminders/reminders_screen.dart
 - calendar/calendar_screen.dart
 - discover/discover_screen.dart
 - profile/profile_screen.dart
+- quick_actions/quick_actions_screen.dart
+- quick_actions/add_medication_screen.dart
+- quick_actions/add_vet_visit_screen.dart
+- quick_actions/add_grooming_screen.dart
+- services/services_screen.dart
+- services/business_listing_screen.dart
 
 ### Widgets (lib/widgets/)
 - pet_carousel.dart
 - quick_actions.dart
 - activity_chart.dart
+- activity_icon.dart
 - reminder_card.dart
 
 ### Utils (lib/utils/)
-- constants.dart
-- theme.dart
-- router.dart (updated with all routes)
+- constants.dart (env-based via flutter_dotenv)
+- theme.dart (light + dark themes)
+- router.dart (all routes + error handling)
+- connectivity.dart (Phase 6)
+
+### Tests (test/)
+- widget_test.dart (smoke tests)
+- models/pet_test.dart
+- models/medical_record_test.dart
+- models/activity_test.dart
+- models/appointment_test.dart
+- models/reminder_test.dart
+- providers/pet_provider_test.dart
+- providers/activity_provider_test.dart
+- providers/auth_provider_test.dart
+- services/places_service_test.dart
+- utils/constants_test.dart
+- widgets/login_screen_test.dart
+- widgets/register_screen_test.dart
+- helpers/test_helpers.dart
+- helpers/fake_auth_provider.dart
+- helpers/supabase_test_setup.dart
+
+### CI/CD (.github/)
+- workflows/ci.yml
+- PULL_REQUEST_TEMPLATE.md
+
+### Documentation (docs/)
+- PROGRESS.md (this file)
+- ROADMAP.md
+- BACKEND.md
+- FEATURES.md
+
+### Configuration
+- .env (secrets - gitignored)
+- .env.example (template)
+- pubspec.yaml
+- analysis_options.yaml
 
 ### Assets
 - assets/images/paw_placeholder.svg
@@ -98,120 +191,56 @@
 ### Database (supabase/migrations/)
 - 001_initial_schema.sql (full schema with RLS)
 
-## Feature Summary
-
-### Implemented Features
-1. **User Authentication**
-   - Email/password registration and login
-   - Google and Apple OAuth support
-   - Password reset functionality
-   - User profile management
-
-2. **Pet Profiles**
-   - Create, read, update, delete pets
-   - Photo upload support
-   - Multiple pets per user
-   - Detailed pet information
-
-3. **Medical Records**
-   - Vaccinations, medications, allergies
-   - Vet visits, grooming, surgeries
-   - Lab results with document upload
-   - Next due date tracking
-
-4. **Pet Passport**
-   - QR code generation
-   - Configurable privacy settings
-   - Share via native share dialog
-   - Preview before sharing
-
-5. **Activity Tracking**
-   - 8 activity types (Walk, Play, Train, etc.)
-   - Timer functionality
-   - Manual duration entry
-   - Points system
-   - Activity history with filtering
-
-6. **Calendar**
-   - Monthly/weekly calendar view
-   - Appointment creation
-   - Date selection
-
-7. **Provider Discovery**
-   - Vets, Groomers, Stores tabs
-   - Location-based search (placeholder)
-   - Pet Sitters coming soon
-
-8. **Profile & Settings**
-   - User profile display
-   - Stats overview
-   - Achievements preview
-   - Sign out
-
-9. **Reminders**
-   - Create reminders with due dates
-   - Recurring reminders (daily, weekly, monthly)
-   - Filter by status (all, today, upcoming, overdue)
-   - Mark complete, delete
-
-10. **Push Notifications**
-    - Local notification service
-    - Scheduled reminder notifications
-    - Daily activity reminders
-    - Streak reminders
-
 ## Tech Stack
-- Flutter 3.10+
-- Supabase (Auth, Database, Storage)
+- Flutter 3.10+ / Dart
+- Supabase (Auth, PostgreSQL, Storage)
 - Provider for state management
 - GoRouter for navigation
+- flutter_dotenv for environment config
 - fl_chart for activity graphs
 - table_calendar for calendar
-- qr_flutter for QR codes
-- geolocator for location
+- pretty_qr_code for QR codes
+- geolocator + Google Places API for location
 - flutter_local_notifications for push notifications
-- timezone for scheduling
+- connectivity_plus for offline detection
+- share_plus for native sharing
+- GitHub Actions for CI/CD
 
 ## Setup Instructions
 1. Create a Supabase project at https://supabase.com
-2. Run the migration in supabase/migrations/001_initial_schema.sql
-3. Update lib/utils/constants.dart with:
-   - supabaseUrl: Your Supabase project URL
-   - supabaseAnonKey: Your Supabase anon key
+2. Run the migration in `supabase/migrations/001_initial_schema.sql`
+3. Copy `.env.example` to `.env` and fill in your credentials:
+   - `SUPABASE_URL` — Your Supabase project URL
+   - `SUPABASE_ANON_KEY` — Your Supabase anon key
+   - `GOOGLE_PLACES_API_KEY` — Your Google Places API key
 4. Create storage buckets: profile-photos, pet-photos, medical-documents, activity-photos
 5. Enable Google and Apple OAuth in Supabase Authentication settings
-6. Run: flutter pub get && flutter run
+6. Run: `flutter pub get && flutter run`
 
 ## Routes Available
-- `/splash` - Splash screen
-- `/login` - Login screen
-- `/register` - Registration screen
-- `/forgot-password` - Password reset
-- `/home` - Home dashboard (bottom nav)
-- `/pets` - Pet list (bottom nav)
-- `/calendar` - Calendar view (bottom nav)
-- `/discover` - Provider discovery (bottom nav)
-- `/profile` - User profile (bottom nav)
-- `/pet/:id` - Pet detail
-- `/add-pet` - Add new pet
-- `/edit-pet/:id` - Edit pet
-- `/pet/:id/medical` - Medical records
-- `/pet/:id/medical/add` - Add medical record
-- `/pet/:id/passport` - Pet passport
-- `/pet/:id/activity-history` - Pet activity history
-- `/log-activity` - Log new activity
-- `/activity-history` - All activity history
-- `/reminders` - Reminders management
-
-## Known Limitations
-- Provider discovery requires Google Places API integration
-- Push notifications require device permission setup
-- Some UI elements have placeholder implementations
-- Offline mode not fully implemented
-
-## Next Steps (Optional Enhancements)
-- Add unit tests and widget tests
-- Implement offline mode with local caching
-- Add Google Places API for provider discovery
-- Implement social sharing features
-- Add pet community features
+- `/splash` — Splash screen
+- `/login` — Login screen
+- `/register` — Registration screen
+- `/forgot-password` — Password reset
+- `/home` — Home dashboard (bottom nav)
+- `/pets` — Pet list (bottom nav)
+- `/calendar` — Calendar view (bottom nav)
+- `/discover` — Provider discovery (bottom nav)
+- `/profile` — User profile (bottom nav)
+- `/services` — Services screen (bottom nav)
+- `/pet/:id` — Pet detail
+- `/add-pet` — Add new pet
+- `/edit-pet/:id` — Edit pet
+- `/pet/:id/medical` — Medical records
+- `/pet/:id/medical/add` — Add medical record
+- `/pet/:id/passport` — Pet passport
+- `/pet/:id/activity-history` — Pet activity history
+- `/log-activity` — Log new activity
+- `/activity-history` — All activity history
+- `/reminders` — Reminders management
+- `/quick-actions` — Quick actions menu
+- `/add-medication` — Add medication
+- `/add-vet-visit` — Add vet visit
+- `/add-grooming` — Add grooming
+- `/services/listing` — Business listing detail
+- `/not-found` — 404 error page

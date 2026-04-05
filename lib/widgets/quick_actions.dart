@@ -71,46 +71,52 @@ class _ActionButton extends StatelessWidget {
     final color = AppTheme.activityColors[type] ?? AppTheme.primaryColor;
     final isEnabled = onTap != null;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: isEnabled
-                    ? color.withValues(alpha: 0.1)
-                    : AppTheme.backgroundColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isEnabled ? color : AppTheme.dividerColor,
-                  width: 1.5,
+    return Semantics(
+      button: true,
+      label: 'Log $type activity',
+      enabled: isEnabled,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 80,
+          margin: const EdgeInsets.only(right: 12),
+          child: Column(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: isEnabled
+                      ? color.withValues(alpha: 0.1)
+                      : AppTheme.backgroundColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isEnabled ? color : AppTheme.dividerColor,
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  _icon,
+                  color: isEnabled ? color : AppTheme.textLight,
+                  size: 28,
                 ),
               ),
-              child: Icon(
-                _icon,
-                color: isEnabled ? color : AppTheme.textLight,
-                size: 28,
+              const SizedBox(height: 8),
+              Text(
+                type,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isEnabled ? AppTheme.textPrimary : AppTheme.textLight,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              type,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isEnabled ? AppTheme.textPrimary : AppTheme.textLight,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -29,6 +29,7 @@ class _PetListScreenState extends State<PetListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Add a new pet',
             onPressed: () => context.push('/add-pet'),
           ),
         ],
@@ -94,13 +95,16 @@ class _PetListScreenState extends State<PetListScreen> {
         final categoryColor =
             AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: InkWell(
-            onTap: () => context.push('/pet/${pet.id}'),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+        return Semantics(
+          label: 'Select ${pet.name}, ${pet.species}${pet.breed != null ? ', ${pet.breed}' : ''}',
+          button: true,
+          child: Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: InkWell(
+              onTap: () => context.push('/pet/${pet.id}'),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   // Pet photo
@@ -245,6 +249,7 @@ class _PetListScreenState extends State<PetListScreen> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

@@ -150,6 +150,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -265,33 +266,38 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
             const SizedBox(height: 32),
 
             // Save button
-            GestureDetector(
-              onTap: _isLoading ? null : _saveVetVisit,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.playfulGradient,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
-                ),
-                child: Center(
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            Semantics(
+              button: true,
+              label: 'Save Vet Visit',
+              child: InkWell(
+                onTap: _isLoading ? null : _saveVetVisit,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.playfulGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
+                  ),
+                  child: Center(
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Save Vet Visit',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
-                        )
-                      : const Text(
-                          'Save Vet Visit',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
+                  ),
                 ),
               ),
             ),
@@ -334,35 +340,41 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
       runSpacing: 12,
       children: petProvider.pets.map((pet) {
         final isSelected = pet.id == _selectedPet?.id;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedPet = pet),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isSelected ? AppTheme.primaryColor : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: AppTheme.thickBorder,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: isSelected ? Colors.white.withOpacity(0.2) : AppTheme.primaryColor.withOpacity(0.1),
-                  backgroundImage: pet.photoUrl != null ? NetworkImage(pet.photoUrl!) : null,
-                  child: pet.photoUrl == null
-                      ? Icon(Icons.pets, size: 16, color: isSelected ? Colors.white : AppTheme.primaryColor)
-                      : null,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  pet.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : AppTheme.textPrimary,
+        return Semantics(
+          label: 'Select ${pet.name}',
+          selected: isSelected,
+          button: true,
+          child: InkWell(
+            onTap: () => setState(() => _selectedPet = pet),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: AppTheme.thickBorder,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: isSelected ? Colors.white.withValues(alpha:0.2) : AppTheme.primaryColor.withValues(alpha:0.1),
+                    backgroundImage: pet.photoUrl != null ? NetworkImage(pet.photoUrl!) : null,
+                    child: pet.photoUrl == null
+                        ? Icon(Icons.pets, size: 16, color: isSelected ? Colors.white : AppTheme.primaryColor)
+                        : null,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    pet.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -376,23 +388,29 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
       runSpacing: 8,
       children: _visitTypes.map((type) {
         final isSelected = type == _visitType;
-        return GestureDetector(
-          onTap: () => setState(() => _visitType = type),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? AppTheme.primaryColor : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected ? AppTheme.primaryColor : Colors.black,
-                width: 2,
+        return Semantics(
+          label: '$type visit type',
+          selected: isSelected,
+          button: true,
+          child: InkWell(
+            onTap: () => setState(() => _visitType = type),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? AppTheme.primaryColor : Colors.black,
+                  width: 2,
+                ),
               ),
-            ),
-            child: Text(
-              type,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : AppTheme.textPrimary,
+              child: Text(
+                type,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                ),
               ),
             ),
           ),
@@ -430,30 +448,35 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
   }
 
   Widget _buildDatePicker(DateTime? date, VoidCallback onTap, {bool isOptional = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: AppTheme.thickBorder,
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today_rounded, color: AppTheme.primaryColor, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                date != null ? DateFormat('MMM d, y').format(date) : (isOptional ? 'Not set' : 'Select'),
-                style: TextStyle(
-                  color: date != null ? AppTheme.textPrimary : AppTheme.textLight,
-                  fontWeight: FontWeight.w500,
+    return Semantics(
+      button: true,
+      label: date != null ? 'Selected date: ${DateFormat('MMM d, y').format(date)}' : (isOptional ? 'Follow-up date: Not set' : 'Select date'),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: AppTheme.thickBorder,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_today_rounded, color: AppTheme.primaryColor, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  date != null ? DateFormat('MMM d, y').format(date) : (isOptional ? 'Not set' : 'Select'),
+                  style: TextStyle(
+                    color: date != null ? AppTheme.textPrimary : AppTheme.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/activity.dart';
 import '../../services/activity_service.dart';
+import '../../utils/constants.dart';
 import '../../utils/theme.dart';
 import '../../widgets/activity_icon.dart';
 
@@ -91,10 +92,12 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
+            tooltip: 'Select date',
             onPressed: _selectDate,
           ),
           IconButton(
             icon: const Icon(Icons.filter_list),
+            tooltip: 'Filter activities',
             onPressed: _showFilterSheet,
           ),
         ],
@@ -332,7 +335,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                     Navigator.pop(context);
                   },
                 ),
-                ...['Walk', 'Play', 'Training', 'Feeding', 'Grooming']
+                ...AppConstants.activityTypes
                     .map((type) => _FilterChip(
                           label: type,
                           isSelected: _selectedType == type,
@@ -432,22 +435,28 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+    return Semantics(
+      label: '$label filter',
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
-            fontWeight: FontWeight.w500,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),

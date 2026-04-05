@@ -193,19 +193,24 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                 children: [
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: AppTheme.softShadow,
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_rounded,
-                            color: AppTheme.textPrimary,
+                      Semantics(
+                        button: true,
+                        label: 'Go back',
+                        child: InkWell(
+                          onTap: () => Navigator.of(context).pop(),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: AppTheme.softShadow,
+                            ),
+                            child: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: AppTheme.textPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -260,22 +265,27 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                             onSubmitted: (_) => _searchByZipcode(),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: _searchByZipcode,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Text(
-                              'Search',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                        Semantics(
+                          button: true,
+                          label: 'Search by zipcode',
+                          child: InkWell(
+                            onTap: _searchByZipcode,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: AppTheme.primaryGradient,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Text(
+                                'Search',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -460,8 +470,8 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppTheme.primaryColor.withOpacity(0.1),
-                    AppTheme.secondaryColor.withOpacity(0.1),
+                    AppTheme.primaryColor.withValues(alpha:0.1),
+                    AppTheme.secondaryColor.withValues(alpha:0.1),
                   ],
                 ),
                 borderRadius:
@@ -471,7 +481,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                 child: Icon(
                   _screenIcon,
                   size: 48,
-                  color: AppTheme.primaryColor.withOpacity(0.5),
+                  color: AppTheme.primaryColor.withValues(alpha:0.5),
                 ),
               ),
             ),
@@ -502,7 +512,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.successColor.withOpacity(0.1),
+                          color: AppTheme.successColor.withValues(alpha:0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
@@ -564,7 +574,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                           return Icon(
                             Icons.star_outline_rounded,
                             size: 18,
-                            color: AppTheme.textLight.withOpacity(0.5),
+                            color: AppTheme.textLight.withValues(alpha:0.5),
                           );
                         }
                       }),
@@ -597,73 +607,83 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => _openDirections(place),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.directions_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Directions',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                      child: Semantics(
+                        button: true,
+                        label: 'Get directions to ${place.name}',
+                        child: InkWell(
+                          onTap: () => _openDirections(place),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.primaryGradient,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withValues(alpha:0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.directions_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Directions',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => _callBusiness(place),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: AppTheme.secondaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: AppTheme.secondaryColor,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.phone_rounded,
+                      child: Semantics(
+                        button: true,
+                        label: 'Call ${place.name}',
+                        child: InkWell(
+                          onTap: () => _callBusiness(place),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondaryColor.withValues(alpha:0.1),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
                                 color: AppTheme.secondaryColor,
-                                size: 20,
+                                width: 2,
                               ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Call',
-                                style: TextStyle(
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.phone_rounded,
                                   color: AppTheme.secondaryColor,
-                                  fontWeight: FontWeight.w600,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 8),
+                                Text(
+                                  'Call',
+                                  style: TextStyle(
+                                    color: AppTheme.secondaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

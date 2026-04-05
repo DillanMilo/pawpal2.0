@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/theme.dart';
@@ -74,7 +75,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
               width: 300,
               height: 300,
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.1),
+                color: categoryColor.withValues(alpha:0.1),
                 shape: BoxShape.circle,
               ),
             ).animate(onPlay: (c) => c.repeat(reverse: true)).move(begin: const Offset(-20, -20), end: const Offset(20, 20), duration: 5.seconds),
@@ -90,11 +91,13 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                   backgroundColor: categoryColor,
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                    tooltip: 'Go back',
                     onPressed: () => context.pop(),
                   ),
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                      tooltip: 'Edit pet',
                       onPressed: () => context.push('/edit-pet/${_pet!.id}').then((_) => _loadPet()),
                     ),
                     _buildPopupMenu(),
@@ -156,6 +159,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
   Widget _buildPopupMenu() {
     return PopupMenuButton(
       icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+      tooltip: 'More options',
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       itemBuilder: (context) => [
         const PopupMenuItem(
@@ -195,7 +199,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [categoryColor, categoryColor.withOpacity(0.8)],
+          colors: [categoryColor, categoryColor.withValues(alpha:0.8)],
         ),
       ),
       child: Stack(
@@ -209,7 +213,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha:0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -228,7 +232,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                     border: Border.all(color: Colors.white, width: 6),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha:0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -241,7 +245,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                             fit: BoxFit.cover,
                           )
                         : Container(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha:0.2),
                             child: const Icon(Icons.pets_rounded, color: Colors.white, size: 60),
                           ),
                   ),
@@ -261,7 +265,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha:0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -352,7 +356,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.05),
+              color: AppTheme.primaryColor.withValues(alpha:0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: AppTheme.primaryColor, size: 20),
@@ -422,7 +426,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.05),
+                color: AppTheme.primaryColor.withValues(alpha:0.05),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 64, color: AppTheme.primaryColor),
@@ -473,6 +477,23 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
     );
   }
 
+  void _sharePet() {
+    if (_pet == null) return;
+    final pet = _pet!;
+    final text = StringBuffer();
+    text.writeln('Meet ${pet.name}! \u{1F43E}');
+    text.writeln('Species: ${pet.species}');
+    if (pet.breed != null) text.writeln('Breed: ${pet.breed}');
+    text.writeln('Age: ${pet.ageDisplay}');
+    if (pet.weight != null) text.writeln('Weight: ${pet.weight} kg');
+    text.writeln('');
+    text.writeln('Shared via PawPal');
+    Share.share(
+      text.toString(),
+      subject: '${pet.name}\'s Profile',
+    );
+  }
+
   void _showShareDialog() {
     showDialog(
       context: context,
@@ -485,7 +506,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement share functionality
+              _sharePet();
             },
             child: const Text('Generate'),
           ),

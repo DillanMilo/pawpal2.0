@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/reminder.dart';
 import '../../services/reminder_service.dart';
+import '../../services/notification_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/constants.dart';
 
@@ -59,6 +60,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Add reminder',
             onPressed: _showAddReminderDialog,
           ),
         ],
@@ -123,6 +125,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddReminderDialog,
+        tooltip: 'Add reminder',
         child: const Icon(Icons.add),
       ),
     );
@@ -333,6 +336,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
                   try {
                     await _reminderService.createReminder(reminder);
+                    await NotificationService().scheduleReminderNotification(reminder);
                     if (mounted) {
                       Navigator.pop(context);
                       _loadReminders();
@@ -431,22 +435,28 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chipColor = color ?? AppTheme.primaryColor;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? chipColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? chipColor : AppTheme.dividerColor,
+    return Semantics(
+      label: '$label filter',
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? chipColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? chipColor : AppTheme.dividerColor,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
-            fontWeight: FontWeight.w500,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),
@@ -488,17 +498,19 @@ class _ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(reminder.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        color: AppTheme.errorColor,
-        child: const Icon(Icons.delete, color: Colors.white),
-      ),
-      onDismissed: (_) => onDelete(),
-      child: Card(
+    return Semantics(
+      label: '${reminder.title} reminder, ${_formatDueDate()}',
+      child: Dismissible(
+        key: Key(reminder.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 16),
+          color: AppTheme.errorColor,
+          child: const Icon(Icons.delete, color: Colors.white),
+        ),
+        onDismissed: (_) => onDelete(),
+        child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -558,6 +570,7 @@ class _ReminderCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onComplete,
+                tooltip: 'Mark as complete',
                 icon: const Icon(Icons.check_circle_outline),
                 color: AppTheme.successColor,
               ),
@@ -565,6 +578,7 @@ class _ReminderCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

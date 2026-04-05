@@ -2,9 +2,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/pet.dart';
 import '../services/pet_service.dart';
+import '../utils/connectivity.dart';
 
 class PetProvider with ChangeNotifier {
   final PetService _petService = PetService();
+
+  static const _cacheThreshold = Duration(minutes: 5);
+  DateTime? _lastFetched;
 
   List<Pet> _pets = [];
   Pet? _selectedPet;
@@ -17,13 +21,31 @@ class PetProvider with ChangeNotifier {
   String? get error => _error;
   bool get hasPets => _pets.isNotEmpty;
 
-  Future<void> loadPets() async {
+  Future<void> loadPets({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _lastFetched != null &&
+        DateTime.now().difference(_lastFetched!) < _cacheThreshold) {
+      return;
+    }
+
+    final isOnline = await ConnectivityHelper.instance.hasInternetConnection();
+
+    if (!isOnline) {
+      // If we have cached data, just use it silently
+      if (_pets.isNotEmpty) return;
+      // No cached data and offline
+      _error = 'No internet connection. Please try again later.';
+      notifyListeners();
+      return;
+    }
+
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
       _pets = await _petService.getPets();
+      _lastFetched = DateTime.now();
 
       // Auto-select first pet if none selected
       if (_selectedPet == null && _pets.isNotEmpty) {
@@ -68,6 +90,7 @@ class PetProvider with ChangeNotifier {
         newPet = await _petService.updatePet(newPet);
       }
 
+      _lastFetched = null;
       _pets.insert(0, newPet);
 
       // Auto-select if first pet
@@ -100,6 +123,7 @@ class PetProvider with ChangeNotifier {
       }
 
       updatedPet = await _petService.updatePet(updatedPet);
+      _lastFetched = null;
 
       // Update in list
       final index = _pets.indexWhere((p) => p.id == pet.id);
@@ -129,6 +153,7 @@ class PetProvider with ChangeNotifier {
       notifyListeners();
 
       await _petService.deletePet(petId);
+      _lastFetched = null;
 
       _pets.removeWhere((p) => p.id == petId);
 
@@ -170,6 +195,7 @@ class PetProvider with ChangeNotifier {
     _selectedPet = null;
     _isLoading = false;
     _error = null;
+    _lastFetched = null;
     notifyListeners();
   }
 }

@@ -154,34 +154,37 @@ class ActivityService {
     if (userId == null) return 0;
 
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final cutoff = today.subtract(const Duration(days: 365));
+
+    // Single query: fetch all user activities in the last 365 days
+    final response = await _client
+        .from('activities')
+        .select('start_time')
+        .eq('user_id', userId)
+        .gte('start_time', cutoff.toIso8601String())
+        .order('start_time', ascending: false);
+
+    if ((response as List).isEmpty) return 0;
+
+    // Build a set of unique active dates (date only, no time)
+    final activeDates = <DateTime>{};
+    for (final row in response) {
+      final dt = DateTime.parse(row['start_time'] as String);
+      activeDates.add(DateTime(dt.year, dt.month, dt.day));
+    }
+
+    // Compute streak by walking backwards from today (or yesterday if today has no activity)
+    DateTime checkDate = today;
+    if (!activeDates.contains(checkDate)) {
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      if (!activeDates.contains(checkDate)) return 0;
+    }
+
     int streak = 0;
-    DateTime checkDate = DateTime(now.year, now.month, now.day);
-
-    while (true) {
-      final startOfDay = checkDate;
-      final endOfDay = checkDate.add(const Duration(days: 1));
-
-      final response = await _client
-          .from('activities')
-          .select('id')
-          .eq('user_id', userId)
-          .gte('start_time', startOfDay.toIso8601String())
-          .lt('start_time', endOfDay.toIso8601String())
-          .limit(1);
-
-      if ((response as List).isEmpty) {
-        // If today has no activity, check if we have yesterday's
-        if (streak == 0 && checkDate == DateTime(now.year, now.month, now.day)) {
-          checkDate = checkDate.subtract(const Duration(days: 1));
-          continue;
-        }
-        break;
-      }
-
+    while (activeDates.contains(checkDate)) {
       streak++;
       checkDate = checkDate.subtract(const Duration(days: 1));
-
-      // Limit check to prevent infinite loop
       if (streak > 365) break;
     }
 

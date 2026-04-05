@@ -33,7 +33,7 @@ class AppTheme {
   // Text Colors
   static const Color textPrimary = Color(0xFF1A1C1E);
   static const Color textSecondary = Color(0xFF6C727A);
-  static const Color textLight = Color(0xFFA9B0B8);
+  static const Color textLight = Color(0xFF6B7280);
 
   // Gradient Definitions
   static const LinearGradient primaryGradient = LinearGradient(
@@ -88,7 +88,7 @@ class AppTheme {
   // Box Shadows
   static List<BoxShadow> get softShadow => [
         BoxShadow(
-          color: const Color(0xFF7B61FF).withOpacity(0.06),
+          color: const Color(0xFF7B61FF).withValues(alpha: 0.06),
           blurRadius: 24,
           offset: const Offset(0, 8),
         ),
@@ -96,7 +96,7 @@ class AppTheme {
 
   static List<BoxShadow> get mediumShadow => [
         BoxShadow(
-          color: const Color(0xFF7B61FF).withOpacity(0.12),
+          color: const Color(0xFF7B61FF).withValues(alpha: 0.12),
           blurRadius: 32,
           offset: const Offset(0, 12),
         ),
@@ -115,7 +115,7 @@ class AppTheme {
 
   static List<BoxShadow> coloredShadow(Color color) => [
         BoxShadow(
-          color: color.withOpacity(0.25),
+          color: color.withValues(alpha: 0.25),
           blurRadius: 24,
           offset: const Offset(0, 8),
         ),
@@ -224,6 +224,121 @@ class AppTheme {
       ),
     );
   }
+
+  // Dark Theme Colors
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E2E);
+  static const Color darkCard = Color(0xFF252536);
+  static const Color darkDivider = Color(0xFF2E2E42);
+  static const Color darkTextPrimary = Color(0xFFF1F1F3);
+  static const Color darkTextSecondary = Color(0xFFB0B0C0);
+  static const Color darkTextLight = Color(0xFF8888A0);
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: darkBackground,
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.dark,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        tertiary: accentColor,
+        error: errorColor,
+        surface: darkSurface,
+        background: darkBackground,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: darkTextPrimary,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: GoogleFonts.outfit(
+          color: darkTextPrimary,
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(32),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          textStyle: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryLight,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          side: const BorderSide(color: primaryLight, width: 2.5),
+          textStyle: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkSurface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: darkDivider, width: 2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: primaryLight, width: 2.5),
+        ),
+        hintStyle: GoogleFonts.outfit(color: darkTextLight, fontSize: 16),
+        labelStyle:
+            GoogleFonts.outfit(color: darkTextSecondary, fontSize: 16),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: primaryLight,
+        unselectedItemColor: darkTextLight,
+        type: BottomNavigationBarType.fixed,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 12,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+    );
+  }
 }
 
 // Custom animated gradient background widget
@@ -316,10 +431,10 @@ class GlassCard extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white.withOpacity(0.9),
+        color: backgroundColor ?? Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(borderRadius ?? 24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           width: 1.5,
         ),
         boxShadow: AppTheme.softShadow,

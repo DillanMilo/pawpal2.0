@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../../models/pet.dart';
@@ -153,6 +153,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
+            tooltip: 'Share pet passport',
             onPressed: _sharePassport,
           ),
         ],
@@ -216,19 +217,27 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                     const SizedBox(height: 24),
 
                     // QR Code
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.dividerColor),
-                      ),
-                      child: QrImageView(
-                        data: passportData,
-                        version: QrVersions.auto,
-                        size: 200,
-                        backgroundColor: Colors.white,
-                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                    Semantics(
+                      label: 'QR code containing ${_pet!.name}\'s passport information',
+                      image: true,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.dividerColor),
+                        ),
+                        child: SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: PrettyQrView.data(
+                            data: passportData,
+                            decoration: const PrettyQrDecoration(
+                              shape: PrettyQrSmoothSymbol(),
+                              background: Color(0xFFFFFFFF),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -339,9 +348,10 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () {
-                // TODO: Generate PDF
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('PDF export coming soon!')),
+                final passportText = _generatePassportData();
+                Share.share(
+                  passportText,
+                  subject: '${_pet!.name}\'s Pet Passport',
                 );
               },
               icon: const Icon(Icons.picture_as_pdf),

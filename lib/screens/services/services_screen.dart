@@ -89,31 +89,35 @@ class ServicesScreen extends StatelessWidget {
     required ServiceType serviceType,
     required int delay,
   }) {
-    return GestureDetector(
-      onTap: () {
-        context.push('/services/listing', extra: serviceType);
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: gradient.colors.first.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
+    return Semantics(
+      button: true,
+      label: '$title: $subtitle',
+      child: InkWell(
+        onTap: () {
+          context.push('/services/listing', extra: serviceType);
+        },
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: gradient.colors.first.withValues(alpha:0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
         child: Row(
           children: [
             Container(
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
@@ -139,7 +143,7 @@ class ServicesScreen extends StatelessWidget {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha:0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -151,7 +155,7 @@ class ServicesScreen extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
@@ -161,6 +165,7 @@ class ServicesScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     )

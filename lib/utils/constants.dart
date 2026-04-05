@@ -1,10 +1,12 @@
-class AppConstants {
-  // Supabase Configuration
-  static const String supabaseUrl = 'https://esrxaniydzgzxxxwzqca.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzcnhhbml5ZHpnenh4eHd6cWNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMDI1MzYsImV4cCI6MjA4NDY3ODUzNn0.3m4ZCG6GFnWcMngc9AcvWkntbHBe8xI4lgjT5oDyc0s';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-  // Google Places API Configuration
-  static const String googlePlacesApiKey = 'AIzaSyCBwMxlKn2RNctCLVm1A7W-rUa0ZvsFRFg';
+class AppConstants {
+  // Supabase Configuration (loaded from .env)
+  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  // Google Places API Configuration (loaded from .env)
+  static String get googlePlacesApiKey => dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
 
   // App Info
   static const String appName = 'PawPal';

@@ -104,20 +104,23 @@ class ActivityIcon extends StatelessWidget {
     final iconColor = _getIconColor();
     final iconData = _getIconData();
 
-    return Container(
-      width: size * 2,
-      height: size * 2,
-      decoration: BoxDecoration(
-        color: isActive ? iconColor : iconColor.withOpacity(0.15),
-        shape: BoxShape.circle,
-        border: showBorder ? Border.all(color: Colors.black, width: 2.5) : null,
-        boxShadow: isActive ? AppTheme.coloredShadow(iconColor) : null,
-      ),
-      child: Center(
-        child: Icon(
-          iconData,
-          color: isActive ? Colors.white : iconColor,
-          size: size,
+    return Semantics(
+      label: '$type activity',
+      child: Container(
+        width: size * 2,
+        height: size * 2,
+        decoration: BoxDecoration(
+          color: isActive ? iconColor : iconColor.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+          border: showBorder ? Border.all(color: Colors.black, width: 2.5) : null,
+          boxShadow: isActive ? AppTheme.coloredShadow(iconColor) : null,
+        ),
+        child: Center(
+          child: Icon(
+            iconData,
+            color: isActive ? Colors.white : iconColor,
+            size: size,
+          ),
         ),
       ),
     );

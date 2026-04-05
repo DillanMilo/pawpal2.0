@@ -194,50 +194,55 @@ class _EditPetScreenState extends State<EditPetScreen> {
           children: [
             // Photo picker
             Center(
-              child: GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppTheme.backgroundColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.dividerColor,
-                      width: 2,
+              child: Semantics(
+                label: 'Change pet photo',
+                button: true,
+                child: InkWell(
+                  onTap: _pickImage,
+                  customBorder: const CircleBorder(),
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppTheme.backgroundColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.dividerColor,
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: ClipOval(
-                    child: _newPhotoFile != null
-                        ? Image.file(_newPhotoFile!, fit: BoxFit.cover)
-                        : _existingPhotoUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: _existingPhotoUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Icon(
-                                  Icons.pets,
-                                  size: 40,
-                                  color: AppTheme.textLight,
-                                ),
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.camera_alt,
-                                    size: 32,
+                    child: ClipOval(
+                      child: _newPhotoFile != null
+                          ? Image.file(_newPhotoFile!, fit: BoxFit.cover)
+                          : _existingPhotoUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: _existingPhotoUrl!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Icon(
+                                    Icons.pets,
+                                    size: 40,
                                     color: AppTheme.textLight,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Add Photo',
-                                    style: TextStyle(
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.camera_alt,
+                                      size: 32,
                                       color: AppTheme.textLight,
-                                      fontSize: 12,
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Add Photo',
+                                      style: TextStyle(
+                                        color: AppTheme.textLight,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                    ),
                   ),
                 ),
               ),

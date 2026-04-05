@@ -146,45 +146,50 @@ class _AddPetScreenState extends State<AddPetScreen> {
           children: [
             // Photo picker
             Center(
-              child: GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppTheme.backgroundColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.dividerColor,
-                      width: 2,
+              child: Semantics(
+                label: 'Add pet photo',
+                button: true,
+                child: InkWell(
+                  onTap: _pickImage,
+                  customBorder: const CircleBorder(),
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppTheme.backgroundColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.dividerColor,
+                        width: 2,
+                      ),
+                      image: _photoFile != null
+                          ? DecorationImage(
+                              image: FileImage(_photoFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    image: _photoFile != null
-                        ? DecorationImage(
-                            image: FileImage(_photoFile!),
-                            fit: BoxFit.cover,
+                    child: _photoFile == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 32,
+                                color: AppTheme.textLight,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Add Photo',
+                                style: TextStyle(
+                                  color: AppTheme.textLight,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           )
                         : null,
                   ),
-                  child: _photoFile == null
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.camera_alt,
-                              size: 32,
-                              color: AppTheme.textLight,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Add Photo',
-                              style: TextStyle(
-                                color: AppTheme.textLight,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        )
-                      : null,
                 ),
               ),
             ),

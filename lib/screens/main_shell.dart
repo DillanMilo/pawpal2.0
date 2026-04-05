@@ -1,12 +1,41 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../utils/theme.dart';
+import '../utils/connectivity.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  bool _isOffline = false;
+  late final StreamSubscription<bool> _connectivitySub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check initial state
+    ConnectivityHelper.instance.hasInternetConnection().then((online) {
+      if (!online && mounted) setState(() => _isOffline = true);
+    });
+    // Listen for changes
+    _connectivitySub = ConnectivityHelper.instance.onConnectivityChanged.listen((online) {
+      if (mounted) setState(() => _isOffline = !online);
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +45,22 @@ class MainShell extends StatelessWidget {
 
     return Scaffold(
       extendBody: true,
-      body: child,
+      body: Column(
+        children: [
+          if (_isOffline)
+            MaterialBanner(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              content: const Text(
+                "You're offline. Some features may be limited.",
+                style: TextStyle(color: Colors.white, fontSize: 13),
+              ),
+              leading: const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 20),
+              backgroundColor: Colors.grey.shade700,
+              actions: const [SizedBox.shrink()],
+            ),
+          Expanded(child: widget.child),
+        ],
+      ),
       bottomNavigationBar: Container(
         margin: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding > 0 ? bottomPadding : 12),
         child: Stack(
@@ -27,11 +71,11 @@ class MainShell extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: Colors.white.withValues(alpha:0.95),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: AppTheme.mediumShadow,
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha:0.5),
                   width: 1.5,
                 ),
               ),
@@ -61,27 +105,35 @@ class MainShell extends StatelessWidget {
   }
 
   Widget _buildCentralPawButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push('/quick-actions'),
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          gradient: AppTheme.playfulGradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primaryColor.withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+    return Semantics(
+      label: 'Quick actions',
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/quick-actions'),
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              gradient: AppTheme.playfulGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha:0.4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(color: Colors.white, width: 5),
             ),
-          ],
-          border: Border.all(color: Colors.white, width: 5),
-        ),
-        child: const Icon(
-          Icons.pets_rounded,
-          color: Colors.white,
-          size: 36,
+            child: const Icon(
+              Icons.pets_rounded,
+              color: Colors.white,
+              size: 36,
+            ),
+          ),
         ),
       ).animate(onPlay: (c) => c.repeat(reverse: true))
        .scale(begin: const Offset(1, 1), end: const Offset(1.08, 1.08), duration: 1500.ms, curve: Curves.easeInOut),
@@ -89,35 +141,40 @@ class MainShell extends StatelessWidget {
   }
 
   Widget _buildNavItem(BuildContext context, int index, IconData icon, String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () => _onItemTapped(index, context),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: 300.ms,
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppTheme.primaryColor : AppTheme.textLight,
-              size: 26,
-            ).animate(target: isSelected ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2)),
-            if (isSelected)
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.primaryColor,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ).animate().fadeIn().scale(begin: const Offset(0.8, 0.8)),
-          ],
+    return Semantics(
+      label: '$label tab',
+      button: true,
+      selected: isSelected,
+      child: InkWell(
+        onTap: () => _onItemTapped(index, context),
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: 300.ms,
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryColor.withValues(alpha:0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? AppTheme.primaryColor : AppTheme.textLight,
+                size: 26,
+              ).animate(target: isSelected ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2)),
+              if (isSelected)
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ).animate().fadeIn().scale(begin: const Offset(0.8, 0.8)),
+            ],
+          ),
         ),
       ),
     );

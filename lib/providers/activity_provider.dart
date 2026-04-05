@@ -1,9 +1,15 @@
 import 'package:flutter/foundation.dart';
 import '../models/activity.dart';
 import '../services/activity_service.dart';
+import '../utils/connectivity.dart';
 
 class ActivityProvider with ChangeNotifier {
   final ActivityService _activityService = ActivityService();
+
+  static const _cacheThreshold = Duration(minutes: 5);
+  DateTime? _lastFetched;
+  String? _lastFetchedPetId;
+  DateTime? _lastStatsFetched;
 
   List<Activity> _activities = [];
   Map<String, int> _weeklySummary = {};
@@ -27,7 +33,23 @@ class ActivityProvider with ChangeNotifier {
   DateTime? get timerStartTime => _timerStartTime;
   String? get activeActivityType => _activeActivityType;
 
-  Future<void> loadActivities(String petId, {int? limit}) async {
+  Future<void> loadActivities(String petId, {int? limit, bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _lastFetchedPetId == petId &&
+        _lastFetched != null &&
+        DateTime.now().difference(_lastFetched!) < _cacheThreshold) {
+      return;
+    }
+
+    final isOnline = await ConnectivityHelper.instance.hasInternetConnection();
+
+    if (!isOnline) {
+      if (_activities.isNotEmpty) return;
+      _error = 'No internet connection. Please try again later.';
+      notifyListeners();
+      return;
+    }
+
     try {
       _isLoading = true;
       _error = null;
@@ -35,6 +57,8 @@ class ActivityProvider with ChangeNotifier {
 
       _activities = await _activityService.getActivities(petId, limit: limit);
       _weeklySummary = await _activityService.getWeeklySummary(petId);
+      _lastFetched = DateTime.now();
+      _lastFetchedPetId = petId;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -43,10 +67,27 @@ class ActivityProvider with ChangeNotifier {
     }
   }
 
-  Future<void> loadStats() async {
+  Future<void> loadStats({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _lastStatsFetched != null &&
+        DateTime.now().difference(_lastStatsFetched!) < _cacheThreshold) {
+      return;
+    }
+
+    final isOnline = await ConnectivityHelper.instance.hasInternetConnection();
+
+    if (!isOnline) {
+      // If we already have stats cached, just keep them
+      if (_lastStatsFetched != null) return;
+      _error = 'No internet connection. Please try again later.';
+      notifyListeners();
+      return;
+    }
+
     try {
       _totalPoints = await _activityService.getTotalPoints();
       _currentStreak = await _activityService.getCurrentStreak();
+      _lastStatsFetched = DateTime.now();
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -61,10 +102,12 @@ class ActivityProvider with ChangeNotifier {
       notifyListeners();
 
       final newActivity = await _activityService.logActivity(activity);
+      _lastFetched = null;
+      _lastStatsFetched = null;
       _activities.insert(0, newActivity);
 
       // Reload stats
-      await loadStats();
+      await loadStats(forceRefresh: true);
       if (activity.petId.isNotEmpty) {
         _weeklySummary = await _activityService.getWeeklySummary(activity.petId);
       }
@@ -86,10 +129,12 @@ class ActivityProvider with ChangeNotifier {
       notifyListeners();
 
       await _activityService.deleteActivity(activityId);
+      _lastFetched = null;
+      _lastStatsFetched = null;
       _activities.removeWhere((a) => a.id == activityId);
 
       // Reload stats
-      await loadStats();
+      await loadStats(forceRefresh: true);
 
       return true;
     } catch (e) {
@@ -176,6 +221,9 @@ class ActivityProvider with ChangeNotifier {
     _currentStreak = 0;
     _isLoading = false;
     _error = null;
+    _lastFetched = null;
+    _lastFetchedPetId = null;
+    _lastStatsFetched = null;
     _timerStartTime = null;
     _activeActivityType = null;
     _activeActivityPetId = null;

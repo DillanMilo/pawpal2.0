@@ -32,7 +32,17 @@ class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+  /// Cached router instance, accessible for notification navigation.
+  static GoRouter? _instance;
+  static GoRouter? get instance => _instance;
+
   static GoRouter router(AuthProvider authProvider) {
+    if (_instance != null) return _instance!;
+    _instance = _createRouter(authProvider);
+    return _instance!;
+  }
+
+  static GoRouter _createRouter(AuthProvider authProvider) {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/splash',
@@ -67,7 +77,35 @@ class AppRouter {
 
         return null;
       },
+      onException: (context, state, router) {
+        router.go('/not-found');
+      },
       routes: [
+        // Error / not found route
+        GoRoute(
+          path: '/not-found',
+          builder: (context, state) => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Page not found',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.go('/home'),
+                    child: const Text('Go to Home'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
         // Splash screen
         GoRoute(
           path: '/splash',

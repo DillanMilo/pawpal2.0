@@ -29,6 +29,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Add appointment',
             onPressed: _showAddAppointmentDialog,
           ),
         ],
@@ -122,6 +123,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddAppointmentDialog,
+        tooltip: 'Add appointment',
         child: const Icon(Icons.add),
       ),
     );

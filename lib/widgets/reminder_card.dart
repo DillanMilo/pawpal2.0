@@ -25,11 +25,13 @@ class ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+    return Semantics(
+      label: '${reminder.title} reminder, ${_formatDueDate(reminder.dueDate)}',
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -93,6 +95,7 @@ class ReminderCard extends StatelessWidget {
               if (onComplete != null && !reminder.isCompleted)
                 IconButton(
                   onPressed: onComplete,
+                  tooltip: 'Mark as complete',
                   icon: Icon(
                     Icons.check_circle_outline,
                     color: AppTheme.successColor,
@@ -101,6 +104,7 @@ class ReminderCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

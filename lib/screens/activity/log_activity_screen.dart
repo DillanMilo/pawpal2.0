@@ -94,7 +94,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
     final now = DateTime.now();
     final startTime = _startTime ?? now;
     final duration = _useTimer
-        ? _elapsed.inMinutes
+        ? (_elapsed.inSeconds / 60).ceil()
         : (_manualDuration ?? 0);
 
     final activity = Activity(

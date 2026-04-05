@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import '../models/reminder.dart';
+import '../utils/router.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -43,9 +45,25 @@ class NotificationService {
   }
 
   void _onNotificationTapped(NotificationResponse response) {
-    // Handle notification tap - navigate to relevant screen
     debugPrint('Notification tapped: ${response.payload}');
-    // TODO: Implement navigation based on payload
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+
+    final router = AppRouter.instance;
+    if (router == null) return;
+
+    // Map payload to route
+    if (payload.startsWith('reminder:')) {
+      router.go('/reminders');
+    } else if (payload == 'daily_activity' || payload == 'streak_reminder') {
+      router.go('/log-activity');
+    } else if (payload.startsWith('pet:')) {
+      final petId = payload.substring(4);
+      router.go('/pet/$petId');
+    } else {
+      // Fallback: try using payload directly as a route
+      router.go('/home');
+    }
   }
 
   Future<bool> requestPermissions() async {
@@ -133,13 +151,22 @@ class NotificationService {
       tz.TZDateTime.from(scheduledDate, tz.local),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
 
+  /// Returns true if the given notification preference key is enabled.
+  /// Also returns false if the master toggle is off.
+  Future<bool> _isNotificationEnabled(String prefKey) async {
+    final prefs = await SharedPreferences.getInstance();
+    final masterEnabled = prefs.getBool('notifications_enabled') ?? true;
+    if (!masterEnabled) return false;
+    return prefs.getBool(prefKey) ?? true;
+  }
+
   Future<void> scheduleReminderNotification(Reminder reminder) async {
+    if (!await _isNotificationEnabled('reminder_notifications')) return;
+
     // Schedule notification 1 hour before due date
     final notifyTime = reminder.dueDate.subtract(const Duration(hours: 1));
 
@@ -187,6 +214,8 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    if (!await _isNotificationEnabled('streak_notifications')) return;
+
     const androidDetails = AndroidNotificationDetails(
       'pawpal_daily',
       'Daily Reminders',
@@ -221,8 +250,6 @@ class NotificationService {
       tz.TZDateTime.from(scheduledDate, tz.local),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: 'daily_activity',
     );
@@ -230,6 +257,8 @@ class NotificationService {
 
   // Streak reminder
   Future<void> scheduleStreakReminder() async {
+    if (!await _isNotificationEnabled('streak_notifications')) return;
+
     const androidDetails = AndroidNotificationDetails(
       'pawpal_streaks',
       'Streak Reminders',
@@ -264,8 +293,6 @@ class NotificationService {
       tz.TZDateTime.from(scheduledDate, tz.local),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'streak_reminder',
     );
   }

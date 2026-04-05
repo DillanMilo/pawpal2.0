@@ -59,6 +59,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -89,7 +90,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withOpacity(0.08),
+                color: AppTheme.primaryColor.withValues(alpha:0.08),
               ),
             ),
           ),
@@ -101,7 +102,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.secondaryColor.withOpacity(0.08),
+                color: AppTheme.secondaryColor.withValues(alpha:0.08),
               ),
             ),
           ),
@@ -172,19 +173,23 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
     required VoidCallback onTap,
     bool isAddPet = false,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isAddPet ? color.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          border: isAddPet
-              ? Border.all(color: color, width: 2.5)
-              : AppTheme.thickBorder,
-          boxShadow: AppTheme.softShadow,
-        ),
+    return Semantics(
+      button: true,
+      label: '$title: $subtitle',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isAddPet ? color.withValues(alpha:0.1) : Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            border: isAddPet
+                ? Border.all(color: color, width: 2.5)
+                : AppTheme.thickBorder,
+            boxShadow: AppTheme.softShadow,
+          ),
         child: Row(
           children: [
             // Icon container
@@ -226,7 +231,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withOpacity(isAddPet ? 0.2 : 0.1),
+                color: color.withValues(alpha:isAddPet ? 0.2 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -236,6 +241,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

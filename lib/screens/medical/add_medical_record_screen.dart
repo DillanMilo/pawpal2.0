@@ -7,11 +7,13 @@ import '../../utils/theme.dart';
 class AddMedicalRecordScreen extends StatefulWidget {
   final String petId;
   final MedicalRecordType? initialType;
+  final MedicalRecord? existingRecord;
 
   const AddMedicalRecordScreen({
     super.key,
     required this.petId,
     this.initialType,
+    this.existingRecord,
   });
 
   @override
@@ -34,10 +36,25 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   DateTime? _nextDueDate;
   bool _isLoading = false;
 
+  bool get _isEditing => widget.existingRecord != null;
+
   @override
   void initState() {
     super.initState();
-    _selectedType = widget.initialType ?? MedicalRecordType.vaccination;
+    final record = widget.existingRecord;
+    if (record != null) {
+      _selectedType = record.type;
+      _titleController.text = record.title;
+      _descriptionController.text = record.description ?? '';
+      _providerController.text = record.provider ?? '';
+      _dosageController.text = record.dosage ?? '';
+      _frequencyController.text = record.frequency ?? '';
+      _date = record.date;
+      _endDate = record.endDate;
+      _nextDueDate = record.nextDueDate;
+    } else {
+      _selectedType = widget.initialType ?? MedicalRecordType.vaccination;
+    }
   }
 
   @override
@@ -98,7 +115,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
     try {
       final now = DateTime.now();
       final record = MedicalRecord(
-        id: '',
+        id: _isEditing ? widget.existingRecord!.id : '',
         petId: widget.petId,
         type: _selectedType,
         title: _titleController.text.trim(),
@@ -117,15 +134,21 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
         frequency: _frequencyController.text.trim().isEmpty
             ? null
             : _frequencyController.text.trim(),
-        createdAt: now,
+        documentUrl: _isEditing ? widget.existingRecord!.documentUrl : null,
+        metadata: _isEditing ? widget.existingRecord!.metadata : null,
+        createdAt: _isEditing ? widget.existingRecord!.createdAt : now,
         updatedAt: now,
       );
 
-      await _medicalService.createMedicalRecord(record);
+      if (_isEditing) {
+        await _medicalService.updateMedicalRecord(record);
+      } else {
+        await _medicalService.createMedicalRecord(record);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Record added successfully')),
+          SnackBar(content: Text(_isEditing ? 'Record updated successfully' : 'Record added successfully')),
         );
         Navigator.pop(context);
       }
@@ -144,7 +167,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Medical Record'),
+        title: Text(_isEditing ? 'Edit Medical Record' : 'Add Medical Record'),
       ),
       body: Form(
         key: _formKey,
@@ -260,6 +283,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         if (_endDate != null)
                           IconButton(
                             icon: const Icon(Icons.clear),
+                            tooltip: 'Clear end date',
                             onPressed: () => setState(() => _endDate = null),
                           ),
                         const Icon(Icons.arrow_drop_down),
@@ -294,6 +318,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         if (_nextDueDate != null)
                           IconButton(
                             icon: const Icon(Icons.clear),
+                            tooltip: 'Clear next due date',
                             onPressed: () => setState(() => _nextDueDate = null),
                           ),
                         const Icon(Icons.arrow_drop_down),
@@ -340,7 +365,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text('Save Record'),
+                  : Text(_isEditing ? 'Update Record' : 'Save Record'),
             ),
             const SizedBox(height: 16),
           ],

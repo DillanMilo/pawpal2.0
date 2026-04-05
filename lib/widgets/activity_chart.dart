@@ -51,14 +51,16 @@ class ActivityChart extends StatelessWidget {
       (max, value) => value > max ? value : max,
     );
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 180,
-              child: BarChart(
+    return Semantics(
+      label: 'Weekly activity chart showing ${sortedKeys.length} days of data',
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 180,
+                child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: (maxValue == 0 ? 10 : maxValue * 1.2).toDouble(),
@@ -155,6 +157,7 @@ class ActivityChart extends StatelessWidget {
               ],
             ),
           ],
+          ),
         ),
       ),
     );

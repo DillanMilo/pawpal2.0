@@ -17,7 +17,6 @@ class AddGroomingScreen extends StatefulWidget {
 }
 
 class _AddGroomingScreenState extends State<AddGroomingScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _notesController = TextEditingController();
   final _groomerController = TextEditingController();
   final _costController = TextEditingController();
@@ -52,7 +51,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   Future<void> _selectDate(bool isGroomingDate) async {
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: isGroomingDate ? _groomingDate : (_nextAppointment ?? DateTime.now().add(const Duration(days: 30))),
+      initialDate: isGroomingDate
+          ? _groomingDate
+          : (_nextAppointment ?? DateTime.now().add(const Duration(days: 30))),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -75,7 +76,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           content: const Text('Please select a pet'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -87,7 +90,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           content: const Text('Please select at least one service'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -106,10 +111,14 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         petId: _selectedPet!.id,
         type: MedicalRecordType.groomingVisit,
         title: servicesTitle,
-        description: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        description: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
         date: _groomingDate,
         nextDueDate: _nextAppointment,
-        provider: _groomerController.text.trim().isEmpty ? null : _groomerController.text.trim(),
+        provider: _groomerController.text.trim().isEmpty
+            ? null
+            : _groomerController.text.trim(),
         metadata: {
           'services': _selectedServices.toList(),
           'cost': _costController.text.trim(),
@@ -126,7 +135,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             content: const Text('Grooming session saved!'),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -138,7 +149,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             content: Text('Error: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -170,7 +183,10 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
               borderRadius: BorderRadius.circular(12),
               border: AppTheme.thickBorder,
             ),
-            child: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: AppTheme.textPrimary,
+            ),
           ),
         ),
         title: const Text(
@@ -208,36 +224,33 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           // Date
           _buildSectionLabel('Date'),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Grooming Date',
-                      style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDatePicker(_groomingDate, () => _selectDate(true)),
-                  ],
+          _buildResponsivePair(
+            left: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Grooming Date',
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Next Appointment',
-                      style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDatePicker(_nextAppointment, () => _selectDate(false), isOptional: true),
-                  ],
+                const SizedBox(height: 8),
+                _buildDatePicker(_groomingDate, () => _selectDate(true)),
+              ],
+            ),
+            right: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Next Appointment',
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                _buildDatePicker(
+                  _nextAppointment,
+                  () => _selectDate(false),
+                  isOptional: true,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -294,7 +307,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
@@ -366,10 +381,20 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: isSelected ? Colors.white.withValues(alpha:0.2) : AppTheme.primaryColor.withValues(alpha:0.1),
-                    backgroundImage: pet.photoUrl != null ? NetworkImage(pet.photoUrl!) : null,
+                    backgroundColor: isSelected
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : AppTheme.primaryColor.withValues(alpha: 0.1),
+                    backgroundImage: pet.photoUrl != null
+                        ? NetworkImage(pet.photoUrl!)
+                        : null,
                     child: pet.photoUrl == null
-                        ? Icon(Icons.pets, size: 16, color: isSelected ? Colors.white : AppTheme.primaryColor)
+                        ? Icon(
+                            Icons.pets,
+                            size: 16,
+                            color: isSelected
+                                ? Colors.white
+                                : AppTheme.primaryColor,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 8),
@@ -468,16 +493,44 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           hintStyle: const TextStyle(color: AppTheme.textLight),
           prefixIcon: Icon(icon, color: AppTheme.primaryColor),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDatePicker(DateTime? date, VoidCallback onTap, {bool isOptional = false}) {
+  Widget _buildResponsivePair({required Widget left, required Widget right}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 420) {
+          return Column(children: [left, const SizedBox(height: 16), right]);
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            const SizedBox(width: 16),
+            Expanded(child: right),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDatePicker(
+    DateTime? date,
+    VoidCallback onTap, {
+    bool isOptional = false,
+  }) {
     return Semantics(
       button: true,
-      label: date != null ? 'Selected date: ${DateFormat('MMM d, y').format(date)}' : (isOptional ? 'Next appointment: Not set' : 'Select date'),
+      label: date != null
+          ? 'Selected date: ${DateFormat('MMM d, y').format(date)}'
+          : (isOptional ? 'Next appointment: Not set' : 'Select date'),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
@@ -490,13 +543,21 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           ),
           child: Row(
             children: [
-              Icon(Icons.calendar_today_rounded, color: AppTheme.primaryColor, size: 20),
+              Icon(
+                Icons.calendar_today_rounded,
+                color: AppTheme.primaryColor,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  date != null ? DateFormat('MMM d, y').format(date) : (isOptional ? 'Not set' : 'Select'),
+                  date != null
+                      ? DateFormat('MMM d, y').format(date)
+                      : (isOptional ? 'Not set' : 'Select'),
                   style: TextStyle(
-                    color: date != null ? AppTheme.textPrimary : AppTheme.textLight,
+                    color: date != null
+                        ? AppTheme.textPrimary
+                        : AppTheme.textLight,
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,

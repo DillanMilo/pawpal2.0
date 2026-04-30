@@ -4,35 +4,35 @@ import 'package:pawpal/models/appointment.dart';
 void main() {
   final now = DateTime(2025, 6, 15, 10, 30);
 
-  Map<String, dynamic> _fullJson() => {
-        'id': 'apt-123',
-        'user_id': 'user-456',
-        'pet_id': 'pet-789',
-        'type': 'Vet',
-        'title': 'Annual Checkup',
-        'date_time': now.toIso8601String(),
-        'provider': 'Dr. Smith',
-        'provider_address': '123 Main St',
-        'notes': 'Bring vaccination records',
-        'reminder_minutes_before': 60,
-        'is_completed': false,
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> fullJson() => {
+    'id': 'apt-123',
+    'user_id': 'user-456',
+    'pet_id': 'pet-789',
+    'type': 'Vet',
+    'title': 'Annual Checkup',
+    'date_time': now.toIso8601String(),
+    'provider': 'Dr. Smith',
+    'provider_address': '123 Main St',
+    'notes': 'Bring vaccination records',
+    'reminder_minutes_before': 60,
+    'is_completed': false,
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
-  Map<String, dynamic> _minimalJson() => {
-        'id': 'apt-123',
-        'user_id': 'user-456',
-        'type': 'Vet',
-        'title': 'Annual Checkup',
-        'date_time': now.toIso8601String(),
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> minimalJson() => {
+    'id': 'apt-123',
+    'user_id': 'user-456',
+    'type': 'Vet',
+    'title': 'Annual Checkup',
+    'date_time': now.toIso8601String(),
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
   group('Appointment.fromJson', () {
     test('parses all fields from complete JSON', () {
-      final apt = Appointment.fromJson(_fullJson());
+      final apt = Appointment.fromJson(fullJson());
 
       expect(apt.id, 'apt-123');
       expect(apt.userId, 'user-456');
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('handles missing optional fields', () {
-      final apt = Appointment.fromJson(_minimalJson());
+      final apt = Appointment.fromJson(minimalJson());
 
       expect(apt.petId, isNull);
       expect(apt.provider, isNull);
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('defaults isCompleted to false when missing', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       final apt = Appointment.fromJson(json);
       expect(apt.isCompleted, false);
     });
@@ -67,7 +67,7 @@ void main() {
 
   group('Appointment.toJson', () {
     test('produces expected map with all fields', () {
-      final apt = Appointment.fromJson(_fullJson());
+      final apt = Appointment.fromJson(fullJson());
       final json = apt.toJson();
 
       expect(json['id'], 'apt-123');
@@ -82,7 +82,7 @@ void main() {
     });
 
     test('null optional fields serialize as null', () {
-      final apt = Appointment.fromJson(_minimalJson());
+      final apt = Appointment.fromJson(minimalJson());
       final json = apt.toJson();
 
       expect(json['pet_id'], isNull);
@@ -95,7 +95,7 @@ void main() {
 
   group('Appointment round-trip', () {
     test('fromJson -> toJson -> fromJson preserves data', () {
-      final original = Appointment.fromJson(_fullJson());
+      final original = Appointment.fromJson(fullJson());
       final roundTripped = Appointment.fromJson(original.toJson());
 
       expect(roundTripped.id, original.id);
@@ -109,11 +109,8 @@ void main() {
 
   group('Appointment.copyWith', () {
     test('overrides specified fields', () {
-      final apt = Appointment.fromJson(_fullJson());
-      final updated = apt.copyWith(
-        title: 'Dental Cleaning',
-        isCompleted: true,
-      );
+      final apt = Appointment.fromJson(fullJson());
+      final updated = apt.copyWith(title: 'Dental Cleaning', isCompleted: true);
 
       expect(updated.title, 'Dental Cleaning');
       expect(updated.isCompleted, true);
@@ -124,14 +121,14 @@ void main() {
 
   group('Appointment computed properties', () {
     test('isPast returns true for past date', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['date_time'] = DateTime(2020, 1, 1).toIso8601String();
       final apt = Appointment.fromJson(json);
       expect(apt.isPast, true);
     });
 
     test('isPast returns false for future date', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['date_time'] = DateTime(2099, 1, 1).toIso8601String();
       final apt = Appointment.fromJson(json);
       expect(apt.isPast, false);
@@ -139,15 +136,20 @@ void main() {
 
     test('isToday returns true for today', () {
       final today = DateTime.now();
-      final json = _fullJson();
-      json['date_time'] =
-          DateTime(today.year, today.month, today.day, 14, 0).toIso8601String();
+      final json = fullJson();
+      json['date_time'] = DateTime(
+        today.year,
+        today.month,
+        today.day,
+        14,
+        0,
+      ).toIso8601String();
       final apt = Appointment.fromJson(json);
       expect(apt.isToday, true);
     });
 
     test('isUpcoming returns true for future non-today date', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['date_time'] = DateTime(2099, 1, 1).toIso8601String();
       final apt = Appointment.fromJson(json);
       expect(apt.isUpcoming, true);

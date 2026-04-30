@@ -4,37 +4,37 @@ import 'package:pawpal/models/medical_record.dart';
 void main() {
   final now = DateTime(2025, 6, 15, 10, 30);
 
-  Map<String, dynamic> _fullJson() => {
-        'id': 'rec-123',
-        'pet_id': 'pet-456',
-        'type': 'vaccination',
-        'title': 'Rabies Vaccine',
-        'description': 'Annual rabies shot',
-        'date': DateTime(2025, 1, 15).toIso8601String(),
-        'end_date': DateTime(2026, 1, 15).toIso8601String(),
-        'next_due_date': DateTime(2026, 1, 15).toIso8601String(),
-        'provider': 'Dr. Smith',
-        'dosage': '1ml',
-        'frequency': 'annually',
-        'document_url': 'https://example.com/doc.pdf',
-        'metadata': {'batch_number': 'ABC123'},
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> fullJson() => {
+    'id': 'rec-123',
+    'pet_id': 'pet-456',
+    'type': 'vaccination',
+    'title': 'Rabies Vaccine',
+    'description': 'Annual rabies shot',
+    'date': DateTime(2025, 1, 15).toIso8601String(),
+    'end_date': DateTime(2026, 1, 15).toIso8601String(),
+    'next_due_date': DateTime(2026, 1, 15).toIso8601String(),
+    'provider': 'Dr. Smith',
+    'dosage': '1ml',
+    'frequency': 'annually',
+    'document_url': 'https://example.com/doc.pdf',
+    'metadata': {'batch_number': 'ABC123'},
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
-  Map<String, dynamic> _minimalJson() => {
-        'id': 'rec-123',
-        'pet_id': 'pet-456',
-        'type': 'vaccination',
-        'title': 'Rabies Vaccine',
-        'date': DateTime(2025, 1, 15).toIso8601String(),
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> minimalJson() => {
+    'id': 'rec-123',
+    'pet_id': 'pet-456',
+    'type': 'vaccination',
+    'title': 'Rabies Vaccine',
+    'date': DateTime(2025, 1, 15).toIso8601String(),
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
   group('MedicalRecord.fromJson', () {
     test('parses all fields from complete JSON', () {
-      final record = MedicalRecord.fromJson(_fullJson());
+      final record = MedicalRecord.fromJson(fullJson());
 
       expect(record.id, 'rec-123');
       expect(record.petId, 'pet-456');
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('handles missing optional fields', () {
-      final record = MedicalRecord.fromJson(_minimalJson());
+      final record = MedicalRecord.fromJson(minimalJson());
 
       expect(record.description, isNull);
       expect(record.endDate, isNull);
@@ -65,7 +65,7 @@ void main() {
     });
 
     test('falls back to condition type for unknown type string', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       json['type'] = 'unknownType';
       final record = MedicalRecord.fromJson(json);
 
@@ -74,7 +74,7 @@ void main() {
 
     test('parses each MedicalRecordType correctly', () {
       for (final type in MedicalRecordType.values) {
-        final json = _minimalJson();
+        final json = minimalJson();
         json['type'] = type.name;
         final record = MedicalRecord.fromJson(json);
         expect(record.type, type);
@@ -84,7 +84,7 @@ void main() {
 
   group('MedicalRecord.toJson', () {
     test('produces expected map', () {
-      final record = MedicalRecord.fromJson(_fullJson());
+      final record = MedicalRecord.fromJson(fullJson());
       final json = record.toJson();
 
       expect(json['id'], 'rec-123');
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('null optional fields serialize as null', () {
-      final record = MedicalRecord.fromJson(_minimalJson());
+      final record = MedicalRecord.fromJson(minimalJson());
       final json = record.toJson();
 
       expect(json['description'], isNull);
@@ -112,7 +112,7 @@ void main() {
 
   group('MedicalRecord round-trip', () {
     test('fromJson -> toJson -> fromJson preserves data', () {
-      final original = MedicalRecord.fromJson(_fullJson());
+      final original = MedicalRecord.fromJson(fullJson());
       final roundTripped = MedicalRecord.fromJson(original.toJson());
 
       expect(roundTripped.id, original.id);
@@ -125,11 +125,8 @@ void main() {
 
   group('MedicalRecord.copyWith', () {
     test('overrides specified fields', () {
-      final record = MedicalRecord.fromJson(_fullJson());
-      final updated = record.copyWith(
-        title: 'Updated Title',
-        dosage: '2ml',
-      );
+      final record = MedicalRecord.fromJson(fullJson());
+      final updated = record.copyWith(title: 'Updated Title', dosage: '2ml');
 
       expect(updated.title, 'Updated Title');
       expect(updated.dosage, '2ml');
@@ -140,14 +137,14 @@ void main() {
 
   group('MedicalRecord computed properties', () {
     test('isActive returns true for medication with no end date', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       json['type'] = 'medication';
       final record = MedicalRecord.fromJson(json);
       expect(record.isActive, true);
     });
 
     test('isActive returns false for medication with past end date', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       json['type'] = 'medication';
       json['end_date'] = DateTime(2020, 1, 1).toIso8601String();
       final record = MedicalRecord.fromJson(json);
@@ -155,12 +152,12 @@ void main() {
     });
 
     test('isDue returns false when nextDueDate is null', () {
-      final record = MedicalRecord.fromJson(_minimalJson());
+      final record = MedicalRecord.fromJson(minimalJson());
       expect(record.isDue, false);
     });
 
     test('isDue returns true when nextDueDate is in the past', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['next_due_date'] = DateTime(2020, 1, 1).toIso8601String();
       final record = MedicalRecord.fromJson(json);
       expect(record.isDue, true);

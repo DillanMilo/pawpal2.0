@@ -62,6 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final petProvider = context.watch<PetProvider>();
     final activityProvider = context.watch<ActivityProvider>();
     final user = authProvider.userProfile;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       appBar: AppBar(
@@ -77,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 128 + bottomInset),
         children: [
           // Profile header
           Center(
@@ -99,7 +100,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             imageUrl: user!.photoUrl!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
                               child: const Icon(
                                 Icons.person,
                                 size: 50,
@@ -128,10 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
                 ),
               ],
             ),
@@ -268,10 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Center(
             child: Text(
               'PawPal v1.0.0',
-              style: TextStyle(
-                color: AppTheme.textLight,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppTheme.textLight, fontSize: 12),
             ),
           ),
           const SizedBox(height: 16),
@@ -320,9 +317,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text('Sync Data'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Data synced!')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Data synced!')));
               },
             ),
           ],
@@ -362,9 +359,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated!')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Profile updated!')));
             },
             child: const Text('Save'),
           ),
@@ -455,10 +452,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Achievements',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -520,16 +514,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: AppTheme.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
-          Icons.pets,
-          color: AppTheme.primaryColor,
-          size: 30,
-        ),
+        child: const Icon(Icons.pets, color: AppTheme.primaryColor, size: 30),
       ),
       children: [
-        const Text(
-          'Your all-in-one pet management companion.',
-        ),
+        const Text('Your all-in-one pet management companion.'),
         const SizedBox(height: 8),
         const Text(
           'Made with love by Creative Currents LLC',
@@ -590,17 +578,11 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
               label,
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
             ),
           ],
         ),
@@ -613,10 +595,7 @@ class _MenuSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const _MenuSection({
-    required this.title,
-    required this.children,
-  });
+  const _MenuSection({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -634,9 +613,7 @@ class _MenuSection extends StatelessWidget {
             ),
           ),
         ),
-        Card(
-          child: Column(children: children),
-        ),
+        Card(child: Column(children: children)),
       ],
     );
   }
@@ -663,10 +640,7 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: iconColor ?? AppTheme.textSecondary),
-      title: Text(
-        title,
-        style: TextStyle(color: titleColor),
-      ),
+      title: Text(title, style: TextStyle(color: titleColor)),
       trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: onTap,
     );
@@ -699,7 +673,9 @@ class _AchievementBadge extends StatelessWidget {
                   : AppTheme.backgroundColor,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isUnlocked ? AppTheme.accentColor : AppTheme.dividerColor,
+                color: isUnlocked
+                    ? AppTheme.accentColor
+                    : AppTheme.dividerColor,
                 width: 2,
               ),
             ),

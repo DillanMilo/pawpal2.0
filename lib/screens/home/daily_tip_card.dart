@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/theme.dart';
+import '../../widgets/brand_mark.dart';
 
 class DailyTipCard extends StatelessWidget {
   final Map<String, String> tip;
@@ -42,7 +43,7 @@ class DailyTipCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          Text(tip['emoji']!, style: const TextStyle(fontSize: 48)),
+          BrandTipIcon(type: tip['iconType'] ?? 'default'),
         ],
       ),
     );

@@ -52,7 +52,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _loadUserProfile() async {
     try {
-      _userProfile = await _authService.getCurrentUserProfile();
+      _userProfile = await _authService.ensureCurrentUserProfile();
       _status = AuthStatus.authenticated;
       _error = null;
     } catch (e) {

@@ -9,7 +9,7 @@ import 'package:pawpal/providers/auth_provider.dart';
 /// that the Provider widget tree accepts via `ChangeNotifierProvider<AuthProvider>`
 /// without ever initializing Supabase.
 class FakeAuthProvider with ChangeNotifier implements AuthProvider {
-  AuthStatus _status = AuthStatus.unauthenticated;
+  final AuthStatus _status = AuthStatus.unauthenticated;
   String? _error;
 
   @override
@@ -33,7 +33,11 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
   }
 
   @override
-  Future<bool> signUp({required String email, required String password, String? name}) async {
+  Future<bool> signUp({
+    required String email,
+    required String password,
+    String? name,
+  }) async {
     return false;
   }
 

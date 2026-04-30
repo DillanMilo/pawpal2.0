@@ -4,35 +4,35 @@ import 'package:pawpal/models/activity.dart';
 void main() {
   final now = DateTime(2025, 6, 15, 10, 30);
 
-  Map<String, dynamic> _fullJson() => {
-        'id': 'act-123',
-        'pet_id': 'pet-456',
-        'user_id': 'user-789',
-        'type': 'Walk',
-        'start_time': now.toIso8601String(),
-        'end_time': now.add(const Duration(minutes: 45)).toIso8601String(),
-        'duration_minutes': 45,
-        'distance': 2.5,
-        'notes': 'Great walk in the park',
-        'photo_urls': ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
-        'points': 10,
-        'metadata': {'weather': 'sunny'},
-        'created_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> fullJson() => {
+    'id': 'act-123',
+    'pet_id': 'pet-456',
+    'user_id': 'user-789',
+    'type': 'Walk',
+    'start_time': now.toIso8601String(),
+    'end_time': now.add(const Duration(minutes: 45)).toIso8601String(),
+    'duration_minutes': 45,
+    'distance': 2.5,
+    'notes': 'Great walk in the park',
+    'photo_urls': ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
+    'points': 10,
+    'metadata': {'weather': 'sunny'},
+    'created_at': now.toIso8601String(),
+  };
 
-  Map<String, dynamic> _minimalJson() => {
-        'id': 'act-123',
-        'pet_id': 'pet-456',
-        'user_id': 'user-789',
-        'type': 'Walk',
-        'start_time': now.toIso8601String(),
-        'points': 10,
-        'created_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> minimalJson() => {
+    'id': 'act-123',
+    'pet_id': 'pet-456',
+    'user_id': 'user-789',
+    'type': 'Walk',
+    'start_time': now.toIso8601String(),
+    'points': 10,
+    'created_at': now.toIso8601String(),
+  };
 
   group('Activity.fromJson', () {
     test('parses all fields from complete JSON', () {
-      final activity = Activity.fromJson(_fullJson());
+      final activity = Activity.fromJson(fullJson());
 
       expect(activity.id, 'act-123');
       expect(activity.petId, 'pet-456');
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('handles missing optional fields', () {
-      final activity = Activity.fromJson(_minimalJson());
+      final activity = Activity.fromJson(minimalJson());
 
       expect(activity.endTime, isNull);
       expect(activity.durationMinutes, isNull);
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('defaults points to 0 when missing', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       json.remove('points');
       final activity = Activity.fromJson(json);
       expect(activity.points, 0);
@@ -69,7 +69,7 @@ void main() {
 
   group('Activity.toJson', () {
     test('produces expected map', () {
-      final activity = Activity.fromJson(_fullJson());
+      final activity = Activity.fromJson(fullJson());
       final json = activity.toJson();
 
       expect(json['id'], 'act-123');
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('null optional fields serialize as null', () {
-      final activity = Activity.fromJson(_minimalJson());
+      final activity = Activity.fromJson(minimalJson());
       final json = activity.toJson();
 
       expect(json['end_time'], isNull);
@@ -96,7 +96,7 @@ void main() {
 
   group('Activity round-trip', () {
     test('fromJson -> toJson -> fromJson preserves data', () {
-      final original = Activity.fromJson(_fullJson());
+      final original = Activity.fromJson(fullJson());
       final roundTripped = Activity.fromJson(original.toJson());
 
       expect(roundTripped.id, original.id);
@@ -110,7 +110,7 @@ void main() {
 
   group('Activity.copyWith', () {
     test('overrides specified fields', () {
-      final activity = Activity.fromJson(_fullJson());
+      final activity = Activity.fromJson(fullJson());
       final updated = activity.copyWith(type: 'Play', points: 8);
 
       expect(updated.type, 'Play');
@@ -122,14 +122,13 @@ void main() {
 
   group('Activity.calculatedDuration', () {
     test('returns durationMinutes when set', () {
-      final activity = Activity.fromJson(_fullJson());
+      final activity = Activity.fromJson(fullJson());
       expect(activity.calculatedDuration, 45);
     });
 
     test('calculates from start and end time when durationMinutes is null', () {
-      final json = _minimalJson();
-      json['end_time'] =
-          now.add(const Duration(minutes: 30)).toIso8601String();
+      final json = minimalJson();
+      json['end_time'] = now.add(const Duration(minutes: 30)).toIso8601String();
       final activity = Activity.fromJson(json);
 
       expect(activity.durationMinutes, isNull);
@@ -137,7 +136,7 @@ void main() {
     });
 
     test('returns 0 when neither durationMinutes nor endTime is set', () {
-      final activity = Activity.fromJson(_minimalJson());
+      final activity = Activity.fromJson(minimalJson());
       expect(activity.calculatedDuration, 0);
     });
   });

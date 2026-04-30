@@ -54,7 +54,9 @@ class PetProvider with ChangeNotifier {
 
       // Update selected pet if it's in the list
       if (_selectedPet != null) {
-        final updatedPet = _pets.where((p) => p.id == _selectedPet!.id).firstOrNull;
+        final updatedPet = _pets
+            .where((p) => p.id == _selectedPet!.id)
+            .firstOrNull;
         _selectedPet = updatedPet ?? (_pets.isNotEmpty ? _pets.first : null);
       }
     } catch (e) {
@@ -94,9 +96,7 @@ class PetProvider with ChangeNotifier {
       _pets.insert(0, newPet);
 
       // Auto-select if first pet
-      if (_selectedPet == null) {
-        _selectedPet = newPet;
-      }
+      _selectedPet ??= newPet;
 
       return true;
     } catch (e) {

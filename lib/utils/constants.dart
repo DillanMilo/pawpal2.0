@@ -2,11 +2,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppConstants {
   // Supabase Configuration (loaded from .env)
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  static String get supabaseUrl => _env('SUPABASE_URL');
+  static String get supabaseAnonKey => _env('SUPABASE_ANON_KEY');
 
   // Google Places API Configuration (loaded from .env)
-  static String get googlePlacesApiKey => dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+  static String get googlePlacesApiKey => _env('GOOGLE_PLACES_API_KEY');
+
+  // Optional auth providers. Keep disabled until configured in Supabase.
+  static bool get enableGoogleAuth => _envBool('APP_ENABLE_GOOGLE_AUTH');
+  static bool get enableAppleAuth => _envBool('APP_ENABLE_APPLE_AUTH');
+
+  static String _env(String key, [String fallback = '']) {
+    try {
+      return dotenv.env[key] ?? fallback;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  static bool _envBool(String key) => _env(key, 'false').toLowerCase() == 'true';
 
   // App Info
   static const String appName = 'PawPal';

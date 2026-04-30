@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/constants.dart';
 import '../../utils/theme.dart';
+import '../../widgets/brand_mark.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,26 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 48),
-                // Logo
-                Center(
-                  child: Semantics(
-                    label: 'PawPal logo',
-                    image: true,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: const Icon(
-                        Icons.pets,
-                        size: 50,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                  ),
-                ),
+                const Center(child: BrandMark(size: 104)),
                 const SizedBox(height: 24),
                 // Title
                 const Text(
@@ -173,41 +156,44 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                       : const Text('Sign In'),
                 ),
-                const SizedBox(height: 24),
-                // Divider
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                          color: AppTheme.textLight,
-                          fontWeight: FontWeight.w500,
+                if (AppConstants.enableGoogleAuth || AppConstants.enableAppleAuth) ...[
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            color: AppTheme.textLight,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  if (AppConstants.enableGoogleAuth) ...[
+                    OutlinedButton.icon(
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () => authProvider.signInWithGoogle(),
+                      icon: const Icon(Icons.g_mobiledata, size: 24),
+                      label: const Text('Continue with Google'),
                     ),
-                    const Expanded(child: Divider()),
+                    const SizedBox(height: 12),
                   ],
-                ),
-                const SizedBox(height: 24),
-                // Social login buttons
-                OutlinedButton.icon(
-                  onPressed: authProvider.isLoading
-                      ? null
-                      : () => authProvider.signInWithGoogle(),
-                  icon: const Icon(Icons.g_mobiledata, size: 24),
-                  label: const Text('Continue with Google'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: authProvider.isLoading
-                      ? null
-                      : () => authProvider.signInWithApple(),
-                  icon: const Icon(Icons.apple, size: 24),
-                  label: const Text('Continue with Apple'),
-                ),
+                  if (AppConstants.enableAppleAuth)
+                    OutlinedButton.icon(
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () => authProvider.signInWithApple(),
+                      icon: const Icon(Icons.apple, size: 24),
+                      label: const Text('Continue with Apple'),
+                    ),
+                ],
                 const SizedBox(height: 32),
                 // Sign up link
                 Row(

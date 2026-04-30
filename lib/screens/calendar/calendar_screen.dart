@@ -23,6 +23,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Calendar'),
@@ -117,14 +119,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
           // Appointments list
           Expanded(
-            child: _buildAppointmentsList(),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 112 + bottomInset),
+              child: _buildAppointmentsList(),
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddAppointmentDialog,
-        tooltip: 'Add appointment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 88 + bottomInset),
+        child: FloatingActionButton(
+          onPressed: _showAddAppointmentDialog,
+          tooltip: 'Add appointment',
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -145,17 +153,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 16),
             const Text(
               'No appointments',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Tap + to schedule a new appointment',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-              ),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -194,10 +197,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               const SizedBox(height: 16),
               const Text(
                 'New Appointment',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -217,10 +217,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         prefixIcon: Icon(Icons.category),
                       ),
                       items: ['Vet', 'Grooming', 'Training', 'Other']
-                          .map((type) => DropdownMenuItem(
-                                value: type,
-                                child: Text(type),
-                              ))
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(type),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {},
                     ),
@@ -257,7 +259,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Appointment scheduling coming soon!')),
+                            content: Text(
+                              'Appointment scheduling coming soon!',
+                            ),
+                          ),
                         );
                       },
                       child: const Text('Save Appointment'),

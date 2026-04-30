@@ -5,37 +5,37 @@ void main() {
   final now = DateTime(2025, 6, 15, 10, 30);
   final birthDate = DateTime(2022, 3, 10);
 
-  Map<String, dynamic> _fullJson() => {
-        'id': 'pet-123',
-        'user_id': 'user-456',
-        'name': 'Buddy',
-        'species': 'Dog',
-        'breed': 'Golden Retriever',
-        'date_of_birth': birthDate.toIso8601String(),
-        'gender': 'Male',
-        'photo_url': 'https://example.com/photo.jpg',
-        'weight': 30.5,
-        'color_markings': 'Golden',
-        'microchip_number': 'MC-12345',
-        'spayed_neutered': true,
-        'adoption_date': DateTime(2022, 5, 1).toIso8601String(),
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> fullJson() => {
+    'id': 'pet-123',
+    'user_id': 'user-456',
+    'name': 'Buddy',
+    'species': 'Dog',
+    'breed': 'Golden Retriever',
+    'date_of_birth': birthDate.toIso8601String(),
+    'gender': 'Male',
+    'photo_url': 'https://example.com/photo.jpg',
+    'weight': 30.5,
+    'color_markings': 'Golden',
+    'microchip_number': 'MC-12345',
+    'spayed_neutered': true,
+    'adoption_date': DateTime(2022, 5, 1).toIso8601String(),
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
-  Map<String, dynamic> _minimalJson() => {
-        'id': 'pet-123',
-        'user_id': 'user-456',
-        'name': 'Buddy',
-        'species': 'Dog',
-        'gender': 'Male',
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> minimalJson() => {
+    'id': 'pet-123',
+    'user_id': 'user-456',
+    'name': 'Buddy',
+    'species': 'Dog',
+    'gender': 'Male',
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
   group('Pet.fromJson', () {
     test('parses all fields from complete JSON', () {
-      final pet = Pet.fromJson(_fullJson());
+      final pet = Pet.fromJson(fullJson());
 
       expect(pet.id, 'pet-123');
       expect(pet.userId, 'user-456');
@@ -55,7 +55,7 @@ void main() {
     });
 
     test('handles missing optional fields gracefully', () {
-      final pet = Pet.fromJson(_minimalJson());
+      final pet = Pet.fromJson(minimalJson());
 
       expect(pet.id, 'pet-123');
       expect(pet.name, 'Buddy');
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('defaults spayedNeutered to false when missing', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       // no spayed_neutered key at all
       final pet = Pet.fromJson(json);
       expect(pet.spayedNeutered, false);
@@ -79,7 +79,7 @@ void main() {
 
   group('Pet.toJson', () {
     test('produces expected map with all fields', () {
-      final pet = Pet.fromJson(_fullJson());
+      final pet = Pet.fromJson(fullJson());
       final json = pet.toJson();
 
       expect(json['id'], 'pet-123');
@@ -94,7 +94,7 @@ void main() {
     });
 
     test('null optional fields serialize as null', () {
-      final pet = Pet.fromJson(_minimalJson());
+      final pet = Pet.fromJson(minimalJson());
       final json = pet.toJson();
 
       expect(json['breed'], isNull);
@@ -107,7 +107,7 @@ void main() {
 
   group('Pet.toJson -> Pet.fromJson round-trip', () {
     test('round-trips with all fields', () {
-      final original = Pet.fromJson(_fullJson());
+      final original = Pet.fromJson(fullJson());
       final roundTripped = Pet.fromJson(original.toJson());
 
       expect(roundTripped.id, original.id);
@@ -121,7 +121,7 @@ void main() {
 
   group('Pet.copyWith', () {
     test('overrides specified fields and keeps others', () {
-      final pet = Pet.fromJson(_fullJson());
+      final pet = Pet.fromJson(fullJson());
       final updated = pet.copyWith(name: 'Max', weight: 35.0);
 
       expect(updated.name, 'Max');
@@ -133,7 +133,7 @@ void main() {
     });
 
     test('returns identical object when no args given', () {
-      final pet = Pet.fromJson(_fullJson());
+      final pet = Pet.fromJson(fullJson());
       final copy = pet.copyWith();
 
       expect(copy.id, pet.id);
@@ -144,12 +144,12 @@ void main() {
 
   group('Pet computed properties', () {
     test('ageInYears returns null when dateOfBirth is null', () {
-      final pet = Pet.fromJson(_minimalJson());
+      final pet = Pet.fromJson(minimalJson());
       expect(pet.ageInYears, isNull);
     });
 
     test('ageDisplay returns Unknown when dateOfBirth is null', () {
-      final pet = Pet.fromJson(_minimalJson());
+      final pet = Pet.fromJson(minimalJson());
       expect(pet.ageDisplay, 'Unknown');
     });
   });

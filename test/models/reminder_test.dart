@@ -4,34 +4,34 @@ import 'package:pawpal/models/reminder.dart';
 void main() {
   final now = DateTime(2025, 6, 15, 10, 30);
 
-  Map<String, dynamic> _fullJson() => {
-        'id': 'rem-123',
-        'user_id': 'user-456',
-        'pet_id': 'pet-789',
-        'type': 'Medication',
-        'title': 'Give heartworm pill',
-        'description': 'Monthly heartworm prevention',
-        'due_date': now.toIso8601String(),
-        'is_completed': false,
-        'is_recurring': true,
-        'recurring_pattern': 'monthly',
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> fullJson() => {
+    'id': 'rem-123',
+    'user_id': 'user-456',
+    'pet_id': 'pet-789',
+    'type': 'Medication',
+    'title': 'Give heartworm pill',
+    'description': 'Monthly heartworm prevention',
+    'due_date': now.toIso8601String(),
+    'is_completed': false,
+    'is_recurring': true,
+    'recurring_pattern': 'monthly',
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
-  Map<String, dynamic> _minimalJson() => {
-        'id': 'rem-123',
-        'user_id': 'user-456',
-        'type': 'Medication',
-        'title': 'Give heartworm pill',
-        'due_date': now.toIso8601String(),
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      };
+  Map<String, dynamic> minimalJson() => {
+    'id': 'rem-123',
+    'user_id': 'user-456',
+    'type': 'Medication',
+    'title': 'Give heartworm pill',
+    'due_date': now.toIso8601String(),
+    'created_at': now.toIso8601String(),
+    'updated_at': now.toIso8601String(),
+  };
 
   group('Reminder.fromJson', () {
     test('parses all fields from complete JSON', () {
-      final reminder = Reminder.fromJson(_fullJson());
+      final reminder = Reminder.fromJson(fullJson());
 
       expect(reminder.id, 'rem-123');
       expect(reminder.userId, 'user-456');
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('handles missing optional fields', () {
-      final reminder = Reminder.fromJson(_minimalJson());
+      final reminder = Reminder.fromJson(minimalJson());
 
       expect(reminder.petId, isNull);
       expect(reminder.description, isNull);
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('defaults booleans to false when missing', () {
-      final json = _minimalJson();
+      final json = minimalJson();
       final reminder = Reminder.fromJson(json);
       expect(reminder.isCompleted, false);
       expect(reminder.isRecurring, false);
@@ -65,7 +65,7 @@ void main() {
 
   group('Reminder.toJson', () {
     test('produces expected map with all fields', () {
-      final reminder = Reminder.fromJson(_fullJson());
+      final reminder = Reminder.fromJson(fullJson());
       final json = reminder.toJson();
 
       expect(json['id'], 'rem-123');
@@ -81,7 +81,7 @@ void main() {
     });
 
     test('null optional fields serialize as null', () {
-      final reminder = Reminder.fromJson(_minimalJson());
+      final reminder = Reminder.fromJson(minimalJson());
       final json = reminder.toJson();
 
       expect(json['pet_id'], isNull);
@@ -92,7 +92,7 @@ void main() {
 
   group('Reminder round-trip', () {
     test('fromJson -> toJson -> fromJson preserves data', () {
-      final original = Reminder.fromJson(_fullJson());
+      final original = Reminder.fromJson(fullJson());
       final roundTripped = Reminder.fromJson(original.toJson());
 
       expect(roundTripped.id, original.id);
@@ -106,7 +106,7 @@ void main() {
 
   group('Reminder.copyWith', () {
     test('overrides specified fields', () {
-      final reminder = Reminder.fromJson(_fullJson());
+      final reminder = Reminder.fromJson(fullJson());
       final updated = reminder.copyWith(
         title: 'Updated Title',
         isCompleted: true,
@@ -122,7 +122,7 @@ void main() {
 
   group('Reminder computed properties', () {
     test('isDue returns true for past uncompleted reminder', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['due_date'] = DateTime(2020, 1, 1).toIso8601String();
       json['is_completed'] = false;
       final reminder = Reminder.fromJson(json);
@@ -130,7 +130,7 @@ void main() {
     });
 
     test('isDue returns false for completed reminder', () {
-      final json = _fullJson();
+      final json = fullJson();
       json['due_date'] = DateTime(2020, 1, 1).toIso8601String();
       json['is_completed'] = true;
       final reminder = Reminder.fromJson(json);
@@ -139,9 +139,14 @@ void main() {
 
     test('isDueToday returns true for today uncompleted reminder', () {
       final today = DateTime.now();
-      final json = _fullJson();
-      json['due_date'] =
-          DateTime(today.year, today.month, today.day, 14, 0).toIso8601String();
+      final json = fullJson();
+      json['due_date'] = DateTime(
+        today.year,
+        today.month,
+        today.day,
+        14,
+        0,
+      ).toIso8601String();
       json['is_completed'] = false;
       final reminder = Reminder.fromJson(json);
       expect(reminder.isDueToday, true);
@@ -149,27 +154,34 @@ void main() {
 
     test('isDueToday returns false for completed reminder', () {
       final today = DateTime.now();
-      final json = _fullJson();
-      json['due_date'] =
-          DateTime(today.year, today.month, today.day, 14, 0).toIso8601String();
+      final json = fullJson();
+      json['due_date'] = DateTime(
+        today.year,
+        today.month,
+        today.day,
+        14,
+        0,
+      ).toIso8601String();
       json['is_completed'] = true;
       final reminder = Reminder.fromJson(json);
       expect(reminder.isDueToday, false);
     });
 
     test('isUpcoming returns true for near-future uncompleted reminder', () {
-      final json = _fullJson();
-      json['due_date'] =
-          DateTime.now().add(const Duration(days: 3)).toIso8601String();
+      final json = fullJson();
+      json['due_date'] = DateTime.now()
+          .add(const Duration(days: 3))
+          .toIso8601String();
       json['is_completed'] = false;
       final reminder = Reminder.fromJson(json);
       expect(reminder.isUpcoming, true);
     });
 
     test('isUpcoming returns false for far-future reminder', () {
-      final json = _fullJson();
-      json['due_date'] =
-          DateTime.now().add(const Duration(days: 30)).toIso8601String();
+      final json = fullJson();
+      json['due_date'] = DateTime.now()
+          .add(const Duration(days: 30))
+          .toIso8601String();
       json['is_completed'] = false;
       final reminder = Reminder.fromJson(json);
       expect(reminder.isUpcoming, false);

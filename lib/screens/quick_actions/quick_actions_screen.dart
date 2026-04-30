@@ -12,7 +12,138 @@ class QuickActionsScreen extends StatefulWidget {
 }
 
 class _QuickActionsScreenState extends State<QuickActionsScreen> {
-  final List<Map<String, dynamic>> _actionCards = [
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: AppTheme.thickBorder,
+            ),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+      ),
+      body: QuickActionsContent(onActionSelected: (route) => context.go(route)),
+    );
+  }
+}
+
+class QuickActionsSheet extends StatefulWidget {
+  final ValueChanged<String> onActionSelected;
+
+  const QuickActionsSheet({super.key, required this.onActionSelected});
+
+  @override
+  State<QuickActionsSheet> createState() => _QuickActionsSheetState();
+}
+
+class _QuickActionsSheetState extends State<QuickActionsSheet> {
+  bool _isSelecting = false;
+
+  void _handleActionSelected(String route) {
+    if (_isSelecting) return;
+    setState(() => _isSelecting = true);
+    widget.onActionSelected(route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.86;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 12),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundColor,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              boxShadow: AppTheme.mediumShadow,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.dividerColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Quick Actions',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Close',
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  Flexible(
+                    child: QuickActionsContent(
+                      compact: true,
+                      onActionSelected: _handleActionSelected,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class QuickActionsContent extends StatelessWidget {
+  final ValueChanged<String> onActionSelected;
+  final bool compact;
+
+  const QuickActionsContent({
+    super.key,
+    required this.onActionSelected,
+    this.compact = false,
+  });
+
+  static final List<Map<String, dynamic>> _actionCards = [
     {
       'title': 'Medication',
       'subtitle': 'Track medications & doses',
@@ -52,36 +183,10 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          tooltip: 'Go back',
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: AppTheme.thickBorder,
-            ),
-            child: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
-          ),
-        ),
-        title: const Text(
-          'Quick Actions',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          // Background decorative blobs
+    return Stack(
+      children: [
+        // Background decorative blobs
+        if (!compact) ...[
           Positioned(
             top: -50,
             right: -80,
@@ -90,7 +195,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withValues(alpha:0.08),
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -102,18 +207,23 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.secondaryColor.withValues(alpha:0.08),
+                color: AppTheme.secondaryColor.withValues(alpha: 0.08),
               ),
             ),
           ),
+        ],
 
-          // Main content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        // Main content
+        SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 0 : 24,
+              vertical: compact ? 0 : 16,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!compact) ...[
                   const Text(
                     'What would you like to do?',
                     style: TextStyle(
@@ -123,45 +233,48 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
                     ),
                   ).animate().fadeIn(duration: 400.ms),
                   const SizedBox(height: 24),
-
-                  // Action cards list
-                  Expanded(
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _actionCards.length,
-                      itemBuilder: (context, index) {
-                        final card = _actionCards[index];
-                        final isAddPet = card['route'] == '/add-pet';
-
-                        return _buildActionCard(
-                          title: card['title'],
-                          subtitle: card['subtitle'],
-                          type: card['type'],
-                          color: card['color'],
-                          isAddPet: isAddPet,
-                          onTap: () => context.push(card['route']),
-                        )
-                            .animate()
-                            .fadeIn(
-                              delay: Duration(milliseconds: 150 * index),
-                              duration: 500.ms,
-                            )
-                            .slideX(
-                              begin: -0.3,
-                              end: 0,
-                              delay: Duration(milliseconds: 150 * index),
-                              duration: 500.ms,
-                              curve: Curves.easeOutCubic,
-                            );
-                      },
-                    ),
-                  ),
                 ],
-              ),
+
+                // Action cards list
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: compact,
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.only(bottom: compact ? 4 : 0),
+                    itemCount: QuickActionsContent._actionCards.length,
+                    itemBuilder: (context, index) {
+                      final card = QuickActionsContent._actionCards[index];
+                      final isAddPet = card['route'] == '/add-pet';
+
+                      return _buildActionCard(
+                            title: card['title'],
+                            subtitle: card['subtitle'],
+                            type: card['type'],
+                            color: card['color'],
+                            isAddPet: isAddPet,
+                            compact: compact,
+                            onTap: () => onActionSelected(card['route']),
+                          )
+                          .animate()
+                          .fadeIn(
+                            delay: Duration(milliseconds: 150 * index),
+                            duration: 500.ms,
+                          )
+                          .slideX(
+                            begin: -0.3,
+                            end: 0,
+                            delay: Duration(milliseconds: 150 * index),
+                            duration: 500.ms,
+                            curve: Curves.easeOutCubic,
+                          );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -172,6 +285,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
     required Color color,
     required VoidCallback onTap,
     bool isAddPet = false,
+    bool compact = false,
   }) {
     return Semantics(
       button: true,
@@ -180,68 +294,68 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(28),
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
+          margin: EdgeInsets.only(bottom: compact ? 10 : 16),
+          padding: EdgeInsets.all(compact ? 16 : 20),
           decoration: BoxDecoration(
-            color: isAddPet ? color.withValues(alpha:0.1) : Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            color: isAddPet ? color.withValues(alpha: 0.1) : Colors.white,
+            borderRadius: BorderRadius.circular(compact ? 22 : 28),
             border: isAddPet
                 ? Border.all(color: color, width: 2.5)
                 : AppTheme.thickBorder,
             boxShadow: AppTheme.softShadow,
           ),
-        child: Row(
-          children: [
-            // Icon container
-            ActivityIcon(
-              type: type,
-              size: 32,
-              showBorder: false,
-            ),
-            const SizedBox(width: 16),
+          child: Row(
+            children: [
+              // Icon container
+              ActivityIcon(
+                type: type,
+                size: compact ? 28 : 32,
+                showBorder: false,
+              ),
+              const SizedBox(width: 16),
 
-            // Text content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: isAddPet ? color : AppTheme.textPrimary,
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: compact ? 17 : 20,
+                        fontWeight: FontWeight.w700,
+                        color: isAddPet ? color : AppTheme.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Arrow icon
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha:isAddPet ? 0.2 : 0.1),
-                shape: BoxShape.circle,
+              // Arrow icon
+              Container(
+                width: compact ? 36 : 40,
+                height: compact ? 36 : 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: isAddPet ? 0.2 : 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isAddPet ? Icons.add_rounded : Icons.arrow_forward_rounded,
+                  color: color,
+                  size: 20,
+                ),
               ),
-              child: Icon(
-                isAddPet ? Icons.add_rounded : Icons.arrow_forward_rounded,
-                color: color,
-                size: 20,
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

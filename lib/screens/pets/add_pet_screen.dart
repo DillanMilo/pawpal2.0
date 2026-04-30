@@ -119,9 +119,9 @@ class _AddPetScreenState extends State<AddPetScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${pet.name} has been added!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${pet.name} has been added!')));
       context.pop();
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,9 +136,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Pet'),
-      ),
+      appBar: AppBar(title: const Text('Add Pet')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -214,16 +212,13 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
             // Species dropdown
             DropdownButtonFormField<String>(
-              value: _species,
+              initialValue: _species,
               decoration: const InputDecoration(
                 labelText: 'Species *',
                 prefixIcon: Icon(Icons.category),
               ),
               items: AppConstants.petSpecies.map((species) {
-                return DropdownMenuItem(
-                  value: species,
-                  child: Text(species),
-                );
+                return DropdownMenuItem(value: species, child: Text(species));
               }).toList(),
               onChanged: (value) {
                 setState(() => _species = value!);
@@ -244,16 +239,13 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
             // Gender
             DropdownButtonFormField<String>(
-              value: _gender,
+              initialValue: _gender,
               decoration: const InputDecoration(
                 labelText: 'Gender *',
                 prefixIcon: Icon(Icons.wc),
               ),
               items: ['Male', 'Female', 'Unknown'].map((gender) {
-                return DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                );
+                return DropdownMenuItem(value: gender, child: Text(gender));
               }).toList(),
               onChanged: (value) {
                 setState(() => _gender = value!);
@@ -287,8 +279,9 @@ class _AddPetScreenState extends State<AddPetScreen> {
             // Weight
             TextFormField(
               controller: _weightController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Weight (kg)',
                 prefixIcon: Icon(Icons.monitor_weight),

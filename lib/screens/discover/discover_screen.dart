@@ -463,60 +463,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     }
   }
 
-  Widget _buildComingSoon(String type) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppTheme.accentColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.construction,
-                size: 50,
-                color: AppTheme.accentColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '$type Coming Soon',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'We\'re working hard to bring you pet sitter discovery and booking features',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('You\'ll be notified when this feature is available!'),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.notifications_active),
-              label: const Text('Notify Me'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showZipCodeDialog([ServiceType? forType]) {
     final controller = TextEditingController();
     final type = forType ?? _tabs[_tabController.index];

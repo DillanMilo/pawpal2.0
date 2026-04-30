@@ -12,11 +12,7 @@ class LogActivityScreen extends StatefulWidget {
   final String? initialType;
   final Pet? pet;
 
-  const LogActivityScreen({
-    super.key,
-    this.initialType,
-    this.pet,
-  });
+  const LogActivityScreen({super.key, this.initialType, this.pet});
 
   @override
   State<LogActivityScreen> createState() => _LogActivityScreenState();
@@ -82,9 +78,9 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
 
   Future<void> _saveActivity() async {
     if (_selectedPet == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a pet')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a pet')));
       return;
     }
 
@@ -146,19 +142,14 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Log Activity'),
-      ),
+      appBar: AppBar(title: const Text('Log Activity')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Activity type selector
           const Text(
             'Activity Type',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -166,7 +157,8 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
             runSpacing: 8,
             children: AppConstants.activityTypes.map((type) {
               final isSelected = type == _selectedType;
-              final color = AppTheme.activityColors[type] ?? AppTheme.primaryColor;
+              final color =
+                  AppTheme.activityColors[type] ?? AppTheme.primaryColor;
               return FilterChip(
                 selected: isSelected,
                 label: Text(type),
@@ -191,10 +183,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
           // Pet selector
           const Text(
             'Pet',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 12),
           if (petProvider.pets.isEmpty)
@@ -233,10 +222,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
           // Duration section
           const Text(
             'Duration',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 12),
 
@@ -292,31 +278,47 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                     ),
                   ] else ...[
                     // Start timer or manual entry
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _startTimer,
-                            icon: const Icon(Icons.timer),
-                            label: const Text('Start Timer'),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final startTimerButton = OutlinedButton.icon(
+                          onPressed: _startTimer,
+                          icon: const Icon(Icons.timer),
+                          label: const Text('Start Timer'),
+                        );
+                        final minutesField = TextFormField(
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Minutes',
+                            isDense: true,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text('or'),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Minutes',
-                              isDense: true,
-                            ),
-                            onChanged: (value) {
-                              _manualDuration = int.tryParse(value);
-                            },
-                          ),
-                        ),
-                      ],
+                          onChanged: (value) {
+                            _manualDuration = int.tryParse(value);
+                          },
+                        );
+
+                        if (constraints.maxWidth < 360) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              startTimerButton,
+                              const SizedBox(height: 12),
+                              const Center(child: Text('or')),
+                              const SizedBox(height: 12),
+                              minutesField,
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(child: startTimerButton),
+                            const SizedBox(width: 12),
+                            const Text('or'),
+                            const SizedBox(width: 12),
+                            Expanded(child: minutesField),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ],
@@ -352,10 +354,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                       color: AppTheme.accentColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.star,
-                      color: AppTheme.accentColor,
-                    ),
+                    child: const Icon(Icons.star, color: AppTheme.accentColor),
                   ),
                   const SizedBox(width: 16),
                   Column(
@@ -363,9 +362,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                     children: [
                       const Text(
                         'Points you\'ll earn',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary,
-                        ),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                       Text(
                         '+${AppConstants.activityPoints[_selectedType] ?? 0} points',

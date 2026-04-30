@@ -11,7 +11,6 @@ class PlaceholderData {
       'age': '3 years',
       'weight': 28.5,
       'photoUrl': null,
-      'emoji': '🐕',
     },
     {
       'id': 'demo-pet-2',
@@ -22,7 +21,6 @@ class PlaceholderData {
       'age': '2 years',
       'weight': 4.2,
       'photoUrl': null,
-      'emoji': '🐱',
     },
     {
       'id': 'demo-pet-3',
@@ -33,7 +31,6 @@ class PlaceholderData {
       'age': '1 year',
       'weight': 0.1,
       'photoUrl': null,
-      'emoji': '🐦',
     },
   ];
 
@@ -45,7 +42,6 @@ class PlaceholderData {
       'time': 'Tomorrow, 10:00 AM',
       'type': 'vaccination',
       'color': 0xFFFF6B6B,
-      'icon': '💉',
     },
     {
       'title': 'Mochi\'s Grooming',
@@ -53,7 +49,6 @@ class PlaceholderData {
       'time': 'Friday, 2:00 PM',
       'type': 'grooming',
       'color': 0xFFB8B8FF,
-      'icon': '✂️',
     },
     {
       'title': 'Sunny\'s Vet Checkup',
@@ -61,7 +56,6 @@ class PlaceholderData {
       'time': 'Next Monday, 11:00 AM',
       'type': 'vet',
       'color': 0xFF4ECDC4,
-      'icon': '🏥',
     },
   ];
 
@@ -171,22 +165,22 @@ class PlaceholderData {
     {
       'title': 'Hydration Reminder',
       'tip': 'Make sure your pet has fresh water available at all times!',
-      'emoji': '💧',
+      'iconType': 'hydration',
     },
     {
       'title': 'Exercise Time',
       'tip': 'Dogs need at least 30 minutes of exercise daily.',
-      'emoji': '🏃',
+      'iconType': 'exercise',
     },
     {
       'title': 'Dental Health',
       'tip': 'Brush your pet\'s teeth 2-3 times a week.',
-      'emoji': '🦷',
+      'iconType': 'dental',
     },
     {
       'title': 'Social Time',
       'tip': 'Pets need social interaction for mental health.',
-      'emoji': '🤗',
+      'iconType': 'social',
     },
   ];
 }

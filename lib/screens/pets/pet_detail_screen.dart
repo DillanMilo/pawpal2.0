@@ -20,7 +20,8 @@ class PetDetailScreen extends StatefulWidget {
   State<PetDetailScreen> createState() => _PetDetailScreenState();
 }
 
-class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderStateMixin {
+class _PetDetailScreenState extends State<PetDetailScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   Pet? _pet;
   bool _isLoading = true;
@@ -50,9 +51,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_pet == null) {
@@ -62,7 +61,8 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
       );
     }
 
-    final categoryColor = AppTheme.petCategoryColors[_pet!.species] ?? AppTheme.primaryColor;
+    final categoryColor =
+        AppTheme.petCategoryColors[_pet!.species] ?? AppTheme.primaryColor;
 
     return Scaffold(
       body: Stack(
@@ -71,14 +71,21 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
           Positioned(
             top: -100,
             right: -50,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: categoryColor.withValues(alpha:0.1),
-                shape: BoxShape.circle,
-              ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).move(begin: const Offset(-20, -20), end: const Offset(20, 20), duration: 5.seconds),
+            child:
+                Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: categoryColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .move(
+                      begin: const Offset(-20, -20),
+                      end: const Offset(20, 20),
+                      duration: 5.seconds,
+                    ),
           ),
 
           NestedScrollView(
@@ -90,7 +97,10 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                   stretch: true,
                   backgroundColor: categoryColor,
                   leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                    ),
                     tooltip: 'Go back',
                     onPressed: () => context.pop(),
                   ),
@@ -98,7 +108,9 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                     IconButton(
                       icon: const Icon(Icons.edit_rounded, color: Colors.white),
                       tooltip: 'Edit pet',
-                      onPressed: () => context.push('/edit-pet/${_pet!.id}').then((_) => _loadPet()),
+                      onPressed: () => context
+                          .push('/edit-pet/${_pet!.id}')
+                          .then((_) => _loadPet()),
                     ),
                     _buildPopupMenu(),
                   ],
@@ -110,10 +122,15 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                 SliverPersistentHeader(
                   delegate: _TabBarDelegate(
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.backgroundColor,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(32),
+                        ),
                       ),
                       child: TabBar(
                         controller: _tabController,
@@ -123,8 +140,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                         indicatorWeight: 4,
                         indicatorSize: TabBarIndicatorSize.label,
                         dividerColor: Colors.transparent,
-                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                         tabs: const [
                           Tab(text: 'Info'),
                           Tab(text: 'Health'),
@@ -176,7 +199,11 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
           value: 'delete',
           child: Row(
             children: [
-              Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor, size: 20),
+              Icon(
+                Icons.delete_outline_rounded,
+                color: AppTheme.errorColor,
+                size: 20,
+              ),
               SizedBox(width: 12),
               Text('Delete Pet', style: TextStyle(color: AppTheme.errorColor)),
             ],
@@ -199,7 +226,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [categoryColor, categoryColor.withValues(alpha:0.8)],
+          colors: [categoryColor, categoryColor.withValues(alpha: 0.8)],
         ),
       ),
       child: Stack(
@@ -213,7 +240,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -232,7 +259,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                     border: Border.all(color: Colors.white, width: 6),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha:0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -245,8 +272,12 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
                             fit: BoxFit.cover,
                           )
                         : Container(
-                            color: Colors.white.withValues(alpha:0.2),
-                            child: const Icon(Icons.pets_rounded, color: Colors.white, size: 60),
+                            color: Colors.white.withValues(alpha: 0.2),
+                            child: const Icon(
+                              Icons.pets_rounded,
+                              color: Colors.white,
+                              size: 60,
+                            ),
                           ),
                   ),
                 ),
@@ -263,9 +294,12 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
               ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha:0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -289,34 +323,48 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
       physics: const BouncingScrollPhysics(),
       children: [
-        _buildInfoCard(
-          'About ${_pet!.name}',
-          [
-            _buildInfoRow('Species', _pet!.species, Icons.category_rounded),
-            _buildInfoRow('Gender', _pet!.gender, Icons.transgender_rounded),
-            _buildInfoRow('Age', _pet!.ageDisplay, Icons.cake_rounded),
-            if (_pet!.dateOfBirth != null)
-              _buildInfoRow('Birthday', DateFormat('MMMM d, y').format(_pet!.dateOfBirth!), Icons.event_rounded),
-          ],
-        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+        _buildInfoCard('About ${_pet!.name}', [
+          _buildInfoRow('Species', _pet!.species, Icons.category_rounded),
+          _buildInfoRow('Gender', _pet!.gender, Icons.transgender_rounded),
+          _buildInfoRow('Age', _pet!.ageDisplay, Icons.cake_rounded),
+          if (_pet!.dateOfBirth != null)
+            _buildInfoRow(
+              'Birthday',
+              DateFormat('MMMM d, y').format(_pet!.dateOfBirth!),
+              Icons.event_rounded,
+            ),
+        ]).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
         const SizedBox(height: 24),
-        _buildInfoCard(
-          'Physical Details',
-          [
-            if (_pet!.weight != null) _buildInfoRow('Weight', '${_pet!.weight} kg', Icons.monitor_weight_rounded),
-            if (_pet!.colorMarkings != null) _buildInfoRow('Color', _pet!.colorMarkings!, Icons.palette_rounded),
-            _buildInfoRow('Spayed/Neutered', _pet!.spayedNeutered ? 'Yes' : 'No', Icons.check_circle_rounded),
-          ],
-        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
+        _buildInfoCard('Physical Details', [
+          if (_pet!.weight != null)
+            _buildInfoRow(
+              'Weight',
+              '${_pet!.weight} kg',
+              Icons.monitor_weight_rounded,
+            ),
+          if (_pet!.colorMarkings != null)
+            _buildInfoRow('Color', _pet!.colorMarkings!, Icons.palette_rounded),
+          _buildInfoRow(
+            'Spayed/Neutered',
+            _pet!.spayedNeutered ? 'Yes' : 'No',
+            Icons.check_circle_rounded,
+          ),
+        ]).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
         const SizedBox(height: 24),
-        _buildInfoCard(
-          'Identification',
-          [
-            if (_pet!.microchipNumber != null) _buildInfoRow('Microchip', _pet!.microchipNumber!, Icons.qr_code_rounded),
-            if (_pet!.adoptionDate != null)
-              _buildInfoRow('Adoption', DateFormat('MMMM d, y').format(_pet!.adoptionDate!), Icons.favorite_rounded),
-          ],
-        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
+        _buildInfoCard('Identification', [
+          if (_pet!.microchipNumber != null)
+            _buildInfoRow(
+              'Microchip',
+              _pet!.microchipNumber!,
+              Icons.qr_code_rounded,
+            ),
+          if (_pet!.adoptionDate != null)
+            _buildInfoRow(
+              'Adoption',
+              DateFormat('MMMM d, y').format(_pet!.adoptionDate!),
+              Icons.favorite_rounded,
+            ),
+        ]).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
       ],
     );
   }
@@ -356,7 +404,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha:0.05),
+              color: AppTheme.primaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: AppTheme.primaryColor, size: 20),
@@ -367,11 +415,19 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
             children: [
               Text(
                 label,
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Text(
                 value,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -388,7 +444,9 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
       'View Records',
       () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MedicalRecordsScreen(petId: _pet!.id)),
+        MaterialPageRoute(
+          builder: (context) => MedicalRecordsScreen(petId: _pet!.id),
+        ),
       ),
     );
   }
@@ -411,12 +469,20 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
       'View Passport',
       () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PetPassportScreen(petId: _pet!.id)),
+        MaterialPageRoute(
+          builder: (context) => PetPassportScreen(petId: _pet!.id),
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyTab(IconData icon, String title, String subtitle, String buttonText, VoidCallback onPressed) {
+  Widget _buildEmptyTab(
+    IconData icon,
+    String title,
+    String subtitle,
+    String buttonText,
+    VoidCallback onPressed,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -426,7 +492,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha:0.05),
+                color: AppTheme.primaryColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 64, color: AppTheme.primaryColor),
@@ -434,19 +500,23 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
             const SizedBox(height: 32),
             Text(
               title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: AppTheme.textPrimary,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               subtitle,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: onPressed,
-              child: Text(buttonText),
-            ),
+            ElevatedButton(onPressed: onPressed, child: Text(buttonText)),
           ],
         ),
       ),
@@ -454,20 +524,26 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
   }
 
   void _showDeleteDialog() {
+    final rootContext = context;
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: rootContext,
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: const Text('Delete Pet?'),
-        content: Text('Are you sure you want to delete ${_pet!.name}? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete ${_pet!.name}? This action cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              final petProvider = context.read<PetProvider>();
+              Navigator.pop(dialogContext);
+              final petProvider = rootContext.read<PetProvider>();
               final success = await petProvider.deletePet(_pet!.id);
-              if (success && mounted) context.pop();
+              if (success && rootContext.mounted) rootContext.pop();
             },
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
             child: const Text('Delete'),
@@ -488,10 +564,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
     if (pet.weight != null) text.writeln('Weight: ${pet.weight} kg');
     text.writeln('');
     text.writeln('Shared via PawPal');
-    Share.share(
-      text.toString(),
-      subject: '${pet.name}\'s Profile',
-    );
+    Share.share(text.toString(), subject: '${pet.name}\'s Profile');
   }
 
   void _showShareDialog() {
@@ -500,9 +573,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> with TickerProviderSt
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: const Text('Share Pet Passport'),
-        content: const Text('Generate a shareable profile with your pet\'s info, vaccinations, and emergency contacts.'),
+        content: const Text(
+          'Generate a shareable profile with your pet\'s info, vaccinations, and emergency contacts.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -521,12 +599,17 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   _TabBarDelegate(this.child);
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => child;
 
   @override
   double get maxExtent => 64;
   @override
   double get minExtent => 64;
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
 }

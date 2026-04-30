@@ -868,7 +868,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Center(
               child: Text(
-                'All caught up! 🎉',
+                'All caught up!',
                 style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
               ),
             ),
@@ -891,7 +891,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!isCompleted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Completed: ${reminder['title']}! 🐾'),
+              content: Text('Completed: ${reminder['title']}!'),
               duration: const Duration(seconds: 1),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

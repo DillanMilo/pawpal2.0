@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 import '../models/user_profile.dart';
@@ -17,11 +18,6 @@ class AuthService {
       data: {'name': name},
     );
 
-    if (response.user != null) {
-      // Create user profile
-      await _createUserProfile(response.user!.id, email, name);
-    }
-
     return response;
   }
 
@@ -40,7 +36,7 @@ class AuthService {
   Future<bool> signInWithGoogle() async {
     final response = await _client.auth.signInWithOAuth(
       OAuthProvider.google,
-      redirectTo: 'io.supabase.pawpal://login-callback/',
+      redirectTo: _oauthRedirectUrl,
     );
     return response;
   }
@@ -49,9 +45,14 @@ class AuthService {
   Future<bool> signInWithApple() async {
     final response = await _client.auth.signInWithOAuth(
       OAuthProvider.apple,
-      redirectTo: 'io.supabase.pawpal://login-callback/',
+      redirectTo: _oauthRedirectUrl,
     );
     return response;
+  }
+
+  String get _oauthRedirectUrl {
+    if (kIsWeb) return Uri.base.origin;
+    return 'io.supabase.pawpal://login-callback/';
   }
 
   // Sign out
@@ -86,6 +87,19 @@ class AuthService {
     return UserProfile.fromJson(response);
   }
 
+  // Ensure the profile exists for accounts created before the DB trigger was present.
+  Future<UserProfile?> ensureCurrentUserProfile() async {
+    final user = SupabaseService.currentUser;
+    if (user == null || user.email == null) return null;
+
+    final existing = await getCurrentUserProfile();
+    if (existing != null) return existing;
+
+    final metadataName = user.userMetadata?['name'] as String?;
+    await _upsertUserProfile(user.id, user.email!, metadataName);
+    return getCurrentUserProfile();
+  }
+
   // Update user profile
   Future<UserProfile> updateUserProfile(UserProfile profile) async {
     final data = profile.toJson();
@@ -101,21 +115,20 @@ class AuthService {
     return UserProfile.fromJson(response);
   }
 
-  // Create user profile (internal)
-  Future<void> _createUserProfile(
+  // Create or repair user profile (internal)
+  Future<void> _upsertUserProfile(
     String userId,
     String email,
     String? name,
   ) async {
     final now = DateTime.now().toIso8601String();
-    await _client.from('users').insert({
+    await _client.from('users').upsert({
       'id': userId,
       'email': email,
       'name': name,
       'notifications_enabled': true,
-      'created_at': now,
       'updated_at': now,
-    });
+    }, onConflict: 'id');
   }
 
   // Delete account

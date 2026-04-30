@@ -82,9 +82,13 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
     if (_includeVaccinations && _vaccinations.isNotEmpty) {
       buffer.writeln('--- VACCINATIONS ---');
       for (final vax in _vaccinations.take(5)) {
-        buffer.writeln('${vax.title}: ${DateFormat('MM/dd/yyyy').format(vax.date)}');
+        buffer.writeln(
+          '${vax.title}: ${DateFormat('MM/dd/yyyy').format(vax.date)}',
+        );
         if (vax.nextDueDate != null) {
-          buffer.writeln('  Next due: ${DateFormat('MM/dd/yyyy').format(vax.nextDueDate!)}');
+          buffer.writeln(
+            '  Next due: ${DateFormat('MM/dd/yyyy').format(vax.nextDueDate!)}',
+          );
         }
       }
       buffer.writeln('');
@@ -93,7 +97,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
     if (_includeMedications && _medications.isNotEmpty) {
       buffer.writeln('--- CURRENT MEDICATIONS ---');
       for (final med in _medications.take(5)) {
-        buffer.write('${med.title}');
+        buffer.write(med.title);
         if (med.dosage != null) buffer.write(' - ${med.dosage}');
         if (med.frequency != null) buffer.write(' (${med.frequency})');
         buffer.writeln('');
@@ -115,7 +119,9 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
       buffer.writeln('');
     }
 
-    buffer.writeln('Updated: ${DateFormat('MM/dd/yyyy').format(DateTime.now())}');
+    buffer.writeln(
+      'Updated: ${DateFormat('MM/dd/yyyy').format(DateTime.now())}',
+    );
 
     return buffer.toString();
   }
@@ -123,10 +129,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
   void _sharePassport() {
     if (_pet == null) return;
     final passportData = _generatePassportData();
-    Share.share(
-      passportData,
-      subject: '${_pet!.name}\'s Pet Passport',
-    );
+    Share.share(passportData, subject: '${_pet!.name}\'s Pet Passport');
   }
 
   @override
@@ -205,9 +208,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                               ),
                               Text(
                                 '${_pet!.species}${_pet!.breed != null ? ' • ${_pet!.breed}' : ''}',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary,
-                                ),
+                                style: TextStyle(color: AppTheme.textSecondary),
                               ),
                             ],
                           ),
@@ -218,7 +219,8 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
 
                     // QR Code
                     Semantics(
-                      label: 'QR code containing ${_pet!.name}\'s passport information',
+                      label:
+                          'QR code containing ${_pet!.name}\'s passport information',
                       image: true,
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -257,10 +259,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             // Privacy Settings
             const Text(
               'Information to Include',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Container(
@@ -362,10 +361,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             // Preview
             const Text(
               'Preview',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Container(
@@ -379,10 +375,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   passportData,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
                 ),
               ),
             ),

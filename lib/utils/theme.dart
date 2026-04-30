@@ -87,39 +87,33 @@ class AppTheme {
 
   // Box Shadows
   static List<BoxShadow> get softShadow => [
-        BoxShadow(
-          color: const Color(0xFF7B61FF).withValues(alpha: 0.06),
-          blurRadius: 24,
-          offset: const Offset(0, 8),
-        ),
-      ];
+    BoxShadow(
+      color: const Color(0xFF7B61FF).withValues(alpha: 0.06),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
   static List<BoxShadow> get mediumShadow => [
-        BoxShadow(
-          color: const Color(0xFF7B61FF).withValues(alpha: 0.12),
-          blurRadius: 32,
-          offset: const Offset(0, 12),
-        ),
-      ];
+    BoxShadow(
+      color: const Color(0xFF7B61FF).withValues(alpha: 0.12),
+      blurRadius: 32,
+      offset: const Offset(0, 12),
+    ),
+  ];
 
   // Borders
-  static Border get thickBorder => Border.all(
-        color: Colors.black,
-        width: 2.5,
-      );
+  static Border get thickBorder => Border.all(color: Colors.black, width: 2.5);
 
-  static Border get thinBorder => Border.all(
-        color: dividerColor,
-        width: 1.5,
-      );
+  static Border get thinBorder => Border.all(color: dividerColor, width: 1.5);
 
   static List<BoxShadow> coloredShadow(Color color) => [
-        BoxShadow(
-          color: color.withValues(alpha: 0.25),
-          blurRadius: 24,
-          offset: const Offset(0, 8),
-        ),
-      ];
+    BoxShadow(
+      color: color.withValues(alpha: 0.25),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -135,7 +129,7 @@ class AppTheme {
         tertiary: accentColor,
         error: errorColor,
         surface: surfaceColor,
-        background: backgroundColor,
+        surfaceContainerLowest: backgroundColor,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -152,9 +146,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(32),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -190,8 +182,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 20,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
@@ -218,9 +212,7 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 12,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
     );
   }
@@ -249,7 +241,7 @@ class AppTheme {
         tertiary: accentColor,
         error: errorColor,
         surface: darkSurface,
-        background: darkBackground,
+        surfaceContainerLowest: darkBackground,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -266,9 +258,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: darkCard,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(32),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -304,8 +294,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurface,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 20,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
@@ -319,8 +311,7 @@ class AppTheme {
           borderSide: const BorderSide(color: primaryLight, width: 2.5),
         ),
         hintStyle: GoogleFonts.outfit(color: darkTextLight, fontSize: 16),
-        labelStyle:
-            GoogleFonts.outfit(color: darkTextSecondary, fontSize: 16),
+        labelStyle: GoogleFonts.outfit(color: darkTextSecondary, fontSize: 16),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.transparent,
@@ -333,9 +324,7 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 12,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
     );
   }
@@ -378,7 +367,8 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
 
   @override
   Widget build(BuildContext context) {
-    final colors = widget.colors ??
+    final colors =
+        widget.colors ??
         [
           const Color(0xFFFFFBF5),
           const Color(0xFFFFE8D6),
@@ -397,11 +387,7 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
                 1.0 + (_controller.value * 0.2),
               ),
               colors: colors,
-              stops: [
-                0.0,
-                0.5 + (_controller.value * 0.2),
-                1.0,
-              ],
+              stops: [0.0, 0.5 + (_controller.value * 0.2), 1.0],
             ),
           ),
           child: widget.child,

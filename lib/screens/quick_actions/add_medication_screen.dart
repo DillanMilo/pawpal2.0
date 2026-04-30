@@ -69,7 +69,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           content: const Text('Please select a pet'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -84,12 +86,20 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         petId: _selectedPet!.id,
         type: MedicalRecordType.medication,
         title: _nameController.text.trim(),
-        description: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        description: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
         date: _startDate,
         endDate: _endDate,
-        provider: _providerController.text.trim().isEmpty ? null : _providerController.text.trim(),
-        dosage: _dosageController.text.trim().isEmpty ? null : _dosageController.text.trim(),
-        frequency: _frequencyController.text.trim().isEmpty ? null : _frequencyController.text.trim(),
+        provider: _providerController.text.trim().isEmpty
+            ? null
+            : _providerController.text.trim(),
+        dosage: _dosageController.text.trim().isEmpty
+            ? null
+            : _dosageController.text.trim(),
+        frequency: _frequencyController.text.trim().isEmpty
+            ? null
+            : _frequencyController.text.trim(),
         createdAt: now,
         updatedAt: now,
       );
@@ -102,7 +112,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             content: const Text('Medication added successfully!'),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -114,7 +126,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             content: Text('Error: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -146,7 +160,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               borderRadius: BorderRadius.circular(12),
               border: AppTheme.thickBorder,
             ),
-            child: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: AppTheme.textPrimary,
+            ),
           ),
         ),
         title: const Text(
@@ -184,71 +201,63 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               controller: _nameController,
               hint: 'e.g., Heartgard, Apoquel',
               icon: Icons.medication_rounded,
-              validator: (value) => value?.isEmpty == true ? 'Please enter medication name' : null,
+              validator: (value) => value?.isEmpty == true
+                  ? 'Please enter medication name'
+                  : null,
             ),
             const SizedBox(height: 24),
 
             // Dosage & Frequency
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionLabel('Dosage'),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _dosageController,
-                        hint: 'e.g., 10mg',
-                        icon: Icons.scale_rounded,
-                      ),
-                    ],
+            _buildResponsivePair(
+              left: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionLabel('Dosage'),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _dosageController,
+                    hint: 'e.g., 10mg',
+                    icon: Icons.scale_rounded,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionLabel('Frequency'),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _frequencyController,
-                        hint: 'e.g., Twice daily',
-                        icon: Icons.repeat_rounded,
-                      ),
-                    ],
+                ],
+              ),
+              right: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionLabel('Frequency'),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _frequencyController,
+                    hint: 'e.g., Twice daily',
+                    icon: Icons.repeat_rounded,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 
             // Date range
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionLabel('Start Date'),
-                      const SizedBox(height: 12),
-                      _buildDatePicker(_startDate, () => _selectDate(true)),
-                    ],
+            _buildResponsivePair(
+              left: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionLabel('Start Date'),
+                  const SizedBox(height: 12),
+                  _buildDatePicker(_startDate, () => _selectDate(true)),
+                ],
+              ),
+              right: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionLabel('End Date'),
+                  const SizedBox(height: 12),
+                  _buildDatePicker(
+                    _endDate,
+                    () => _selectDate(false),
+                    isOptional: true,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionLabel('End Date'),
-                      const SizedBox(height: 12),
-                      _buildDatePicker(_endDate, () => _selectDate(false), isOptional: true),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -294,7 +303,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(
@@ -367,10 +378,20 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: isSelected ? Colors.white.withValues(alpha:0.2) : AppTheme.primaryColor.withValues(alpha:0.1),
-                    backgroundImage: pet.photoUrl != null ? NetworkImage(pet.photoUrl!) : null,
+                    backgroundColor: isSelected
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : AppTheme.primaryColor.withValues(alpha: 0.1),
+                    backgroundImage: pet.photoUrl != null
+                        ? NetworkImage(pet.photoUrl!)
+                        : null,
                     child: pet.photoUrl == null
-                        ? Icon(Icons.pets, size: 16, color: isSelected ? Colors.white : AppTheme.primaryColor)
+                        ? Icon(
+                            Icons.pets,
+                            size: 16,
+                            color: isSelected
+                                ? Colors.white
+                                : AppTheme.primaryColor,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 8),
@@ -412,39 +433,78 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           hintStyle: const TextStyle(color: AppTheme.textLight),
           prefixIcon: Icon(icon, color: AppTheme.primaryColor),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDatePicker(DateTime? date, VoidCallback onTap, {bool isOptional = false}) {
+  Widget _buildResponsivePair({required Widget left, required Widget right}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 420) {
+          return Column(children: [left, const SizedBox(height: 16), right]);
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            const SizedBox(width: 16),
+            Expanded(child: right),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDatePicker(
+    DateTime? date,
+    VoidCallback onTap, {
+    bool isOptional = false,
+  }) {
     return Semantics(
       button: true,
-      label: date != null ? 'Selected date: ${DateFormat('MMM d, y').format(date)}' : (isOptional ? 'End date: Ongoing' : 'Select date'),
+      label: date != null
+          ? 'Selected date: ${DateFormat('MMM d, y').format(date)}'
+          : (isOptional ? 'End date: Ongoing' : 'Select date'),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: AppTheme.thickBorder,
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today_rounded, color: AppTheme.primaryColor, size: 20),
-            const SizedBox(width: 12),
-            Text(
-              date != null ? DateFormat('MMM d, y').format(date) : (isOptional ? 'Ongoing' : 'Select'),
-              style: TextStyle(
-                color: date != null ? AppTheme.textPrimary : AppTheme.textLight,
-                fontWeight: FontWeight.w500,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: AppTheme.thickBorder,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                color: AppTheme.primaryColor,
+                size: 20,
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  date != null
+                      ? DateFormat('MMM d, y').format(date)
+                      : (isOptional ? 'Ongoing' : 'Select'),
+                  style: TextStyle(
+                    color: date != null
+                        ? AppTheme.textPrimary
+                        : AppTheme.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

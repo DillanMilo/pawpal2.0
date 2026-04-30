@@ -147,8 +147,10 @@ class _EditPetScreenState extends State<EditPetScreen> {
       updatedAt: DateTime.now(),
     );
 
-    final success =
-        await petProvider.updatePet(updatedPet, photoFile: _newPhotoFile);
+    final success = await petProvider.updatePet(
+      updatedPet,
+      photoFile: _newPhotoFile,
+    );
 
     setState(() => _isSaving = false);
 
@@ -184,9 +186,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit ${_pet!.name}'),
-      ),
+      appBar: AppBar(title: Text('Edit ${_pet!.name}')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -215,33 +215,33 @@ class _EditPetScreenState extends State<EditPetScreen> {
                       child: _newPhotoFile != null
                           ? Image.file(_newPhotoFile!, fit: BoxFit.cover)
                           : _existingPhotoUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: _existingPhotoUrl!,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Icon(
-                                    Icons.pets,
-                                    size: 40,
-                                    color: AppTheme.textLight,
-                                  ),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.camera_alt,
-                                      size: 32,
-                                      color: AppTheme.textLight,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Add Photo',
-                                      style: TextStyle(
-                                        color: AppTheme.textLight,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
+                          ? CachedNetworkImage(
+                              imageUrl: _existingPhotoUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Icon(
+                                Icons.pets,
+                                size: 40,
+                                color: AppTheme.textLight,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.camera_alt,
+                                  size: 32,
+                                  color: AppTheme.textLight,
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Add Photo',
+                                  style: TextStyle(
+                                    color: AppTheme.textLight,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 ),
@@ -268,16 +268,13 @@ class _EditPetScreenState extends State<EditPetScreen> {
 
             // Species dropdown
             DropdownButtonFormField<String>(
-              value: _species,
+              initialValue: _species,
               decoration: const InputDecoration(
                 labelText: 'Species *',
                 prefixIcon: Icon(Icons.category),
               ),
               items: AppConstants.petSpecies.map((species) {
-                return DropdownMenuItem(
-                  value: species,
-                  child: Text(species),
-                );
+                return DropdownMenuItem(value: species, child: Text(species));
               }).toList(),
               onChanged: (value) {
                 setState(() => _species = value!);
@@ -298,16 +295,13 @@ class _EditPetScreenState extends State<EditPetScreen> {
 
             // Gender
             DropdownButtonFormField<String>(
-              value: _gender,
+              initialValue: _gender,
               decoration: const InputDecoration(
                 labelText: 'Gender *',
                 prefixIcon: Icon(Icons.wc),
               ),
               items: ['Male', 'Female', 'Unknown'].map((gender) {
-                return DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                );
+                return DropdownMenuItem(value: gender, child: Text(gender));
               }).toList(),
               onChanged: (value) {
                 setState(() => _gender = value!);
@@ -341,8 +335,9 @@ class _EditPetScreenState extends State<EditPetScreen> {
             // Weight
             TextFormField(
               controller: _weightController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Weight (kg)',
                 prefixIcon: Icon(Icons.monitor_weight),

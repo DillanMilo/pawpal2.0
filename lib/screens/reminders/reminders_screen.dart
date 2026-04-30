@@ -31,9 +31,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _reminders = await _reminderService.getActiveReminders();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading reminders: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading reminders: $e')));
       }
     }
     setState(() => _isLoading = false);
@@ -104,22 +104,22 @@ class _RemindersScreenState extends State<RemindersScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredReminders.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: _loadReminders,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _filteredReminders.length,
-                          itemBuilder: (context, index) {
-                            final reminder = _filteredReminders[index];
-                            return _ReminderCard(
-                              reminder: reminder,
-                              onComplete: () => _completeReminder(reminder),
-                              onDelete: () => _deleteReminder(reminder),
-                            );
-                          },
-                        ),
-                      ),
+                ? _buildEmptyState()
+                : RefreshIndicator(
+                    onRefresh: _loadReminders,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _filteredReminders.length,
+                      itemBuilder: (context, index) {
+                        final reminder = _filteredReminders[index];
+                        return _ReminderCard(
+                          reminder: reminder,
+                          onComplete: () => _completeReminder(reminder),
+                          onDelete: () => _deleteReminder(reminder),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -161,10 +161,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -190,13 +187,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (_) => StatefulBuilder(
+        builder: (modalContext, setModalState) => Padding(
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
             top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            bottom: MediaQuery.of(modalContext).viewInsets.bottom + 16,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -215,10 +212,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               const SizedBox(height: 16),
               const Text(
                 'New Reminder',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               TextField(
@@ -231,7 +225,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedType,
+                initialValue: selectedType,
                 decoration: const InputDecoration(
                   labelText: 'Type',
                   prefixIcon: Icon(Icons.category),
@@ -247,16 +241,18 @@ class _RemindersScreenState extends State<RemindersScreen> {
               InkWell(
                 onTap: () async {
                   final date = await showDatePicker(
-                    context: context,
+                    context: modalContext,
                     initialDate: selectedDate,
                     firstDate: DateTime.now(),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
                   );
+                  if (!modalContext.mounted) return;
                   if (date != null) {
                     final time = await showTimePicker(
-                      context: context,
+                      context: modalContext,
                       initialTime: TimeOfDay.now(),
                     );
+                    if (!modalContext.mounted) return;
                     if (time != null) {
                       setModalState(() {
                         selectedDate = DateTime(
@@ -296,7 +292,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               if (isRecurring) ...[
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: recurringPattern,
+                  initialValue: recurringPattern,
                   decoration: const InputDecoration(
                     labelText: 'Repeat',
                     prefixIcon: Icon(Icons.repeat),
@@ -315,7 +311,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               ElevatedButton(
                 onPressed: () async {
                   if (titleController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(modalContext).showSnackBar(
                       const SnackBar(content: Text('Please enter a title')),
                     );
                     return;
@@ -336,19 +332,21 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
                   try {
                     await _reminderService.createReminder(reminder);
-                    await NotificationService().scheduleReminderNotification(reminder);
-                    if (mounted) {
-                      Navigator.pop(context);
-                      _loadReminders();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Reminder created')),
-                      );
-                    }
+                    await NotificationService().scheduleReminderNotification(
+                      reminder,
+                    );
+                    if (!mounted || !modalContext.mounted) return;
+                    Navigator.pop(modalContext);
+                    await _loadReminders();
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Reminder created')),
+                    );
                   } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
-                      );
+                    if (modalContext.mounted) {
+                      ScaffoldMessenger.of(
+                        modalContext,
+                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
                     }
                   }
                 },
@@ -366,15 +364,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
       await _reminderService.markAsCompleted(reminder.id);
       await _loadReminders();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder completed!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Reminder completed!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -404,15 +402,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
         await _reminderService.deleteReminder(reminder.id);
         await _loadReminders();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reminder deleted')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Reminder deleted')));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
         }
       }
     }
@@ -511,74 +509,75 @@ class _ReminderCard extends StatelessWidget {
         ),
         onDismissed: (_) => onDelete(),
         child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(_typeIcon, color: _statusColor),
                 ),
-                child: Icon(_typeIcon, color: _statusColor),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reminder.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reminder.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: AppTheme.textLight,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDueDate(),
-                          style: TextStyle(
-                            color: _statusColor,
-                            fontSize: 13,
-                            fontWeight:
-                                reminder.isDue ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                        if (reminder.isRecurring) ...[
-                          const SizedBox(width: 8),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
                           Icon(
-                            Icons.repeat,
+                            Icons.access_time,
                             size: 14,
                             color: AppTheme.textLight,
                           ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDueDate(),
+                            style: TextStyle(
+                              color: _statusColor,
+                              fontSize: 13,
+                              fontWeight: reminder.isDue
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                          if (reminder.isRecurring) ...[
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.repeat,
+                              size: 14,
+                              color: AppTheme.textLight,
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: onComplete,
-                tooltip: 'Mark as complete',
-                icon: const Icon(Icons.check_circle_outline),
-                color: AppTheme.successColor,
-              ),
-            ],
+                IconButton(
+                  onPressed: onComplete,
+                  tooltip: 'Mark as complete',
+                  icon: const Icon(Icons.check_circle_outline),
+                  color: AppTheme.successColor,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 

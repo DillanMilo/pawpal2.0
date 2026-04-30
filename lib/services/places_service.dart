@@ -3,17 +3,15 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import '../utils/constants.dart';
 
-enum ServiceType {
-  petStore,
-  veterinarian,
-  grooming,
-}
+enum ServiceType { petStore, veterinarian, grooming }
 
 class PlaceResult {
   final String placeId;
   final String name;
   final String address;
   final String? phoneNumber;
+  final String? website;
+  final String? googleMapsUri;
   final double? rating;
   final int? userRatingsTotal;
   final double latitude;
@@ -27,6 +25,8 @@ class PlaceResult {
     required this.name,
     required this.address,
     this.phoneNumber,
+    this.website,
+    this.googleMapsUri,
     this.rating,
     this.userRatingsTotal,
     required this.latitude,
@@ -41,7 +41,14 @@ class PlaceResult {
     return PlaceResult(
       placeId: json['place_id'] ?? '',
       name: json['name'] ?? 'Unknown',
-      address: json['vicinity'] ?? json['formatted_address'] ?? 'Address not available',
+      address:
+          json['vicinity'] ??
+          json['formatted_address'] ??
+          'Address not available',
+      phoneNumber:
+          json['formatted_phone_number'] ?? json['international_phone_number'],
+      website: json['website'],
+      googleMapsUri: json['url'],
       rating: (json['rating'] as num?)?.toDouble(),
       userRatingsTotal: json['user_ratings_total'] as int?,
       latitude: (geometry?['lat'] as num?)?.toDouble() ?? 0.0,
@@ -87,6 +94,12 @@ class PlacesService {
     }
   }
 
+  static void _ensureConfigured() {
+    if (AppConstants.googlePlacesApiKey.isEmpty) {
+      throw Exception('Google Places API key is not configured.');
+    }
+  }
+
   /// Get current location with permission handling
   static Future<Position?> getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -118,6 +131,7 @@ class PlacesService {
     required double longitude,
     int radius = 10000, // 10km default radius
   }) async {
+    _ensureConfigured();
     final query = _getSearchQuery(type);
     final placeType = _getPlaceType(type);
 
@@ -137,9 +151,7 @@ class PlacesService {
         final data = json.decode(response.body);
         final results = data['results'] as List? ?? [];
 
-        return results
-            .map((place) => PlaceResult.fromJson(place))
-            .toList();
+        return results.map((place) => PlaceResult.fromJson(place)).toList();
       } else {
         throw Exception('Failed to fetch places: ${response.statusCode}');
       }
@@ -154,10 +166,30 @@ class PlacesService {
     required String zipcode,
     int radius = 10000,
   }) async {
-    // First, geocode the zipcode to get coordinates
+    return searchByLocationQuery(
+      type: type,
+      locationQuery: zipcode,
+      radius: radius,
+    );
+  }
+
+  /// Search places by postal code, city, region, or country.
+  static Future<List<PlaceResult>> searchByLocationQuery({
+    required ServiceType type,
+    required String locationQuery,
+    int radius = 10000,
+  }) async {
+    _ensureConfigured();
+    final trimmedQuery = locationQuery.trim();
+    if (trimmedQuery.isEmpty) {
+      throw Exception('Location query is empty.');
+    }
+
+    // First, geocode the user-entered location to support worldwide postal
+    // codes, cities, regions, and country-specific formats.
     final geocodeUrl = Uri.parse(
       'https://maps.googleapis.com/maps/api/geocode/json'
-      '?address=$zipcode'
+      '?address=${Uri.encodeQueryComponent(trimmedQuery)}'
       '&key=${AppConstants.googlePlacesApiKey}',
     );
 
@@ -170,8 +202,8 @@ class PlacesService {
 
         if (results != null && results.isNotEmpty) {
           final location = results[0]['geometry']['location'];
-          final lat = location['lat'] as double;
-          final lng = location['lng'] as double;
+          final lat = (location['lat'] as num).toDouble();
+          final lng = (location['lng'] as num).toDouble();
 
           return searchNearbyPlaces(
             type: type,
@@ -182,18 +214,48 @@ class PlacesService {
         }
       }
 
-      throw Exception('Could not find location for zipcode: $zipcode');
+      return searchByText(type: type, locationQuery: trimmedQuery);
     } catch (e) {
-      throw Exception('Error searching by zipcode: $e');
+      throw Exception('Error searching by location: $e');
+    }
+  }
+
+  /// Text Search fallback for broad international queries.
+  static Future<List<PlaceResult>> searchByText({
+    required ServiceType type,
+    required String locationQuery,
+  }) async {
+    _ensureConfigured();
+    final query = '${_getSearchQuery(type)} near $locationQuery';
+    final url = Uri.parse(
+      '$_baseUrl/textsearch/json'
+      '?query=${Uri.encodeQueryComponent(query)}'
+      '&key=${AppConstants.googlePlacesApiKey}',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List? ?? [];
+
+        return results.map((place) => PlaceResult.fromJson(place)).toList();
+      }
+
+      throw Exception('Failed to fetch places: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Error searching places: $e');
     }
   }
 
   /// Get place details including phone number
   static Future<PlaceResult?> getPlaceDetails(String placeId) async {
+    _ensureConfigured();
     final url = Uri.parse(
       '$_baseUrl/details/json'
       '?place_id=$placeId'
-      '&fields=place_id,name,formatted_address,formatted_phone_number,rating,user_ratings_total,geometry,opening_hours,photos'
+      '&fields=place_id,name,formatted_address,formatted_phone_number,international_phone_number,website,url,rating,user_ratings_total,geometry,opening_hours,photos'
       '&key=${AppConstants.googlePlacesApiKey}',
     );
 
@@ -210,7 +272,11 @@ class PlacesService {
             placeId: result['place_id'] ?? placeId,
             name: result['name'] ?? 'Unknown',
             address: result['formatted_address'] ?? 'Address not available',
-            phoneNumber: result['formatted_phone_number'],
+            phoneNumber:
+                result['formatted_phone_number'] ??
+                result['international_phone_number'],
+            website: result['website'],
+            googleMapsUri: result['url'],
             rating: (result['rating'] as num?)?.toDouble(),
             userRatingsTotal: result['user_ratings_total'] as int?,
             latitude: (geometry?['lat'] as num?)?.toDouble() ?? 0.0,

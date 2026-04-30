@@ -15,9 +15,10 @@ class BusinessListingScreen extends StatefulWidget {
 }
 
 class _BusinessListingScreenState extends State<BusinessListingScreen> {
-  final TextEditingController _zipcodeController = TextEditingController();
-  final FocusNode _zipcodeFocusNode = FocusNode();
+  final TextEditingController _locationController = TextEditingController();
+  final FocusNode _locationFocusNode = FocusNode();
   List<PlaceResult> _places = [];
+  final Map<String, PlaceResult> _placeDetails = {};
   bool _isLoading = true;
   String? _error;
   bool _usingCurrentLocation = true;
@@ -30,8 +31,8 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
 
   @override
   void dispose() {
-    _zipcodeController.dispose();
-    _zipcodeFocusNode.dispose();
+    _locationController.dispose();
+    _locationFocusNode.dispose();
     super.dispose();
   }
 
@@ -84,23 +85,24 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
         setState(() {
           _isLoading = false;
           _usingCurrentLocation = false;
-          _error = 'Location access denied. Please enter your zipcode.';
+          _error =
+              'Location access denied. Please enter a postal code or city.';
         });
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
         _error =
-            'Unable to fetch nearby places. Please try entering a zipcode.';
+            'Unable to fetch nearby places. Please try entering a postal code or city.';
       });
     }
   }
 
-  Future<void> _searchByZipcode() async {
-    final zipcode = _zipcodeController.text.trim();
-    if (!RegExp(r'^\d{5}$').hasMatch(zipcode)) {
+  Future<void> _searchByLocation() async {
+    final location = _locationController.text.trim();
+    if (location.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid 5-digit zipcode')),
+        const SnackBar(content: Text('Please enter a postal code or city')),
       );
       return;
     }
@@ -112,9 +114,9 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
     });
 
     try {
-      final places = await PlacesService.searchByZipcode(
+      final places = await PlacesService.searchByLocationQuery(
         type: widget.serviceType,
-        zipcode: zipcode,
+        locationQuery: location,
       );
 
       setState(() {
@@ -124,9 +126,19 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _error = 'Could not find places for that zipcode. Please try again.';
+        _error = 'Could not find places for that location. Please try again.';
       });
     }
+  }
+
+  Future<PlaceResult> _getDetails(PlaceResult place) async {
+    final cached = _placeDetails[place.placeId];
+    if (cached != null) return cached;
+
+    final details = await PlacesService.getPlaceDetails(place.placeId);
+    final resolved = details ?? place;
+    _placeDetails[place.placeId] = resolved;
+    return resolved;
   }
 
   Future<void> _openDirections(PlaceResult place) async {
@@ -146,11 +158,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
   }
 
   Future<void> _callBusiness(PlaceResult place) async {
-    if (place.phoneNumber == null) {
-      // Try to get phone number from place details
-      final details = await PlacesService.getPlaceDetails(place.placeId);
-      if (details?.phoneNumber != null) {
-        _launchPhone(details!.phoneNumber!);
+    if (place.phoneNumber == null || place.phoneNumber!.isEmpty) {
+      final details = await _getDetails(place);
+      if (details.phoneNumber != null && details.phoneNumber!.isNotEmpty) {
+        _launchPhone(details.phoneNumber!);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +171,29 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
       }
     } else {
       _launchPhone(place.phoneNumber!);
+    }
+  }
+
+  Future<void> _openWebsite(PlaceResult place) async {
+    final details = place.website == null ? await _getDetails(place) : place;
+    final website = details.website;
+
+    if (website == null || website.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Website not available')));
+      }
+      return;
+    }
+
+    final url = Uri.parse(website);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open website')));
     }
   }
 
@@ -228,7 +262,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Zipcode search
+                  // Location search
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -240,10 +274,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                       children: [
                         Expanded(
                           child: TextField(
-                            controller: _zipcodeController,
-                            focusNode: _zipcodeFocusNode,
+                            controller: _locationController,
+                            focusNode: _locationFocusNode,
                             decoration: InputDecoration(
-                              hintText: 'Enter zipcode...',
+                              hintText: 'Postal code or city...',
                               prefixIcon: const Icon(
                                 Icons.location_on_rounded,
                                 color: AppTheme.textLight,
@@ -258,15 +292,16 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                                 color: AppTheme.textLight,
                               ),
                             ),
-                            keyboardType: TextInputType.number,
-                            onSubmitted: (_) => _searchByZipcode(),
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (_) => _searchByLocation(),
                           ),
                         ),
                         Semantics(
                           button: true,
-                          label: 'Search by zipcode',
+                          label: 'Search by postal code or city',
                           child: InkWell(
-                            onTap: _searchByZipcode,
+                            onTap: _searchByLocation,
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -363,7 +398,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'You can retry location access or search by zipcode above.',
+                'You can retry location access or search by postal code or city above.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.textLight, fontSize: 14),
               ),
@@ -380,10 +415,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                   ),
                   FilledButton.icon(
                     onPressed: () {
-                      _zipcodeFocusNode.requestFocus();
+                      _locationFocusNode.requestFocus();
                     },
                     icon: const Icon(Icons.pin_drop_rounded),
-                    label: const Text('Use Zipcode'),
+                    label: const Text('Search Area'),
                   ),
                 ],
               ),
@@ -616,98 +651,39 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Action buttons
-                    Row(
+                    Column(
                       children: [
-                        Expanded(
-                          child: Semantics(
-                            button: true,
-                            label: 'Get directions to ${place.name}',
-                            child: InkWell(
-                              onTap: () => _openDirections(place),
-                              borderRadius: BorderRadius.circular(14),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: AppTheme.primaryGradient,
-                                  borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.primaryColor.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.directions_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Directions',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildActionButton(
+                                label: 'Directions',
+                                semanticsLabel:
+                                    'Get directions to ${place.name}',
+                                icon: Icons.directions_rounded,
+                                onTap: () => _openDirections(place),
+                                isPrimary: true,
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildActionButton(
+                                label: 'Call',
+                                semanticsLabel: 'Call ${place.name}',
+                                icon: Icons.phone_rounded,
+                                onTap: () => _callBusiness(place),
+                                color: AppTheme.secondaryColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Semantics(
-                            button: true,
-                            label: 'Call ${place.name}',
-                            child: InkWell(
-                              onTap: () => _callBusiness(place),
-                              borderRadius: BorderRadius.circular(14),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.secondaryColor.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: AppTheme.secondaryColor,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.phone_rounded,
-                                      color: AppTheme.secondaryColor,
-                                      size: 20,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Call',
-                                      style: TextStyle(
-                                        color: AppTheme.secondaryColor,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+                        const SizedBox(height: 10),
+                        _buildActionButton(
+                          label: 'Website',
+                          semanticsLabel: 'Open website for ${place.name}',
+                          icon: Icons.language_rounded,
+                          onTap: () => _openWebsite(place),
+                          color: AppTheme.primaryColor,
                         ),
                       ],
                     ),
@@ -723,5 +699,62 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
           delay: Duration(milliseconds: index * 100),
         )
         .slideY(begin: 0.2, end: 0);
+  }
+
+  Widget _buildActionButton({
+    required String label,
+    required String semanticsLabel,
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = AppTheme.primaryColor,
+    bool isPrimary = false,
+  }) {
+    final foregroundColor = isPrimary ? Colors.white : color;
+
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            gradient: isPrimary ? AppTheme.primaryGradient : null,
+            color: isPrimary ? null : color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+            border: isPrimary ? null : Border.all(color: color, width: 1.5),
+            boxShadow: isPrimary
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: foregroundColor, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foregroundColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

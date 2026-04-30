@@ -26,30 +26,23 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<Map<String, dynamic>> _reminders;
   late ScrollController _scrollController;
   late Map<String, String> _dailyTip;
-  final ValueNotifier<double> _scrollOffset = ValueNotifier<double>(0);
 
   @override
   void initState() {
     super.initState();
     _reminders = List.from(PlaceholderData.sampleReminders);
     _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
     // Select a daily tip once on init - won't change during scrolling
-    _dailyTip = PlaceholderData.petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
+    _dailyTip = PlaceholderData
+        .petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
-  void _onScroll() {
-    _scrollOffset.value = _scrollController.offset;
-  }
-
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    _scrollOffset.dispose();
     super.dispose();
   }
 
@@ -61,7 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await activityProvider.loadStats();
 
     if (petProvider.selectedPet != null) {
-      await activityProvider.loadActivities(petProvider.selectedPet!.id, limit: 10);
+      await activityProvider.loadActivities(
+        petProvider.selectedPet!.id,
+        limit: 10,
+      );
     }
   }
 
@@ -70,136 +66,86 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = context.watch<AuthProvider>();
     final petProvider = context.watch<PetProvider>();
     final activityProvider = context.watch<ActivityProvider>();
-    final userName = authProvider.userProfile?.name?.split(' ').first ?? 'Friend';
+    final userName =
+        authProvider.userProfile?.name?.split(' ').first ?? 'Friend';
     final now = DateTime.now();
     final greeting = _getGreeting(now.hour);
 
     return Scaffold(
-      body: ValueListenableBuilder<double>(
-        valueListenable: _scrollOffset,
-        builder: (context, scrollOffsetValue, child) {
-          final scrollProgress = (scrollOffsetValue / 400).clamp(0.0, 1.0);
-          final backgroundColor = Color.lerp(
-            AppTheme.backgroundColor,
-            const Color(0xFFE8E4F8),
-            scrollProgress,
-          )!;
-
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppTheme.backgroundColor,
-                  backgroundColor,
-                ],
+      backgroundColor: AppTheme.backgroundColor,
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          color: AppTheme.primaryColor,
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: HomeHeader(greeting: greeting, userName: userName)
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0, curve: Curves.easeOutQuad),
               ),
-            ),
-            child: child,
-          );
-        },
-        child: Stack(
-          children: [
-            // Background Blobs
-            Positioned(
-              top: -100,
-              right: -50,
-              child: AnimatedBlob(
-                color: AppTheme.primaryColor.withValues(alpha:0.05),
-                size: 300,
+
+              // Content
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 8),
+
+                    // Pet Carousel Section
+                    _buildPetSection(petProvider, activityProvider)
+                        .animate()
+                        .fadeIn(delay: 200.ms)
+                        .slideX(begin: 0.1, end: 0),
+
+                    const SizedBox(height: 32),
+
+                    // Stats Cards
+                    StatsOverview(activityProvider: activityProvider)
+                        .animate()
+                        .fadeIn(delay: 400.ms)
+                        .scale(begin: const Offset(0.9, 0.9)),
+
+                    const SizedBox(height: 32),
+
+                    // Quick Actions
+                    _buildQuickActionsSection(petProvider, activityProvider)
+                        .animate()
+                        .fadeIn(delay: 600.ms)
+                        .slideY(begin: 0.2, end: 0),
+
+                    const SizedBox(height: 32),
+
+                    // Upcoming Reminders
+                    _buildRemindersSection().animate().fadeIn(delay: 700.ms),
+
+                    const SizedBox(height: 32),
+
+                    // Activity Graph (moved below reminders)
+                    _buildActivityGraphSection(activityProvider)
+                        .animate()
+                        .fadeIn(delay: 800.ms)
+                        .scale(begin: const Offset(0.95, 0.95)),
+
+                    const SizedBox(height: 32),
+
+                    // Daily Tip
+                    DailyTipCard(tip: _dailyTip)
+                        .animate()
+                        .fadeIn(delay: 1000.ms)
+                        .shimmer(delay: 2000.ms, duration: 1500.ms),
+
+                    const SizedBox(height: 140),
+                  ]),
+                ),
               ),
-            ),
-            Positioned(
-              bottom: 100,
-              left: -100,
-              child: AnimatedBlob(
-                color: AppTheme.secondaryColor.withValues(alpha:0.05),
-                size: 400,
-              ),
-            ),
-
-            SafeArea(
-              bottom: false,
-              child: RefreshIndicator(
-                onRefresh: _loadData,
-                color: AppTheme.primaryColor,
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                  // Header
-                  SliverToBoxAdapter(
-                    child: HomeHeader(
-                      greeting: greeting,
-                      userName: userName,
-                    ).animate()
-                        .fadeIn(duration: 600.ms)
-                        .slideY(begin: -0.2, end: 0, curve: Curves.easeOutQuad),
-                  ),
-
-                  // Content
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        const SizedBox(height: 8),
-
-                        // Pet Carousel Section
-                        _buildPetSection(petProvider, activityProvider)
-                            .animate()
-                            .fadeIn(delay: 200.ms)
-                            .slideX(begin: 0.1, end: 0),
-
-                        const SizedBox(height: 32),
-
-                        // Stats Cards
-                        StatsOverview(activityProvider: activityProvider)
-                            .animate()
-                            .fadeIn(delay: 400.ms)
-                            .scale(begin: const Offset(0.9, 0.9)),
-
-                        const SizedBox(height: 32),
-
-                        // Quick Actions
-                        _buildQuickActionsSection(petProvider, activityProvider)
-                            .animate()
-                            .fadeIn(delay: 600.ms)
-                            .slideY(begin: 0.2, end: 0),
-
-                        const SizedBox(height: 32),
-
-                        // Upcoming Reminders
-                        _buildRemindersSection()
-                            .animate()
-                            .fadeIn(delay: 700.ms),
-
-                        const SizedBox(height: 32),
-
-                        // Activity Graph (moved below reminders)
-                        _buildActivityGraphSection(activityProvider)
-                            .animate()
-                            .fadeIn(delay: 800.ms)
-                            .scale(begin: const Offset(0.95, 0.95)),
-
-                        const SizedBox(height: 32),
-
-                        // Daily Tip
-                        DailyTipCard(tip: _dailyTip)
-                            .animate()
-                            .fadeIn(delay: 1000.ms)
-                            .shimmer(delay: 2000.ms, duration: 1500.ms),
-
-                        const SizedBox(height: 140),
-                      ]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
-          ],
         ),
       ),
       floatingActionButton: Padding(
@@ -211,13 +157,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPetSection(PetProvider petProvider, ActivityProvider activityProvider) {
+  Widget _buildPetSection(
+    PetProvider petProvider,
+    ActivityProvider activityProvider,
+  ) {
     final hasPets = petProvider.pets.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('My Pets', onSeeAll: hasPets ? () => context.push('/pets') : null),
+        _buildSectionHeader(
+          'My Pets',
+          onSeeAll: hasPets ? () => context.push('/pets') : null,
+        ),
         const SizedBox(height: 16),
         if (hasPets)
           SizedBox(
@@ -237,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(24),
           border: AppTheme.thickBorder,
           boxShadow: AppTheme.softShadow,
         ),
@@ -248,9 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 72,
               decoration: BoxDecoration(
                 gradient: AppTheme.playfulGradient,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
               ),
-              child: const Icon(Icons.pets_rounded, color: Colors.white, size: 36),
+              child: const Icon(
+                Icons.pets_rounded,
+                color: Colors.white,
+                size: 36,
+              ),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -280,10 +236,14 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha:0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: 28),
+              child: const Icon(
+                Icons.add_rounded,
+                color: AppTheme.primaryColor,
+                size: 28,
+              ),
             ),
           ],
         ),
@@ -291,8 +251,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-  Widget _buildPetsCarousel(PetProvider petProvider, ActivityProvider activityProvider) {
+  Widget _buildPetsCarousel(
+    PetProvider petProvider,
+    ActivityProvider activityProvider,
+  ) {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
@@ -310,9 +272,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   Widget _buildPetCard(dynamic pet, bool isSelected, VoidCallback onTap) {
-    final color = AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
+    final color =
+        AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = screenWidth - 64;
 
@@ -323,23 +285,40 @@ class _HomeScreenState extends State<HomeScreen> {
         curve: Curves.easeOutBack,
         width: cardWidth,
         margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: isSelected ? AppTheme.coloredShadow(color) : AppTheme.softShadow,
+          color: isSelected ? null : Colors.white,
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    color,
+                    Color.lerp(color, AppTheme.primaryDark, 0.22)!,
+                  ],
+                )
+              : null,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: isSelected
+              ? AppTheme.coloredShadow(color)
+              : AppTheme.softShadow,
           border: isSelected
-            ? Border.all(color: Colors.white.withValues(alpha:0.3), width: 2)
-            : AppTheme.thickBorder,
+              ? Border.all(
+                  color: Colors.white.withValues(alpha: 0.36),
+                  width: 1.5,
+                )
+              : AppTheme.thickBorder,
         ),
         child: Row(
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withValues(alpha:0.2) : color.withValues(alpha:0.1),
-                borderRadius: BorderRadius.circular(20),
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(18),
                 image: pet.photoUrl != null
                     ? DecorationImage(
                         image: NetworkImage(pet.photoUrl),
@@ -352,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Icon(
                         Icons.pets_rounded,
                         color: isSelected ? Colors.white : color,
-                        size: 36,
+                        size: 32,
                       ),
                     )
                   : null,
@@ -366,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     pet.name,
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 21,
                       fontWeight: FontWeight.w800,
                       color: isSelected ? Colors.white : AppTheme.textPrimary,
                     ),
@@ -376,10 +355,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.white.withValues(alpha:0.2) : color.withValues(alpha:0.1),
-                          borderRadius: BorderRadius.circular(10),
+                          color: isSelected
+                              ? Colors.white.withValues(alpha: 0.18)
+                              : color.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                         child: Text(
                           pet.species,
@@ -397,7 +381,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             pet.breed,
                             style: TextStyle(
                               fontSize: 13,
-                              color: isSelected ? Colors.white.withValues(alpha:0.7) : AppTheme.textSecondary,
+                              color: isSelected
+                                  ? Colors.white.withValues(alpha: 0.78)
+                                  : AppTheme.textSecondary,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -424,15 +410,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   Future<void> _showEndActivityDialog(ActivityProvider activityProvider) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -442,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.warningColor.withValues(alpha:0.15),
+                  color: AppTheme.warningColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -533,23 +516,28 @@ class _HomeScreenState extends State<HomeScreen> {
             content: const Text('Activity logged successfully!'),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     }
   }
 
-  Widget _buildQuickActionsSection(PetProvider petProvider, ActivityProvider activityProvider) {
+  Widget _buildQuickActionsSection(
+    PetProvider petProvider,
+    ActivityProvider activityProvider,
+  ) {
     final activeType = activityProvider.activeActivityType;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Quick Actions'),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         SizedBox(
-          height: 110,
+          height: 100,
           child: ListView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -558,38 +546,57 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (activeType == 'Walk') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer('Walk', petProvider.selectedPet!.id);
+                  activityProvider.startTimer(
+                    'Walk',
+                    petProvider.selectedPet!.id,
+                  );
                 }
               }, isActive: activeType == 'Walk'),
               _buildActionItem('Play', AppTheme.accentColor, () {
                 if (activeType == 'Play') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer('Play', petProvider.selectedPet!.id);
+                  activityProvider.startTimer(
+                    'Play',
+                    petProvider.selectedPet!.id,
+                  );
                 }
               }, isActive: activeType == 'Play'),
               _buildActionItem('Feed', AppTheme.accentMint, () {
                 if (activeType == 'Feed') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer('Feed', petProvider.selectedPet!.id);
+                  activityProvider.startTimer(
+                    'Feed',
+                    petProvider.selectedPet!.id,
+                  );
                 }
               }, isActive: activeType == 'Feed'),
               _buildActionItem('Groom', AppTheme.accentPeach, () {
                 if (activeType == 'Groom') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer('Groom', petProvider.selectedPet!.id);
+                  activityProvider.startTimer(
+                    'Groom',
+                    petProvider.selectedPet!.id,
+                  );
                 }
               }, isActive: activeType == 'Groom'),
               _buildActionItem('Vet', AppTheme.primaryColor, () {
                 if (activeType == 'Vet Visit') {
                   _showEndActivityDialog(activityProvider);
                 } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer('Vet Visit', petProvider.selectedPet!.id);
+                  activityProvider.startTimer(
+                    'Vet Visit',
+                    petProvider.selectedPet!.id,
+                  );
                 }
               }, isActive: activeType == 'Vet Visit'),
-              _buildActionItem('Log', AppTheme.accentLavender, () => context.push('/log-activity')),
+              _buildActionItem(
+                'Log',
+                AppTheme.accentLavender,
+                () => context.push('/log-activity'),
+              ),
             ],
           ),
         ),
@@ -597,26 +604,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionItem(String label, Color color, VoidCallback onTap, {bool isActive = false}) {
+  Widget _buildActionItem(
+    String label,
+    Color color,
+    VoidCallback onTap, {
+    bool isActive = false,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 90,
-        margin: const EdgeInsets.only(right: 16),
+        width: 82,
+        margin: const EdgeInsets.only(right: 14),
         child: Column(
           children: [
-            ActivityIcon(
-              type: label,
-              isActive: isActive,
-              size: 32,
-            ),
+            ActivityIcon(type: label, isActive: isActive, size: 28),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isActive ? color : AppTheme.textPrimary,
+                color: isActive ? color : AppTheme.textSecondary,
               ),
             ),
           ],
@@ -639,13 +647,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Weekly Activity', onSeeAll: () => context.push('/activity-history')),
+        _buildSectionHeader(
+          'Weekly Activity',
+          onSeeAll: () => context.push('/activity-history'),
+        ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             border: AppTheme.thickBorder,
             boxShadow: AppTheme.softShadow,
           ),
@@ -661,7 +672,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             Icon(
                               Icons.bar_chart_rounded,
                               size: 48,
-                              color: AppTheme.primaryColor.withValues(alpha:0.3),
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             const Text(
@@ -677,19 +690,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     : BarChart(
                         BarChartData(
                           alignment: BarChartAlignment.spaceAround,
-                          maxY: (maxValue == 0 ? 100 : maxValue * 1.2).toDouble(),
+                          maxY: (maxValue == 0 ? 100 : maxValue * 1.2)
+                              .toDouble(),
                           barTouchData: BarTouchData(
                             enabled: true,
                             touchTooltipData: BarTouchTooltipData(
-                              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                                return BarTooltipItem(
-                                  '${rod.toY.toInt()} pts',
-                                  const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                );
-                              },
+                              getTooltipItem:
+                                  (group, groupIndex, rod, rodIndex) {
+                                    return BarTooltipItem(
+                                      '${rod.toY.toInt()} pts',
+                                      const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
                             ),
                           ),
                           titlesData: FlTitlesData(
@@ -743,7 +758,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
-                            horizontalInterval: maxValue > 0 ? maxValue / 4 : 25,
+                            horizontalInterval: maxValue > 0
+                                ? maxValue / 4
+                                : 25,
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
                                 color: AppTheme.dividerColor,
@@ -754,8 +771,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderData: FlBorderData(
                             show: true,
                             border: const Border(
-                              bottom: BorderSide(color: AppTheme.dividerColor, width: 1),
-                              left: BorderSide(color: AppTheme.dividerColor, width: 1),
+                              bottom: BorderSide(
+                                color: AppTheme.dividerColor,
+                                width: 1,
+                              ),
+                              left: BorderSide(
+                                color: AppTheme.dividerColor,
+                                width: 1,
+                              ),
                             ),
                           ),
                           barGroups: sortedKeys.asMap().entries.map((entry) {
@@ -775,8 +798,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,
                                           colors: [
-                                            AppTheme.primaryLight.withValues(alpha:0.4),
-                                            AppTheme.primaryLight.withValues(alpha:0.7),
+                                            AppTheme.primaryLight.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                            AppTheme.primaryLight.withValues(
+                                              alpha: 0.7,
+                                            ),
                                           ],
                                         ),
                                   width: 28,
@@ -796,7 +823,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   _buildLegendItem(AppTheme.primaryColor, 'Today'),
                   const SizedBox(width: 24),
-                  _buildLegendItem(AppTheme.primaryLight.withValues(alpha:0.6), 'This Week'),
+                  _buildLegendItem(
+                    AppTheme.primaryLight.withValues(alpha: 0.6),
+                    'This Week',
+                  ),
                 ],
               ),
             ],
@@ -833,7 +863,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isToday(String dateStr) {
     final date = DateTime.parse(dateStr);
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   Map<String, int> _generateSampleWeeklyData() {
@@ -851,25 +883,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRemindersSection() {
-    final activeReminders = _reminders.where((r) => r['completed'] != true).take(2).toList();
+    final activeReminders = _reminders
+        .where((r) => r['completed'] != true)
+        .take(2)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Upcoming', onSeeAll: () => context.push('/reminders')),
+        _buildSectionHeader(
+          'Upcoming',
+          onSeeAll: () => context.push('/reminders'),
+        ),
         const SizedBox(height: 16),
         if (activeReminders.isEmpty)
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(24),
               border: AppTheme.thickBorder,
             ),
             child: const Center(
               child: Text(
                 'All caught up!',
-                style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textSecondary,
+                ),
               ),
             ),
           )
@@ -894,7 +935,9 @@ class _HomeScreenState extends State<HomeScreen> {
               content: Text('Completed: ${reminder['title']}!'),
               duration: const Duration(seconds: 1),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }
@@ -904,16 +947,13 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: AppTheme.softShadow,
           border: AppTheme.thickBorder,
         ),
         child: Row(
           children: [
-            ActivityIcon(
-              type: reminder['type'],
-              size: 28,
-            ),
+            ActivityIcon(type: reminder['type'], size: 28),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -925,13 +965,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
-                      decoration: isCompleted ? TextDecoration.lineThrough : null,
+                      decoration: isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     reminder['time'],
-                    style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -943,11 +989,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: isCompleted ? AppTheme.successColor : Colors.transparent,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isCompleted ? AppTheme.successColor : AppTheme.textLight.withValues(alpha:0.5),
+                  color: isCompleted
+                      ? AppTheme.successColor
+                      : AppTheme.textLight.withValues(alpha: 0.5),
                   width: 2,
                 ),
               ),
-              child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+              child: isCompleted
+                  ? const Icon(Icons.check, color: Colors.white, size: 20)
+                  : null,
             ),
           ],
         ),
@@ -965,7 +1015,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
-            letterSpacing: -0.5,
+            letterSpacing: 0,
           ),
         ),
         if (onSeeAll != null)
@@ -999,7 +1049,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return FloatingActionButton.extended(
       onPressed: () => context.push('/log-activity'),
       icon: const Icon(Icons.add_rounded),
-      label: const Text('Log Activity', style: TextStyle(fontWeight: FontWeight.w700)),
+      label: const Text(
+        'Log Activity',
+        style: TextStyle(fontWeight: FontWeight.w700),
+      ),
     ).animate().scale(delay: 1200.ms, curve: Curves.easeOutBack);
   }
 

@@ -110,9 +110,16 @@ class ActivityIcon extends StatelessWidget {
         width: size * 2,
         height: size * 2,
         decoration: BoxDecoration(
-          color: isActive ? iconColor : iconColor.withValues(alpha: 0.15),
+          color: isActive ? iconColor : iconColor.withValues(alpha: 0.11),
           shape: BoxShape.circle,
-          border: showBorder ? Border.all(color: Colors.black, width: 2.5) : null,
+          border: showBorder
+              ? Border.all(
+                  color: isActive
+                      ? iconColor.withValues(alpha: 0.24)
+                      : AppTheme.dividerColor,
+                  width: 1.5,
+                )
+              : null,
           boxShadow: isActive ? AppTheme.coloredShadow(iconColor) : null,
         ),
         child: Center(

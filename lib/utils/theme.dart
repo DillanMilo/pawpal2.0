@@ -2,50 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Fun & Modern Color Palette
-  static const Color primaryColor = Color(0xFF7B61FF); // Vibrant Purple
-  static const Color primaryLight = Color(0xFF9E8BFF);
-  static const Color primaryDark = Color(0xFF5A41D9);
+  // Warm, modern color palette
+  static const Color primaryColor = Color(0xFF6554D9);
+  static const Color primaryLight = Color(0xFF8F82F2);
+  static const Color primaryDark = Color(0xFF40319F);
 
-  // Secondary - Playful Mint/Teal
-  static const Color secondaryColor = Color(0xFF00D2B4);
-  static const Color secondaryLight = Color(0xFF33DBC3);
-  static const Color secondaryDark = Color(0xFF00A68F);
+  // Secondary - calm teal
+  static const Color secondaryColor = Color(0xFF0E9F9A);
+  static const Color secondaryLight = Color(0xFF5CCBC7);
+  static const Color secondaryDark = Color(0xFF087A76);
 
   // Accent Colors - Energetic & Warm
-  static const Color accentColor = Color(0xFFFFD541); // Bright Yellow
-  static const Color accentPeach = Color(0xFFFF9F87);
-  static const Color accentLavender = Color(0xFFB19DFF);
-  static const Color accentMint = Color(0xFF98FFD9);
-  static const Color accentRose = Color(0xFFFF7EB3);
+  static const Color accentColor = Color(0xFFE9B949);
+  static const Color accentPeach = Color(0xFFE98B6D);
+  static const Color accentLavender = Color(0xFF8B7CF6);
+  static const Color accentMint = Color(0xFF68C7A0);
+  static const Color accentRose = Color(0xFFE56B93);
 
   // Status Colors
   static const Color errorColor = Color(0xFFFF5252);
-  static const Color successColor = Color(0xFF00D2B4);
-  static const Color warningColor = Color(0xFFFFD541);
+  static const Color successColor = Color(0xFF0E9F9A);
+  static const Color warningColor = Color(0xFFE9B949);
 
   // Background - Soft & Clean
-  static const Color backgroundColor = Color(0xFFF8F9FE);
+  static const Color backgroundColor = Color(0xFFF4F6FB);
   static const Color surfaceColor = Colors.white;
   static const Color cardColor = Colors.white;
-  static const Color dividerColor = Color(0xFFEDF1F7);
+  static const Color dividerColor = Color(0xFFDDE3EE);
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF1A1C1E);
-  static const Color textSecondary = Color(0xFF6C727A);
-  static const Color textLight = Color(0xFF6B7280);
+  static const Color textPrimary = Color(0xFF161923);
+  static const Color textSecondary = Color(0xFF4F5968);
+  static const Color textLight = Color(0xFF697386);
 
   // Gradient Definitions
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7B61FF), Color(0xFF9E8BFF)],
+    colors: [Color(0xFF6554D9), Color(0xFF8F82F2)],
   );
 
   static const LinearGradient playfulGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7B61FF), Color(0xFF00D2B4)],
+    colors: [Color(0xFF6554D9), Color(0xFF0E9F9A)],
   );
 
   static const LinearGradient sunsetGradient = LinearGradient(
@@ -57,29 +57,29 @@ class AppTheme {
   static const LinearGradient oceanGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF00D2B4), Color(0xFF00A68F)],
+    colors: [Color(0xFF0E9F9A), Color(0xFF087A76)],
   );
 
   // Pet Category Colors - Vibrant but harmonious
   static const Map<String, Color> petCategoryColors = {
-    'Dog': Color(0xFF7B61FF),
-    'Cat': Color(0xFFFF7EB3),
-    'Bird': Color(0xFFFFD541),
-    'Fish': Color(0xFF00D2B4),
-    'Rabbit': Color(0xFFFF9F87),
-    'Hamster': Color(0xFFB19DFF),
-    'Guinea Pig': Color(0xFF98FFD9),
-    'Reptile': Color(0xFF5A41D9),
+    'Dog': Color(0xFF6554D9),
+    'Cat': Color(0xFFE56B93),
+    'Bird': Color(0xFFE9B949),
+    'Fish': Color(0xFF0E9F9A),
+    'Rabbit': Color(0xFFE98B6D),
+    'Hamster': Color(0xFF8B7CF6),
+    'Guinea Pig': Color(0xFF68C7A0),
+    'Reptile': Color(0xFF40319F),
     'Other': Color(0xFFEDF1F7),
   };
 
   // Activity Type Colors
   static const Map<String, Color> activityColors = {
-    'Walk': Color(0xFF00D2B4),
-    'Play': Color(0xFFFFD541),
-    'Train': Color(0xFF7B61FF),
-    'Feed': Color(0xFF98FFD9),
-    'Groom': Color(0xFFFF9F87),
+    'Walk': Color(0xFF0E9F9A),
+    'Play': Color(0xFFE9B949),
+    'Train': Color(0xFF6554D9),
+    'Feed': Color(0xFF68C7A0),
+    'Groom': Color(0xFFE98B6D),
     'Vet Visit': Color(0xFFFF5252),
     'Social': Color(0xFF74B9FF),
     'Rest': Color(0xFFEDF1F7),
@@ -88,29 +88,30 @@ class AppTheme {
   // Box Shadows
   static List<BoxShadow> get softShadow => [
     BoxShadow(
-      color: const Color(0xFF7B61FF).withValues(alpha: 0.06),
-      blurRadius: 24,
+      color: const Color(0xFF101828).withValues(alpha: 0.07),
+      blurRadius: 18,
       offset: const Offset(0, 8),
     ),
   ];
 
   static List<BoxShadow> get mediumShadow => [
     BoxShadow(
-      color: const Color(0xFF7B61FF).withValues(alpha: 0.12),
-      blurRadius: 32,
+      color: const Color(0xFF101828).withValues(alpha: 0.12),
+      blurRadius: 28,
       offset: const Offset(0, 12),
     ),
   ];
 
   // Borders
-  static Border get thickBorder => Border.all(color: Colors.black, width: 2.5);
+  static Border get thickBorder =>
+      Border.all(color: const Color(0xFFE0E6F0), width: 1.5);
 
   static Border get thinBorder => Border.all(color: dividerColor, width: 1.5);
 
   static List<BoxShadow> coloredShadow(Color color) => [
     BoxShadow(
-      color: color.withValues(alpha: 0.25),
-      blurRadius: 24,
+      color: color.withValues(alpha: 0.18),
+      blurRadius: 22,
       offset: const Offset(0, 8),
     ),
   ];
@@ -140,13 +141,13 @@ class AppTheme {
           color: textPrimary,
           fontSize: 28,
           fontWeight: FontWeight.w800,
-          letterSpacing: -0.5,
+          letterSpacing: 0,
         ),
       ),
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -160,7 +161,7 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+            letterSpacing: 0,
           ),
         ),
       ),
@@ -175,7 +176,7 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+            letterSpacing: 0,
           ),
         ),
       ),
@@ -252,13 +253,13 @@ class AppTheme {
           color: darkTextPrimary,
           fontSize: 28,
           fontWeight: FontWeight.w800,
-          letterSpacing: -0.5,
+          letterSpacing: 0,
         ),
       ),
       cardTheme: CardThemeData(
         color: darkCard,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -272,7 +273,7 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+            letterSpacing: 0,
           ),
         ),
       ),
@@ -287,7 +288,7 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+            letterSpacing: 0,
           ),
         ),
       ),

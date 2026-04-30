@@ -5,10 +5,7 @@ import '../../utils/theme.dart';
 class StatsOverview extends StatelessWidget {
   final ActivityProvider activityProvider;
 
-  const StatsOverview({
-    super.key,
-    required this.activityProvider,
-  });
+  const StatsOverview({super.key, required this.activityProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -18,16 +15,18 @@ class StatsOverview extends StatelessWidget {
           child: _StatCard(
             icon: Icons.local_fire_department_rounded,
             color: AppTheme.accentRose,
-            value: '${activityProvider.currentStreak > 0 ? activityProvider.currentStreak : 7}',
+            value:
+                '${activityProvider.currentStreak > 0 ? activityProvider.currentStreak : 7}',
             label: 'Day Streak',
           ),
         ),
-        const SizedBox(width: 20),
+        const SizedBox(width: 14),
         Expanded(
           child: _StatCard(
             icon: Icons.auto_awesome_rounded,
             color: AppTheme.accentColor,
-            value: '${activityProvider.totalPoints > 0 ? activityProvider.totalPoints : 2450}',
+            value:
+                '${activityProvider.totalPoints > 0 ? activityProvider.totalPoints : 2450}',
             label: 'Paw Points',
           ),
         ),
@@ -52,10 +51,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
         border: AppTheme.thickBorder,
       ),
@@ -65,19 +64,19 @@ class _StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
-              letterSpacing: -1,
+              letterSpacing: 0,
             ),
           ),
           Text(

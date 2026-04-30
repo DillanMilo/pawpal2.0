@@ -139,30 +139,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _buildAppointmentsList() {
     // Placeholder - will be populated with actual appointments
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.event_available,
-              size: 64,
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.event_available,
+                      size: 56,
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'No appointments',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Tap + to schedule a new appointment',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'No appointments',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tap + to schedule a new appointment',
-              style: TextStyle(color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

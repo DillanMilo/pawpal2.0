@@ -45,6 +45,11 @@ class _MainShellState extends State<MainShell> {
     final selectedIndex = _calculateSelectedIndex(context);
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomInset = bottomPadding > 0 ? bottomPadding : 12.0;
+    const navBarHeight = 78.0;
+    const pawButtonSize = 72.0;
+    const pawButtonOverlap = 32.0;
+    const navShellHeight = navBarHeight + pawButtonOverlap;
 
     return Scaffold(
       extendBody: true,
@@ -68,76 +73,85 @@ class _MainShellState extends State<MainShell> {
           Expanded(child: widget.child),
         ],
       ),
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.fromLTRB(
-          24,
-          0,
-          24,
-          bottomPadding > 0 ? bottomPadding : 12,
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            // Navbar background
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: AppTheme.mediumShadow,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  width: 1.5,
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(24, 0, 24, bottomInset),
+        child: SizedBox(
+          height: navShellHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.topCenter,
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: navBarHeight,
+                child: _buildNavBarBackground(context, selectedIndex),
+              ),
+              Positioned(
+                top: 0,
+                child: SizedBox.square(
+                  dimension: pawButtonSize,
+                  child: _buildCentralPawButton(context),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: _buildNavItem(
-                      context,
-                      0,
-                      Icons.home_rounded,
-                      'Home',
-                      selectedIndex == 0,
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildNavItem(
-                      context,
-                      1,
-                      Icons.store_rounded,
-                      'Services',
-                      selectedIndex == 1,
-                    ),
-                  ),
-                  const SizedBox(width: 72), // Space for central button
-                  Expanded(
-                    child: _buildNavItem(
-                      context,
-                      2,
-                      Icons.calendar_today_rounded,
-                      'Events',
-                      selectedIndex == 2,
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildNavItem(
-                      context,
-                      3,
-                      Icons.person_rounded,
-                      'Profile',
-                      selectedIndex == 3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Paw button positioned above navbar
-            Positioned(top: -32, child: _buildCentralPawButton(context)),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavBarBackground(BuildContext context, int selectedIndex) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: AppTheme.mediumShadow,
+        border: AppTheme.thickBorder,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Expanded(
+            child: _buildNavItem(
+              context,
+              0,
+              Icons.home_rounded,
+              'Home',
+              selectedIndex == 0,
+            ),
+          ),
+          Expanded(
+            child: _buildNavItem(
+              context,
+              1,
+              Icons.store_rounded,
+              'Services',
+              selectedIndex == 1,
+            ),
+          ),
+          const SizedBox(width: 72),
+          Expanded(
+            child: _buildNavItem(
+              context,
+              2,
+              Icons.calendar_today_rounded,
+              'Events',
+              selectedIndex == 2,
+            ),
+          ),
+          Expanded(
+            child: _buildNavItem(
+              context,
+              3,
+              Icons.person_rounded,
+              'Profile',
+              selectedIndex == 3,
+            ),
+          ),
+        ],
       ),
     );
   }

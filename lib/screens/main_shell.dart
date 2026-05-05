@@ -106,13 +106,10 @@ class _MainShellState extends State<MainShell> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: AppTheme.inkColor,
-        borderRadius: BorderRadius.circular(26),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
         boxShadow: AppTheme.mediumShadow,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1,
-        ),
+        border: AppTheme.thickBorder,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -173,23 +170,20 @@ class _MainShellState extends State<MainShell> {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      gradient: AppTheme.playfulGradient,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.inkColor.withValues(alpha: 0.24),
-                          blurRadius: 22,
-                          offset: const Offset(0, 10),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
-                      border: Border.all(
-                        color: AppTheme.softLavender,
-                        width: 6,
-                      ),
+                      border: Border.all(color: Colors.white, width: 5),
                     ),
                     child: const Icon(
                       Icons.pets_rounded,
-                      color: AppTheme.inkColor,
+                      color: Colors.white,
                       size: 36,
                     ),
                   ),
@@ -223,47 +217,28 @@ class _MainShellState extends State<MainShell> {
           child: AnimatedContainer(
             duration: 300.ms,
             curve: Curves.easeInOut,
-            height: 52,
+            height: 50,
             constraints: const BoxConstraints(maxWidth: 68),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.white : Colors.transparent,
+              color: isSelected
+                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+            child:
                 Icon(
                       icon,
                       color: isSelected
-                          ? AppTheme.inkColor
-                          : Colors.white.withValues(alpha: 0.66),
-                      size: 25,
+                          ? AppTheme.primaryColor
+                          : AppTheme.textLight,
+                      size: 26,
                     )
                     .animate(target: isSelected ? 1 : 0)
                     .scale(
                       begin: const Offset(1, 1),
-                      end: const Offset(1.12, 1.12),
+                      end: const Offset(1.14, 1.14),
                     ),
-                SizedBox(
-                  height: 14,
-                  child: AnimatedOpacity(
-                    opacity: isSelected ? 1 : 0,
-                    duration: 180.ms,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppTheme.inkColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

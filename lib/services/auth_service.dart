@@ -37,6 +37,9 @@ class AuthService {
     final response = await _client.auth.signInWithOAuth(
       OAuthProvider.google,
       redirectTo: _oauthRedirectUrl,
+      authScreenLaunchMode: kIsWeb
+          ? LaunchMode.platformDefault
+          : LaunchMode.externalApplication,
     );
     return response;
   }
@@ -46,13 +49,16 @@ class AuthService {
     final response = await _client.auth.signInWithOAuth(
       OAuthProvider.apple,
       redirectTo: _oauthRedirectUrl,
+      authScreenLaunchMode: kIsWeb
+          ? LaunchMode.platformDefault
+          : LaunchMode.externalApplication,
     );
     return response;
   }
 
   String get _oauthRedirectUrl {
     if (kIsWeb) return Uri.base.origin;
-    return 'io.supabase.pawpal://login-callback/';
+    return 'com.creativecurrents.pawpal://login-callback/';
   }
 
   // Sign out
@@ -67,9 +73,7 @@ class AuthService {
 
   // Update password
   Future<UserResponse> updatePassword(String newPassword) async {
-    return await _client.auth.updateUser(
-      UserAttributes(password: newPassword),
-    );
+    return await _client.auth.updateUser(UserAttributes(password: newPassword));
   }
 
   // Get current user profile

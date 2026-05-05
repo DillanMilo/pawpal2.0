@@ -698,7 +698,7 @@ Every table has RLS enabled. The security model follows a strict "users can only
 
 ### OAuth Security
 
-- OAuth redirect URI (`io.supabase.pawpal://login-callback/`) uses a custom URL scheme tied to the app.
+- OAuth redirect URI (`com.creativecurrents.pawpal://login-callback/`) uses a custom URL scheme tied to the app.
 - Token exchange is handled by the Supabase SDK -- tokens are stored securely on-device.
 - OAuth providers (Google, Apple) must be configured in the Supabase dashboard with matching client IDs and secrets.
 

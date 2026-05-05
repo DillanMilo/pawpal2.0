@@ -49,6 +49,9 @@ class ActivityIcon extends StatelessWidget {
         return Icons.local_hospital_rounded;
       case 'log':
         return Icons.edit_note_rounded;
+      case 'scan':
+      case 'passport':
+        return Icons.qr_code_scanner_rounded;
       case 'medication':
         return Icons.medication_rounded;
       case 'vaccination':
@@ -86,6 +89,9 @@ class ActivityIcon extends StatelessWidget {
         return AppTheme.accentRose; // Pink
       case 'log':
         return AppTheme.accentLavender; // Lavender
+      case 'scan':
+      case 'passport':
+        return AppTheme.secondaryColor;
       case 'add':
         return AppTheme.primaryColor; // Purple for add pet
       case 'social':

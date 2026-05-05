@@ -6,6 +6,7 @@ import '../../models/pet.dart';
 import '../../providers/activity_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
+import '../../utils/activity_scoring.dart';
 import '../../utils/theme.dart';
 
 class LogActivityScreen extends StatefulWidget {
@@ -93,6 +94,11 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
         ? (_elapsed.inSeconds / 60).ceil()
         : (_manualDuration ?? 0);
 
+    final earnedPoints = ActivityScoring.calculatePoints(
+      _selectedType,
+      durationMinutes: duration,
+    );
+
     final activity = Activity(
       id: '',
       petId: _selectedPet!.id,
@@ -104,7 +110,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
-      points: 0,
+      points: earnedPoints,
       createdAt: now,
     );
 
@@ -115,9 +121,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '+${AppConstants.activityPoints[_selectedType] ?? 0} points earned!',
-          ),
+          content: Text('+$earnedPoints points earned!'),
           backgroundColor: AppTheme.successColor,
         ),
       );
@@ -292,7 +296,9 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                             isDense: true,
                           ),
                           onChanged: (value) {
-                            _manualDuration = int.tryParse(value);
+                            setState(() {
+                              _manualDuration = int.tryParse(value);
+                            });
                           },
                         );
 
@@ -357,22 +363,32 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                     child: const Icon(Icons.star, color: AppTheme.accentColor),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Points you\'ll earn',
-                        style: TextStyle(color: AppTheme.textSecondary),
-                      ),
-                      Text(
-                        '+${AppConstants.activityPoints[_selectedType] ?? 0} points',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Points you\'ll earn',
+                          style: TextStyle(color: AppTheme.textSecondary),
                         ),
-                      ),
-                    ],
+                        Text(
+                          '+$_previewPoints points',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _pointsExplanation,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -398,6 +414,26 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
         ],
       ),
     );
+  }
+
+  int get _previewDuration {
+    if (_useTimer) return (_elapsed.inSeconds / 60).ceil();
+    return _manualDuration ?? 0;
+  }
+
+  int get _previewPoints => ActivityScoring.calculatePoints(
+    _selectedType,
+    durationMinutes: _previewDuration,
+  );
+
+  String get _pointsExplanation {
+    final bonus =
+        ActivityScoring.durationBonusPerTenMinutes[_selectedType] ?? 0;
+    final cap = ActivityScoring.maxPointsPerActivity[_selectedType];
+    if (bonus == 0 || cap == null) {
+      return 'Care task reward';
+    }
+    return '+$bonus per 10 min, capped at $cap';
   }
 
   IconData _getActivityIcon(String type) {

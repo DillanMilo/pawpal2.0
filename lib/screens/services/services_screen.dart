@@ -18,22 +18,19 @@ class ServicesScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               Text(
-                'Pet Services',
+                'Services',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
-                    ),
-              )
-                  .animate()
-                  .fadeIn(duration: 600.ms)
-                  .slideX(begin: -0.2, end: 0),
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
               const SizedBox(height: 8),
               Text(
-                'Find nearby services for your pet',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    'Find nearby services for your pet',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppTheme.textSecondary,
                     ),
-              )
+                  )
                   .animate()
                   .fadeIn(duration: 600.ms, delay: 100.ms)
                   .slideX(begin: -0.2, end: 0),
@@ -46,7 +43,8 @@ class ServicesScreen extends StatelessWidget {
                       title: 'Pet Stores',
                       subtitle: 'Food, toys, supplies & more',
                       icon: Icons.store_rounded,
-                      gradient: AppTheme.playfulGradient,
+                      tint: AppTheme.softMint,
+                      accent: AppTheme.secondaryColor,
                       serviceType: ServiceType.petStore,
                       delay: 0,
                     ),
@@ -56,7 +54,8 @@ class ServicesScreen extends StatelessWidget {
                       title: 'Veterinarians',
                       subtitle: 'Clinics & animal hospitals',
                       icon: Icons.local_hospital_rounded,
-                      gradient: AppTheme.sunsetGradient,
+                      tint: AppTheme.softBlush,
+                      accent: AppTheme.accentRose,
                       serviceType: ServiceType.veterinarian,
                       delay: 100,
                     ),
@@ -66,7 +65,8 @@ class ServicesScreen extends StatelessWidget {
                       title: 'Grooming',
                       subtitle: 'Salons & grooming parlors',
                       icon: Icons.content_cut_rounded,
-                      gradient: AppTheme.oceanGradient,
+                      tint: AppTheme.softLavender,
+                      accent: AppTheme.accentLavender,
                       serviceType: ServiceType.grooming,
                       delay: 200,
                     ),
@@ -85,92 +85,87 @@ class ServicesScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required IconData icon,
-    required LinearGradient gradient,
+    required Color tint,
+    required Color accent,
     required ServiceType serviceType,
     required int delay,
   }) {
     return Semantics(
-      button: true,
-      label: '$title: $subtitle',
-      child: InkWell(
-        onTap: () {
-          context.push('/services/listing', extra: serviceType);
-        },
-        borderRadius: BorderRadius.circular(28),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.colors.first.withValues(alpha:0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-        child: Row(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
+          button: true,
+          label: '$title: $subtitle',
+          child: InkWell(
+            onTap: () {
+              context.push('/services/listing', extra: serviceType);
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                icon,
                 color: Colors.white,
-                size: 32,
+                borderRadius: BorderRadius.circular(24),
+                border: AppTheme.thickBorder,
+                boxShadow: AppTheme.softShadow,
               ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: tint,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(icon, color: accent, size: 32),
+                  ),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha:0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.inkColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 24,
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.2),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ],
-        ),
-        ),
-      ),
-    )
+          ),
+        )
         .animate()
-        .fadeIn(duration: 600.ms, delay: Duration(milliseconds: delay))
+        .fadeIn(
+          duration: 600.ms,
+          delay: Duration(milliseconds: delay),
+        )
         .slideY(begin: 0.3, end: 0);
   }
 }

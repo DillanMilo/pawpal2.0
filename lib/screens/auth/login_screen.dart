@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +47,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleOAuthLogin(Future<bool> Function() action) async {
+    final authProvider = context.read<AuthProvider>();
+    final success = await action();
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Sign in was cancelled'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -58,30 +74,28 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 48),
-                const Center(child: BrandMark(size: 104)),
+                const SizedBox(height: 20),
+                const _PetMosaicHeader(),
                 const SizedBox(height: 24),
-                // Title
                 const Text(
-                  'Welcome Back',
+                  'Track your pet\'s care,\nhealth, and daily routine',
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 27,
+                    fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
+                    height: 1.05,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Sign in to continue to PawPal',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
-                // Email field
+                const SizedBox(height: 28),
+                const _AuthBrandSignature(),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -94,7 +108,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -116,7 +132,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
                       ),
-                      tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                      tooltip: _obscurePassword
+                          ? 'Show password'
+                          : 'Hide password',
                       onPressed: () {
                         setState(() {
                           _obscurePassword = !_obscurePassword;
@@ -141,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Login button
                 ElevatedButton(
                   onPressed: authProvider.isLoading ? null : _handleLogin,
                   child: authProvider.isLoading
@@ -150,13 +167,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
-                      : const Text('Sign In'),
+                      : const Text('Log In'),
                 ),
-                if (AppConstants.enableGoogleAuth || AppConstants.enableAppleAuth) ...[
+                if (AppConstants.enableGoogleAuth ||
+                    AppConstants.enableAppleAuth) ...[
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -164,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'OR',
+                          'or continue with',
                           style: TextStyle(
                             color: AppTheme.textLight,
                             fontWeight: FontWeight.w500,
@@ -179,7 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     OutlinedButton.icon(
                       onPressed: authProvider.isLoading
                           ? null
-                          : () => authProvider.signInWithGoogle(),
+                          : () => _handleOAuthLogin(
+                              authProvider.signInWithGoogle,
+                            ),
                       icon: const Icon(Icons.g_mobiledata, size: 24),
                       label: const Text('Continue with Google'),
                     ),
@@ -189,13 +210,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     OutlinedButton.icon(
                       onPressed: authProvider.isLoading
                           ? null
-                          : () => authProvider.signInWithApple(),
+                          : () =>
+                                _handleOAuthLogin(authProvider.signInWithApple),
                       icon: const Icon(Icons.apple, size: 24),
                       label: const Text('Continue with Apple'),
                     ),
                 ],
                 const SizedBox(height: 32),
-                // Sign up link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -216,4 +237,122 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+class _PetMosaicHeader extends StatefulWidget {
+  const _PetMosaicHeader();
+
+  @override
+  State<_PetMosaicHeader> createState() => _PetMosaicHeaderState();
+}
+
+class _PetMosaicHeaderState extends State<_PetMosaicHeader> {
+  late final List<_MosaicTileData> _tiles = _randomizedTiles();
+
+  List<_MosaicTileData> _randomizedTiles() {
+    final tiles = <_MosaicTileData>[
+      const _MosaicTileData('assets/images/auth/dog_1.jpg'),
+      const _MosaicTileData('assets/images/auth/cat_1.jpg'),
+      const _MosaicTileData('assets/images/auth/rabbit_1.jpg'),
+      const _MosaicTileData('assets/images/auth/dog_2.jpg'),
+      const _MosaicTileData('assets/images/auth/cat_2.jpg'),
+      const _MosaicTileData('assets/images/auth/hamster_1.jpg'),
+    ];
+    tiles.shuffle(Random());
+    return tiles;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 210,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            top: 28,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.softMint,
+                borderRadius: BorderRadius.circular(32),
+              ),
+            ),
+          ),
+          GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.82,
+            ),
+            itemCount: _tiles.length,
+            itemBuilder: (context, index) {
+              final tile = _tiles[index];
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.softLavender,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.white, width: 3),
+                  boxShadow: AppTheme.softShadow,
+                  image: DecorationImage(
+                    image: AssetImage(tile.assetPath),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthBrandSignature extends StatelessWidget {
+  const _AuthBrandSignature();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'PawPal pet care tracker',
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const BrandMark(size: 44, withShadow: false),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'PawPal',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Pet care tracker',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MosaicTileData {
+  final String assetPath;
+
+  const _MosaicTileData(this.assetPath);
 }

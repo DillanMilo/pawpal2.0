@@ -106,10 +106,13 @@ class _MainShellState extends State<MainShell> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        color: AppTheme.inkColor,
+        borderRadius: BorderRadius.circular(26),
         boxShadow: AppTheme.mediumShadow,
-        border: AppTheme.thickBorder,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -170,20 +173,23 @@ class _MainShellState extends State<MainShell> {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.playfulGradient,
+                      color: Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          color: AppTheme.inkColor.withValues(alpha: 0.24),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
                         ),
                       ],
-                      border: Border.all(color: Colors.white, width: 5),
+                      border: Border.all(
+                        color: AppTheme.softLavender,
+                        width: 6,
+                      ),
                     ),
                     child: const Icon(
                       Icons.pets_rounded,
-                      color: Colors.white,
+                      color: AppTheme.inkColor,
                       size: 36,
                     ),
                   ),
@@ -221,9 +227,7 @@ class _MainShellState extends State<MainShell> {
             constraints: const BoxConstraints(maxWidth: 68),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                  : Colors.transparent,
+              color: isSelected ? Colors.white : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -232,8 +236,8 @@ class _MainShellState extends State<MainShell> {
                 Icon(
                       icon,
                       color: isSelected
-                          ? AppTheme.primaryColor
-                          : AppTheme.textLight,
+                          ? AppTheme.inkColor
+                          : Colors.white.withValues(alpha: 0.66),
                       size: 25,
                     )
                     .animate(target: isSelected ? 1 : 0)
@@ -251,7 +255,7 @@ class _MainShellState extends State<MainShell> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.inkColor,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),

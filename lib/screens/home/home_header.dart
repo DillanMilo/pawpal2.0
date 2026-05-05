@@ -62,9 +62,8 @@ class _NotificationBadge extends StatelessWidget {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.inkColor,
           borderRadius: BorderRadius.circular(16),
-          border: AppTheme.thickBorder,
           boxShadow: AppTheme.softShadow,
         ),
         child: Stack(
@@ -72,7 +71,7 @@ class _NotificationBadge extends StatelessWidget {
           children: [
             const Icon(
               Icons.notifications_none_rounded,
-              color: AppTheme.textPrimary,
+              color: Colors.white,
               size: 27,
             ),
             Positioned(

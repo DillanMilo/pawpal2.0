@@ -173,6 +173,13 @@ class QuickActionsContent extends StatelessWidget {
       'route': '/log-activity',
     },
     {
+      'title': 'Scan Passport',
+      'subtitle': 'Read a pet passport QR code',
+      'type': 'Scan',
+      'color': AppTheme.secondaryColor,
+      'route': '/scan-passport',
+    },
+    {
       'title': 'Add New Pet',
       'subtitle': 'Add another furry friend',
       'type': 'Add',

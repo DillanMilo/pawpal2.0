@@ -19,6 +19,7 @@ import '../screens/reminders/reminders_screen.dart';
 import '../screens/medical/medical_records_screen.dart';
 import '../screens/medical/add_medical_record_screen.dart';
 import '../screens/pets/pet_passport_screen.dart';
+import '../screens/pets/pet_passport_scanner_screen.dart';
 import '../screens/activity/activity_history_screen.dart';
 import '../screens/quick_actions/quick_actions_screen.dart';
 import '../screens/quick_actions/add_medication_screen.dart';
@@ -50,7 +51,8 @@ class AppRouter {
       redirect: (context, state) {
         final isAuthenticated = authProvider.isAuthenticated;
         final isLoading = authProvider.status == AuthStatus.initial;
-        final isAuthRoute = state.matchedLocation == '/login' ||
+        final isAuthRoute =
+            state.matchedLocation == '/login' ||
             state.matchedLocation == '/register' ||
             state.matchedLocation == '/forgot-password';
         final isSplash = state.matchedLocation == '/splash';
@@ -133,39 +135,33 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/home',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: HomeScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomeScreen()),
             ),
             GoRoute(
               path: '/services',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: ServicesScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ServicesScreen()),
             ),
             GoRoute(
               path: '/pets',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: PetListScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: PetListScreen()),
             ),
             GoRoute(
               path: '/calendar',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: CalendarScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: CalendarScreen()),
             ),
             GoRoute(
               path: '/discover',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: DiscoverScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: DiscoverScreen()),
             ),
             GoRoute(
               path: '/profile',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: ProfileScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ProfileScreen()),
             ),
           ],
         ),
@@ -222,7 +218,12 @@ class AppRouter {
         // Activity logging
         GoRoute(
           path: '/log-activity',
-          builder: (context, state) => const LogActivityScreen(),
+          builder: (context, state) {
+            final extra = state.extra;
+            return LogActivityScreen(
+              initialType: extra is String ? extra : null,
+            );
+          },
         ),
 
         // Activity history
@@ -267,6 +268,10 @@ class AppRouter {
             final petId = state.pathParameters['id']!;
             return PetPassportScreen(petId: petId);
           },
+        ),
+        GoRoute(
+          path: '/scan-passport',
+          builder: (context, state) => const PetPassportScannerScreen(),
         ),
       ],
     );

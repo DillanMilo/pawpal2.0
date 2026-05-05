@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 32),
 
                     // Quick Actions
-                    _buildQuickActionsSection(petProvider, activityProvider)
+                    _buildQuickActionsSection()
                         .animate()
                         .fadeIn(delay: 600.ms)
                         .slideY(begin: 0.2, end: 0),
@@ -199,12 +199,12 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                gradient: AppTheme.playfulGradient,
+                color: AppTheme.softLavender,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(
                 Icons.pets_rounded,
-                color: Colors.white,
+                color: AppTheme.primaryDark,
                 size: 36,
               ),
             ),
@@ -236,12 +236,12 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: AppTheme.inkColor,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.add_rounded,
-                color: AppTheme.primaryColor,
+                color: Colors.white,
                 size: 28,
               ),
             ),
@@ -287,26 +287,11 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.only(right: 16),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected ? null : Colors.white,
-          gradient: isSelected
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color,
-                    Color.lerp(color, AppTheme.primaryDark, 0.22)!,
-                  ],
-                )
-              : null,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(22),
-          boxShadow: isSelected
-              ? AppTheme.coloredShadow(color)
-              : AppTheme.softShadow,
+          boxShadow: isSelected ? AppTheme.mediumShadow : AppTheme.softShadow,
           border: isSelected
-              ? Border.all(
-                  color: Colors.white.withValues(alpha: 0.36),
-                  width: 1.5,
-                )
+              ? Border.all(color: AppTheme.inkColor, width: 1.5)
               : AppTheme.thickBorder,
         ),
         child: Row(
@@ -315,9 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withValues(alpha: 0.18)
-                    : color.withValues(alpha: 0.10),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(18),
                 image: pet.photoUrl != null
                     ? DecorationImage(
@@ -328,11 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: pet.photoUrl == null
                   ? Center(
-                      child: Icon(
-                        Icons.pets_rounded,
-                        color: isSelected ? Colors.white : color,
-                        size: 32,
-                      ),
+                      child: Icon(Icons.pets_rounded, color: color, size: 32),
                     )
                   : null,
             ),
@@ -347,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 21,
                       fontWeight: FontWeight.w800,
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      color: AppTheme.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -361,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.white.withValues(alpha: 0.18)
+                              ? AppTheme.softLavender
                               : color.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(9),
                         ),
@@ -370,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : color,
+                            color: isSelected ? AppTheme.primaryDark : color,
                           ),
                         ),
                       ),
@@ -382,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               color: isSelected
-                                  ? Colors.white.withValues(alpha: 0.78)
+                                  ? AppTheme.textPrimary
                                   : AppTheme.textSecondary,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -399,10 +378,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 28,
                 height: 28,
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.inkColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check, color: color, size: 18),
+                child: const Icon(Icons.check, color: Colors.white, size: 18),
               ),
           ],
         ),
@@ -410,127 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _showEndActivityDialog(ActivityProvider activityProvider) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppTheme.warningColor.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.timer_off_rounded,
-                  color: AppTheme.warningColor,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'End Activity?',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'You\'ve been doing ${activityProvider.activeActivityType} for ${activityProvider.formattedTimer}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context, false),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'No',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context, true),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Yes',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (result == true) {
-      await activityProvider.stopTimer();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Activity logged successfully!'),
-            backgroundColor: AppTheme.successColor,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  Widget _buildQuickActionsSection(
-    PetProvider petProvider,
-    ActivityProvider activityProvider,
-  ) {
-    final activeType = activityProvider.activeActivityType;
-
+  Widget _buildQuickActionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -542,56 +401,31 @@ class _HomeScreenState extends State<HomeScreen> {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             children: [
-              _buildActionItem('Walk', AppTheme.secondaryColor, () {
-                if (activeType == 'Walk') {
-                  _showEndActivityDialog(activityProvider);
-                } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer(
-                    'Walk',
-                    petProvider.selectedPet!.id,
-                  );
-                }
-              }, isActive: activeType == 'Walk'),
-              _buildActionItem('Play', AppTheme.accentColor, () {
-                if (activeType == 'Play') {
-                  _showEndActivityDialog(activityProvider);
-                } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer(
-                    'Play',
-                    petProvider.selectedPet!.id,
-                  );
-                }
-              }, isActive: activeType == 'Play'),
-              _buildActionItem('Feed', AppTheme.accentMint, () {
-                if (activeType == 'Feed') {
-                  _showEndActivityDialog(activityProvider);
-                } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer(
-                    'Feed',
-                    petProvider.selectedPet!.id,
-                  );
-                }
-              }, isActive: activeType == 'Feed'),
-              _buildActionItem('Groom', AppTheme.accentPeach, () {
-                if (activeType == 'Groom') {
-                  _showEndActivityDialog(activityProvider);
-                } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer(
-                    'Groom',
-                    petProvider.selectedPet!.id,
-                  );
-                }
-              }, isActive: activeType == 'Groom'),
-              _buildActionItem('Vet', AppTheme.primaryColor, () {
-                if (activeType == 'Vet Visit') {
-                  _showEndActivityDialog(activityProvider);
-                } else if (petProvider.selectedPet != null) {
-                  activityProvider.startTimer(
-                    'Vet Visit',
-                    petProvider.selectedPet!.id,
-                  );
-                }
-              }, isActive: activeType == 'Vet Visit'),
+              _buildActionItem(
+                'Walk',
+                AppTheme.secondaryColor,
+                () => context.push('/log-activity', extra: 'Walk'),
+              ),
+              _buildActionItem(
+                'Play',
+                AppTheme.accentColor,
+                () => context.push('/log-activity', extra: 'Play'),
+              ),
+              _buildActionItem(
+                'Feed',
+                AppTheme.accentMint,
+                () => context.push('/log-activity', extra: 'Feed'),
+              ),
+              _buildActionItem(
+                'Groom',
+                AppTheme.accentPeach,
+                () => context.push('/add-grooming'),
+              ),
+              _buildActionItem(
+                'Vet',
+                AppTheme.primaryColor,
+                () => context.push('/add-vet-visit'),
+              ),
               _buildActionItem(
                 'Log',
                 AppTheme.accentLavender,
@@ -610,24 +444,29 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback onTap, {
     bool isActive = false,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 82,
-        margin: const EdgeInsets.only(right: 14),
-        child: Column(
-          children: [
-            ActivityIcon(type: label, isActive: isActive, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isActive ? color : AppTheme.textSecondary,
+    return Semantics(
+      button: true,
+      link: true,
+      label: '$label shortcut',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 82,
+          margin: const EdgeInsets.only(right: 14),
+          child: Column(
+            children: [
+              ActivityIcon(type: label, isActive: isActive, size: 28),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? color : AppTheme.textSecondary,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -793,7 +632,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 BarChartRodData(
                                   toY: value.toDouble(),
                                   gradient: isToday
-                                      ? AppTheme.playfulGradient
+                                      ? const LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [
+                                            AppTheme.inkColor,
+                                            AppTheme.primaryDark,
+                                          ],
+                                        )
                                       : LinearGradient(
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,

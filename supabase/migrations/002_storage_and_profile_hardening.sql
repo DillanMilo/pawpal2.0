@@ -28,7 +28,7 @@ VALUES
   (
     'medical-documents',
     'medical-documents',
-    true,
+    false,
     20971520,
     ARRAY['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
   )
@@ -38,7 +38,8 @@ SET
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
--- Storage object policies. Public buckets expose read URLs, while writes remain user-owned.
+-- Storage object policies. Medical documents are private; profile/pet/activity
+-- media can use public URLs, but writes remain user-owned.
 DROP POLICY IF EXISTS "Users can read own PawPal storage objects" ON storage.objects;
 CREATE POLICY "Users can read own PawPal storage objects"
 ON storage.objects

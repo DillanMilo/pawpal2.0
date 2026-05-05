@@ -1,17 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
-    <linearGradient id="bg" x1="180" y1="120" x2="850" y2="900" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7B61FF"/>
-      <stop offset="0.55" stop-color="#5A41D9"/>
-      <stop offset="1" stop-color="#00D2B4"/>
+    <linearGradient id="soft" x1="224" y1="160" x2="800" y2="864" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F2ECFF"/>
+      <stop offset="0.52" stop-color="#E8FAE6"/>
+      <stop offset="1" stop-color="#EAF7FF"/>
     </linearGradient>
   </defs>
-  <rect width="1024" height="1024" rx="240" fill="url(#bg)"/>
-  <circle cx="812" cy="218" r="74" fill="#FFD541" opacity="0.96"/>
-  <circle cx="215" cy="800" r="92" fill="#00D2B4" opacity="0.32"/>
-  <path fill="#FFFFFF" d="M512 434c84 0 191 99 218 190 32 108-36 197-149 197-36 0-54-13-69-13s-33 13-69 13c-113 0-181-89-149-197 27-91 134-190 218-190z"/>
-  <ellipse cx="326" cy="401" rx="76" ry="97" fill="#FFFFFF" transform="rotate(-21 326 401)"/>
-  <ellipse cx="456" cy="314" rx="68" ry="91" fill="#FFFFFF" transform="rotate(-8 456 314)"/>
-  <ellipse cx="568" cy="314" rx="68" ry="91" fill="#FFFFFF" transform="rotate(8 568 314)"/>
-  <ellipse cx="698" cy="401" rx="76" ry="97" fill="#FFFFFF" transform="rotate(21 698 401)"/>
+  <rect x="144" y="128" width="736" height="768" rx="230" fill="#FFFFFF"/>
+  <rect x="144" y="128" width="736" height="768" rx="230" fill="none" stroke="#ECE6F6" stroke-width="28"/>
+  <rect x="184" y="168" width="656" height="688" rx="196" fill="url(#soft)"/>
+  <path d="M328 580c32-111 113-196 184-196s152 85 184 196c26 91-29 159-121 159-30 0-46-11-63-11s-33 11-63 11c-92 0-147-68-121-159z" fill="#191919"/>
+  <ellipse cx="338" cy="392" rx="64" ry="82" transform="rotate(-22 338 392)" fill="#191919"/>
+  <ellipse cx="456" cy="314" rx="57" ry="76" transform="rotate(-8 456 314)" fill="#191919"/>
+  <ellipse cx="568" cy="314" rx="57" ry="76" transform="rotate(8 568 314)" fill="#191919"/>
+  <ellipse cx="686" cy="392" rx="64" ry="82" transform="rotate(22 686 392)" fill="#191919"/>
+  <path d="M656 270c0-51 41-92 92-92s92 41 92 92-41 92-92 92c-8 0-16-1-23-3l-47 34c-18 13-42-7-31-27l25-46c-10-15-16-32-16-50z" fill="#9E7BFF"/>
+  <path d="M716 270l26 26 50-58" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

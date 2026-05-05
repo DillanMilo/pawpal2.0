@@ -7,6 +7,7 @@ import '../../models/medical_record.dart';
 import '../../services/medical_service.dart';
 import '../../services/pet_service.dart';
 import '../../utils/theme.dart';
+import 'pet_passport_scanner_screen.dart';
 
 class PetPassportScreen extends StatefulWidget {
   final String petId;
@@ -154,6 +155,17 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
       appBar: AppBar(
         title: const Text('Pet Passport'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            tooltip: 'Scan pet passport',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const PetPassportScannerScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.share),
             tooltip: 'Share pet passport',
@@ -343,6 +355,18 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
               onPressed: _sharePassport,
               icon: const Icon(Icons.share),
               label: const Text('Share Pet Passport'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const PetPassportScannerScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.qr_code_scanner_rounded),
+              label: const Text('Scan a Pet Passport'),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(

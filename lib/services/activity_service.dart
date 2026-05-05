@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'supabase_service.dart';
 import '../models/activity.dart';
-import '../utils/constants.dart';
+import '../utils/activity_scoring.dart';
 
 class ActivityService {
   final _client = SupabaseService.client;
@@ -83,7 +83,10 @@ class ActivityService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) throw Exception('User not authenticated');
 
-    final points = AppConstants.activityPoints[activity.type] ?? 5;
+    final points = ActivityScoring.calculatePoints(
+      activity.type,
+      durationMinutes: activity.durationMinutes,
+    );
 
     final data = activity.toJson();
     data['id'] = _uuid.v4();
@@ -91,8 +94,11 @@ class ActivityService {
     data['points'] = points;
     data['created_at'] = DateTime.now().toIso8601String();
 
-    final response =
-        await _client.from('activities').insert(data).select().single();
+    final response = await _client
+        .from('activities')
+        .insert(data)
+        .select()
+        .single();
 
     return Activity.fromJson(response);
   }
@@ -195,7 +201,11 @@ class ActivityService {
   Future<Map<String, int>> getWeeklySummary(String petId) async {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    final start = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    );
     final end = start.add(const Duration(days: 7));
 
     final activities = await getActivitiesInRange(petId, start, end);
@@ -203,13 +213,15 @@ class ActivityService {
     final summary = <String, int>{};
     for (int i = 0; i < 7; i++) {
       final day = start.add(Duration(days: i));
-      final dayKey = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final dayKey =
+          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
       summary[dayKey] = 0;
     }
 
     for (final activity in activities) {
       final day = activity.startTime;
-      final dayKey = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final dayKey =
+          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
       summary[dayKey] = (summary[dayKey] ?? 0) + activity.points;
     }
 

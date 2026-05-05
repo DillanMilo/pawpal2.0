@@ -10,15 +10,22 @@ import 'package:pawpal/screens/auth/register_screen.dart';
 import 'helpers/test_helpers.dart';
 
 void main() {
-  testWidgets('LoginScreen can be instantiated and rendered', (WidgetTester tester) async {
+  testWidgets('LoginScreen can be instantiated and rendered', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createTestWidget(const LoginScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(
+      find.text('Track your pet\'s care,\nhealth, and daily routine'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('RegisterScreen can be instantiated and rendered', (WidgetTester tester) async {
+  testWidgets('RegisterScreen can be instantiated and rendered', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createTestWidget(const RegisterScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('Create Account'), findsAtLeastNWidgets(1));
+    expect(find.text('Create account'), findsAtLeastNWidgets(1));
   });
 }

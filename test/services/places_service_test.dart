@@ -4,8 +4,13 @@ import 'package:pawpal/services/places_service.dart';
 
 void main() {
   setUpAll(() {
-    // Initialize dotenv with test values for photoUrl test
-    dotenv.testLoad(fileInput: 'GOOGLE_PLACES_API_KEY=test_api_key');
+    // Initialize dotenv with test values for photoUrl test.
+    dotenv.testLoad(
+      fileInput: [
+        'SUPABASE_URL=https://example.supabase.co',
+        'SUPABASE_ANON_KEY=test_anon_key',
+      ].join('\n'),
+    );
   });
 
   group('PlaceResult.fromJson', () {
@@ -17,14 +22,9 @@ void main() {
         'rating': 4.5,
         'user_ratings_total': 120,
         'geometry': {
-          'location': {
-            'lat': 37.7749,
-            'lng': -122.4194,
-          },
+          'location': {'lat': 37.7749, 'lng': -122.4194},
         },
-        'opening_hours': {
-          'open_now': true,
-        },
+        'opening_hours': {'open_now': true},
         'photos': [
           {'photo_reference': 'photo_ref_abc123', 'width': 400},
         ],
@@ -49,10 +49,7 @@ void main() {
         'name': 'Some Place',
         'vicinity': '456 Oak Ave',
         'geometry': {
-          'location': {
-            'lat': 40.0,
-            'lng': -74.0,
-          },
+          'location': {'lat': 40.0, 'lng': -74.0},
         },
       };
 
@@ -106,18 +103,21 @@ void main() {
       expect(result.address, '789 Elm St, Cityville, ST 12345');
     });
 
-    test('uses default address when both vicinity and formatted_address are missing', () {
-      final json = {
-        'place_id': 'test',
-        'name': 'Test Place',
-        'geometry': {
-          'location': {'lat': 0.0, 'lng': 0.0},
-        },
-      };
+    test(
+      'uses default address when both vicinity and formatted_address are missing',
+      () {
+        final json = {
+          'place_id': 'test',
+          'name': 'Test Place',
+          'geometry': {
+            'location': {'lat': 0.0, 'lng': 0.0},
+          },
+        };
 
-      final result = PlaceResult.fromJson(json);
-      expect(result.address, 'Address not available');
-    });
+        final result = PlaceResult.fromJson(json);
+        expect(result.address, 'Address not available');
+      },
+    );
 
     test('defaults coordinates to 0.0 when geometry is missing', () {
       final json = {
@@ -188,7 +188,10 @@ void main() {
       );
 
       final url = result.photoUrl;
-      expect(url, contains('maps.googleapis.com'));
+      expect(
+        url,
+        contains('example.supabase.co/functions/v1/places-proxy/photo'),
+      );
       expect(url, contains('photo_reference=abc123'));
       expect(url, contains('maxwidth=400'));
     });

@@ -2,84 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Warm, modern color palette
-  static const Color primaryColor = Color(0xFF6554D9);
-  static const Color primaryLight = Color(0xFF8F82F2);
-  static const Color primaryDark = Color(0xFF40319F);
+  // Minimal, soft color palette
+  static const Color inkColor = Color(0xFF171717);
+  static const Color primaryColor = Color(0xFF9D7BEA);
+  static const Color primaryLight = Color(0xFFEFE7FF);
+  static const Color primaryDark = Color(0xFF6D54B5);
 
-  // Secondary - calm teal
-  static const Color secondaryColor = Color(0xFF0E9F9A);
-  static const Color secondaryLight = Color(0xFF5CCBC7);
-  static const Color secondaryDark = Color(0xFF087A76);
+  // Secondary - fresh mint
+  static const Color secondaryColor = Color(0xFF69B99D);
+  static const Color secondaryLight = Color(0xFFE9F9E7);
+  static const Color secondaryDark = Color(0xFF327B69);
 
-  // Accent Colors - Energetic & Warm
-  static const Color accentColor = Color(0xFFE9B949);
-  static const Color accentPeach = Color(0xFFE98B6D);
-  static const Color accentLavender = Color(0xFF8B7CF6);
-  static const Color accentMint = Color(0xFF68C7A0);
-  static const Color accentRose = Color(0xFFE56B93);
+  // Accent Colors - muted service tones
+  static const Color accentColor = Color(0xFFF2C94C);
+  static const Color accentPeach = Color(0xFFEFA37A);
+  static const Color accentLavender = Color(0xFFA88BEA);
+  static const Color accentMint = Color(0xFF8DDDBD);
+  static const Color accentRose = Color(0xFFE78DAE);
 
   // Status Colors
   static const Color errorColor = Color(0xFFFF5252);
-  static const Color successColor = Color(0xFF0E9F9A);
+  static const Color successColor = Color(0xFF2C9F7B);
   static const Color warningColor = Color(0xFFE9B949);
 
   // Background - Soft & Clean
-  static const Color backgroundColor = Color(0xFFF4F6FB);
+  static const Color backgroundColor = Color(0xFFFBFAFE);
   static const Color surfaceColor = Colors.white;
   static const Color cardColor = Colors.white;
-  static const Color dividerColor = Color(0xFFDDE3EE);
+  static const Color dividerColor = Color(0xFFE8E4EF);
+  static const Color softLavender = Color(0xFFF2ECFF);
+  static const Color softMint = Color(0xFFEAFBE6);
+  static const Color softBlush = Color(0xFFFFEEF5);
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF161923);
-  static const Color textSecondary = Color(0xFF4F5968);
-  static const Color textLight = Color(0xFF697386);
+  static const Color textPrimary = inkColor;
+  static const Color textSecondary = Color(0xFF56525F);
+  static const Color textLight = Color(0xFF918C9E);
 
   // Gradient Definitions
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6554D9), Color(0xFF8F82F2)],
+    colors: [Color(0xFFA88BEA), Color(0xFFEFE7FF)],
   );
 
   static const LinearGradient playfulGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6554D9), Color(0xFF0E9F9A)],
+    colors: [Color(0xFFEAFBE6), Color(0xFFF2ECFF)],
   );
 
   static const LinearGradient sunsetGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFF7EB3), Color(0xFFFFD541)],
+    colors: [Color(0xFFFFEEF5), Color(0xFFFFF4DC)],
   );
 
   static const LinearGradient oceanGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0E9F9A), Color(0xFF087A76)],
+    colors: [Color(0xFFE7F8FF), Color(0xFFEAFBE6)],
   );
 
   // Pet Category Colors - Vibrant but harmonious
   static const Map<String, Color> petCategoryColors = {
-    'Dog': Color(0xFF6554D9),
-    'Cat': Color(0xFFE56B93),
-    'Bird': Color(0xFFE9B949),
-    'Fish': Color(0xFF0E9F9A),
-    'Rabbit': Color(0xFFE98B6D),
-    'Hamster': Color(0xFF8B7CF6),
-    'Guinea Pig': Color(0xFF68C7A0),
-    'Reptile': Color(0xFF40319F),
-    'Other': Color(0xFFEDF1F7),
+    'Dog': Color(0xFF9D7BEA),
+    'Cat': Color(0xFFE78DAE),
+    'Bird': Color(0xFFF2C94C),
+    'Fish': Color(0xFF69B99D),
+    'Rabbit': Color(0xFFEFA37A),
+    'Hamster': Color(0xFFA88BEA),
+    'Guinea Pig': Color(0xFF8DDDBD),
+    'Reptile': Color(0xFF6D54B5),
+    'Other': Color(0xFFB8B3C7),
   };
 
   // Activity Type Colors
   static const Map<String, Color> activityColors = {
-    'Walk': Color(0xFF0E9F9A),
-    'Play': Color(0xFFE9B949),
-    'Train': Color(0xFF6554D9),
-    'Feed': Color(0xFF68C7A0),
-    'Groom': Color(0xFFE98B6D),
+    'Walk': Color(0xFF69B99D),
+    'Play': Color(0xFFF2C94C),
+    'Train': Color(0xFF9D7BEA),
+    'Feed': Color(0xFF8DDDBD),
+    'Groom': Color(0xFFEFA37A),
     'Vet Visit': Color(0xFFFF5252),
     'Social': Color(0xFF74B9FF),
     'Rest': Color(0xFFEDF1F7),
@@ -88,31 +92,31 @@ class AppTheme {
   // Box Shadows
   static List<BoxShadow> get softShadow => [
     BoxShadow(
-      color: const Color(0xFF101828).withValues(alpha: 0.07),
-      blurRadius: 18,
-      offset: const Offset(0, 8),
+      color: const Color(0xFF171717).withValues(alpha: 0.05),
+      blurRadius: 22,
+      offset: const Offset(0, 10),
     ),
   ];
 
   static List<BoxShadow> get mediumShadow => [
     BoxShadow(
-      color: const Color(0xFF101828).withValues(alpha: 0.12),
-      blurRadius: 28,
-      offset: const Offset(0, 12),
+      color: const Color(0xFF171717).withValues(alpha: 0.09),
+      blurRadius: 34,
+      offset: const Offset(0, 16),
     ),
   ];
 
   // Borders
   static Border get thickBorder =>
-      Border.all(color: const Color(0xFFE0E6F0), width: 1.5);
+      Border.all(color: const Color(0xFFE8E4EF), width: 1.2);
 
-  static Border get thinBorder => Border.all(color: dividerColor, width: 1.5);
+  static Border get thinBorder => Border.all(color: dividerColor, width: 1.0);
 
   static List<BoxShadow> coloredShadow(Color color) => [
     BoxShadow(
-      color: color.withValues(alpha: 0.18),
+      color: color.withValues(alpha: 0.16),
       blurRadius: 22,
-      offset: const Offset(0, 8),
+      offset: const Offset(0, 10),
     ),
   ];
 
@@ -151,12 +155,12 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: inkColor,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
           ),
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
@@ -167,12 +171,12 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryColor,
+          foregroundColor: inkColor,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
           ),
-          side: const BorderSide(color: primaryColor, width: 2.5),
+          side: const BorderSide(color: dividerColor, width: 1.4),
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -188,16 +192,16 @@ class AppTheme {
           vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: dividerColor, width: 2),
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: dividerColor, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: primaryColor, width: 2.5),
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: primaryColor, width: 1.8),
         ),
         hintStyle: GoogleFonts.outfit(color: textLight, fontSize: 16),
         labelStyle: GoogleFonts.outfit(color: textSecondary, fontSize: 16),
@@ -210,7 +214,7 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
+        backgroundColor: inkColor,
         foregroundColor: Colors.white,
         elevation: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

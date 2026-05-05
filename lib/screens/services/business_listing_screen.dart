@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -142,74 +143,84 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
   }
 
   Future<void> _openDirections(PlaceResult place) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}&destination_place_id=${place.placeId}',
-    );
+    final details = await _getDetails(place);
+    final destination = details.latitude == 0 && details.longitude == 0
+        ? details.address
+        : '${details.latitude},${details.longitude}';
+    final url = Uri.https('www.google.com', '/maps/dir/', {
+      'api': '1',
+      'destination': destination,
+      if (details.placeId.isNotEmpty) 'destination_place_id': details.placeId,
+    });
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not open maps')));
-      }
+    if (!await _launchExternalUrl(url)) {
+      _showSnackBar('Could not open maps');
     }
   }
 
   Future<void> _callBusiness(PlaceResult place) async {
-    if (place.phoneNumber == null || place.phoneNumber!.isEmpty) {
-      final details = await _getDetails(place);
-      if (details.phoneNumber != null && details.phoneNumber!.isNotEmpty) {
-        _launchPhone(details.phoneNumber!);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Phone number not available')),
-          );
-        }
-      }
-    } else {
-      _launchPhone(place.phoneNumber!);
+    final details = place.phoneNumber == null || place.phoneNumber!.isEmpty
+        ? await _getDetails(place)
+        : place;
+    final phoneNumber = details.phoneNumber;
+
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      _showSnackBar('Phone number not available');
+      return;
     }
+
+    await _launchPhone(phoneNumber);
   }
 
   Future<void> _openWebsite(PlaceResult place) async {
     final details = place.website == null ? await _getDetails(place) : place;
-    final website = details.website;
+    final website = details.website ?? details.googleMapsUri;
 
     if (website == null || website.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Website not available')));
-      }
+      _showSnackBar('Website not available');
       return;
     }
 
-    final url = Uri.parse(website);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not open website')));
+    final url = _normalizeWebUrl(website);
+    if (!await _launchExternalUrl(url)) {
+      _showSnackBar('Could not open website');
     }
   }
 
   Future<void> _launchPhone(String phoneNumber) async {
     final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    if (cleanNumber.isEmpty) {
+      _showSnackBar('Phone number not available');
+      return;
+    }
+
     final url = Uri.parse('tel:$cleanNumber');
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not make call')));
-      }
+    if (!await launchUrl(url)) {
+      await Clipboard.setData(ClipboardData(text: phoneNumber));
+      _showSnackBar('Phone number copied');
     }
+  }
+
+  Uri _normalizeWebUrl(String website) {
+    final trimmed = website.trim();
+    final uri = Uri.parse(trimmed);
+    if (uri.hasScheme) return uri;
+    return Uri.parse('https://$trimmed');
+  }
+
+  Future<bool> _launchExternalUrl(Uri url) async {
+    if (await canLaunchUrl(url)) {
+      return launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+    return launchUrl(url);
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

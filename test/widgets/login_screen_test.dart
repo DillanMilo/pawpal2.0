@@ -5,31 +5,38 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('LoginScreen', () {
-    testWidgets('renders email field, password field, and sign in button',
-        (WidgetTester tester) async {
+    testWidgets('renders email field, password field, and sign in button', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const LoginScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Sign In'), findsOneWidget);
-      expect(find.text('Welcome Back'), findsOneWidget);
+      expect(find.text('Log In'), findsOneWidget);
+      expect(
+        find.text('Track your pet\'s care,\nhealth, and daily routine'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('empty email shows validation error on submit',
-        (WidgetTester tester) async {
+    testWidgets('empty email shows validation error on submit', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const LoginScreen()));
       await tester.pumpAndSettle();
 
-      // Tap Sign In without entering anything
-      await tester.tap(find.text('Sign In'));
+      // Tap Log In without entering anything
+      await tester.ensureVisible(find.text('Log In'));
+      await tester.tap(find.text('Log In'));
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter your email'), findsOneWidget);
     });
 
-    testWidgets('invalid email shows validation error',
-        (WidgetTester tester) async {
+    testWidgets('invalid email shows validation error', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const LoginScreen()));
       await tester.pumpAndSettle();
 
@@ -39,15 +46,17 @@ void main() {
         'not-an-email',
       );
 
-      // Tap Sign In
-      await tester.tap(find.text('Sign In'));
+      // Tap Log In
+      await tester.ensureVisible(find.text('Log In'));
+      await tester.tap(find.text('Log In'));
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter a valid email'), findsOneWidget);
     });
 
-    testWidgets('password visibility toggle works',
-        (WidgetTester tester) async {
+    testWidgets('password visibility toggle works', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const LoginScreen()));
       await tester.pumpAndSettle();
 
@@ -64,8 +73,9 @@ void main() {
       expect(find.byIcon(Icons.visibility_outlined), findsNothing);
     });
 
-    testWidgets('empty password shows validation error on submit',
-        (WidgetTester tester) async {
+    testWidgets('empty password shows validation error on submit', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const LoginScreen()));
       await tester.pumpAndSettle();
 
@@ -75,7 +85,8 @@ void main() {
         'test@example.com',
       );
 
-      await tester.tap(find.text('Sign In'));
+      await tester.ensureVisible(find.text('Log In'));
+      await tester.tap(find.text('Log In'));
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter your password'), findsOneWidget);

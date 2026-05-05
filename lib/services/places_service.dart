@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import '../utils/constants.dart';
+import 'supabase_service.dart';
 
 enum ServiceType { petStore, veterinarian, grooming }
 
@@ -62,42 +62,62 @@ class PlaceResult {
 
   String get photoUrl {
     if (photoReference == null) return '';
-    return 'https://maps.googleapis.com/maps/api/place/photo'
+    return '${AppConstants.supabaseUrl}/functions/v1/places-proxy/photo'
         '?maxwidth=400'
-        '&photo_reference=$photoReference'
-        '&key=${AppConstants.googlePlacesApiKey}';
+        '&photo_reference=${Uri.encodeQueryComponent(photoReference!)}';
   }
 }
 
 class PlacesService {
-  static const String _baseUrl = 'https://maps.googleapis.com/maps/api/place';
+  static void _ensureConfigured() {
+    if (AppConstants.supabaseUrl.isEmpty ||
+        AppConstants.supabaseAnonKey.isEmpty) {
+      throw Exception('Supabase is not configured.');
+    }
+  }
 
-  static String _getSearchQuery(ServiceType type) {
+  static String _serviceTypeValue(ServiceType type) {
     switch (type) {
       case ServiceType.petStore:
-        return 'pet store';
+        return 'petStore';
       case ServiceType.veterinarian:
         return 'veterinarian';
       case ServiceType.grooming:
-        return 'pet grooming';
+        return 'grooming';
     }
   }
 
-  static String _getPlaceType(ServiceType type) {
-    switch (type) {
-      case ServiceType.petStore:
-        return 'pet_store';
-      case ServiceType.veterinarian:
-        return 'veterinary_care';
-      case ServiceType.grooming:
-        return 'pet_store'; // Google doesn't have a specific grooming type
+  static Future<Map<String, dynamic>> _invokePlacesProxy(
+    Map<String, dynamic> body,
+  ) async {
+    _ensureConfigured();
+
+    try {
+      final response = await SupabaseService.client.functions.invoke(
+        'places-proxy',
+        body: body,
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      if (data is String && data.isNotEmpty) {
+        return json.decode(data) as Map<String, dynamic>;
+      }
+
+      throw Exception('Unexpected places response.');
+    } catch (e) {
+      throw Exception('Places request failed: $e');
     }
   }
 
-  static void _ensureConfigured() {
-    if (AppConstants.googlePlacesApiKey.isEmpty) {
-      throw Exception('Google Places API key is not configured.');
-    }
+  static List<PlaceResult> _placesFromResponse(Map<String, dynamic> data) {
+    final results = data['results'] as List? ?? [];
+    return results.map((place) => PlaceResult.fromJson(place)).toList();
   }
 
   /// Get current location with permission handling
@@ -131,33 +151,15 @@ class PlacesService {
     required double longitude,
     int radius = 10000, // 10km default radius
   }) async {
-    _ensureConfigured();
-    final query = _getSearchQuery(type);
-    final placeType = _getPlaceType(type);
+    final data = await _invokePlacesProxy({
+      'action': 'nearby',
+      'type': _serviceTypeValue(type),
+      'latitude': latitude,
+      'longitude': longitude,
+      'radius': radius,
+    });
 
-    final url = Uri.parse(
-      '$_baseUrl/nearbysearch/json'
-      '?location=$latitude,$longitude'
-      '&radius=$radius'
-      '&type=$placeType'
-      '&keyword=$query'
-      '&key=${AppConstants.googlePlacesApiKey}',
-    );
-
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List? ?? [];
-
-        return results.map((place) => PlaceResult.fromJson(place)).toList();
-      } else {
-        throw Exception('Failed to fetch places: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching places: $e');
-    }
+    return _placesFromResponse(data);
   }
 
   /// Search places by zipcode
@@ -179,45 +181,19 @@ class PlacesService {
     required String locationQuery,
     int radius = 10000,
   }) async {
-    _ensureConfigured();
     final trimmedQuery = locationQuery.trim();
     if (trimmedQuery.isEmpty) {
       throw Exception('Location query is empty.');
     }
 
-    // First, geocode the user-entered location to support worldwide postal
-    // codes, cities, regions, and country-specific formats.
-    final geocodeUrl = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json'
-      '?address=${Uri.encodeQueryComponent(trimmedQuery)}'
-      '&key=${AppConstants.googlePlacesApiKey}',
-    );
+    final data = await _invokePlacesProxy({
+      'action': 'location',
+      'type': _serviceTypeValue(type),
+      'locationQuery': trimmedQuery,
+      'radius': radius,
+    });
 
-    try {
-      final geocodeResponse = await http.get(geocodeUrl);
-
-      if (geocodeResponse.statusCode == 200) {
-        final geocodeData = json.decode(geocodeResponse.body);
-        final results = geocodeData['results'] as List?;
-
-        if (results != null && results.isNotEmpty) {
-          final location = results[0]['geometry']['location'];
-          final lat = (location['lat'] as num).toDouble();
-          final lng = (location['lng'] as num).toDouble();
-
-          return searchNearbyPlaces(
-            type: type,
-            latitude: lat,
-            longitude: lng,
-            radius: radius,
-          );
-        }
-      }
-
-      return searchByText(type: type, locationQuery: trimmedQuery);
-    } catch (e) {
-      throw Exception('Error searching by location: $e');
-    }
+    return _placesFromResponse(data);
   }
 
   /// Text Search fallback for broad international queries.
@@ -225,71 +201,44 @@ class PlacesService {
     required ServiceType type,
     required String locationQuery,
   }) async {
-    _ensureConfigured();
-    final query = '${_getSearchQuery(type)} near $locationQuery';
-    final url = Uri.parse(
-      '$_baseUrl/textsearch/json'
-      '?query=${Uri.encodeQueryComponent(query)}'
-      '&key=${AppConstants.googlePlacesApiKey}',
-    );
+    final data = await _invokePlacesProxy({
+      'action': 'text',
+      'type': _serviceTypeValue(type),
+      'locationQuery': locationQuery,
+    });
 
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List? ?? [];
-
-        return results.map((place) => PlaceResult.fromJson(place)).toList();
-      }
-
-      throw Exception('Failed to fetch places: ${response.statusCode}');
-    } catch (e) {
-      throw Exception('Error searching places: $e');
-    }
+    return _placesFromResponse(data);
   }
 
   /// Get place details including phone number
   static Future<PlaceResult?> getPlaceDetails(String placeId) async {
-    _ensureConfigured();
-    final url = Uri.parse(
-      '$_baseUrl/details/json'
-      '?place_id=$placeId'
-      '&fields=place_id,name,formatted_address,formatted_phone_number,international_phone_number,website,url,rating,user_ratings_total,geometry,opening_hours,photos'
-      '&key=${AppConstants.googlePlacesApiKey}',
-    );
-
     try {
-      final response = await http.get(url);
+      final data = await _invokePlacesProxy({
+        'action': 'details',
+        'placeId': placeId,
+      });
+      final result = data['result'];
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final result = data['result'];
-
-        if (result != null) {
-          final geometry = result['geometry']?['location'];
-          return PlaceResult(
-            placeId: result['place_id'] ?? placeId,
-            name: result['name'] ?? 'Unknown',
-            address: result['formatted_address'] ?? 'Address not available',
-            phoneNumber:
-                result['formatted_phone_number'] ??
-                result['international_phone_number'],
-            website: result['website'],
-            googleMapsUri: result['url'],
-            rating: (result['rating'] as num?)?.toDouble(),
-            userRatingsTotal: result['user_ratings_total'] as int?,
-            latitude: (geometry?['lat'] as num?)?.toDouble() ?? 0.0,
-            longitude: (geometry?['lng'] as num?)?.toDouble() ?? 0.0,
-            isOpen: result['opening_hours']?['open_now'] ?? false,
-            photoReference: (result['photos'] as List?)?.isNotEmpty == true
-                ? result['photos'][0]['photo_reference']
-                : null,
-            openingHours: (result['opening_hours']?['weekday_text'] as List?)
-                ?.map((e) => e.toString())
-                .toList(),
-          );
-        }
+      if (result != null) {
+        final resultMap = Map<String, dynamic>.from(result as Map);
+        final place = PlaceResult.fromJson(resultMap);
+        return PlaceResult(
+          placeId: place.placeId.isEmpty ? placeId : place.placeId,
+          name: place.name,
+          address: place.address,
+          phoneNumber: place.phoneNumber,
+          website: place.website,
+          googleMapsUri: place.googleMapsUri,
+          rating: place.rating,
+          userRatingsTotal: place.userRatingsTotal,
+          latitude: place.latitude,
+          longitude: place.longitude,
+          isOpen: place.isOpen,
+          photoReference: place.photoReference,
+          openingHours: (resultMap['opening_hours']?['weekday_text'] as List?)
+              ?.map((e) => e.toString())
+              .toList(),
+        );
       }
 
       return null;

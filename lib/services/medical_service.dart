@@ -129,28 +129,34 @@ class MedicalService {
         .from(AppConstants.medicalDocsBucket)
         .upload(path, file);
 
-    final url = _client.storage
-        .from(AppConstants.medicalDocsBucket)
-        .getPublicUrl(path);
+    return path;
+  }
 
-    return url;
+  // Create a short-lived URL for viewing a private medical document.
+  Future<String> createSignedDocumentUrl(String path) async {
+    return await _client.storage
+        .from(AppConstants.medicalDocsBucket)
+        .createSignedUrl(_storagePathFromValue(path), 300);
   }
 
   // Delete document from storage
-  Future<void> _deleteDocument(String url) async {
+  Future<void> _deleteDocument(String value) async {
     try {
-      final uri = Uri.parse(url);
-      final pathSegments = uri.pathSegments;
-      final bucketIndex = pathSegments.indexOf(AppConstants.medicalDocsBucket);
-      if (bucketIndex != -1 && bucketIndex < pathSegments.length - 1) {
-        final path = pathSegments.sublist(bucketIndex + 1).join('/');
-        await _client.storage
-            .from(AppConstants.medicalDocsBucket)
-            .remove([path]);
-      }
+      final path = _storagePathFromValue(value);
+      await _client.storage.from(AppConstants.medicalDocsBucket).remove([path]);
     } catch (e) {
       // Ignore deletion errors
     }
+  }
+
+  String _storagePathFromValue(String value) {
+    final uri = Uri.tryParse(value);
+    final pathSegments = uri?.pathSegments ?? const <String>[];
+    final bucketIndex = pathSegments.indexOf(AppConstants.medicalDocsBucket);
+    if (bucketIndex != -1 && bucketIndex < pathSegments.length - 1) {
+      return pathSegments.sublist(bucketIndex + 1).join('/');
+    }
+    return value;
   }
 
   // Check if all vaccinations are up to date
@@ -159,7 +165,8 @@ class MedicalService {
     if (vaccinations.isEmpty) return true;
 
     final now = DateTime.now();
-    return !vaccinations.any((v) =>
-        v.nextDueDate != null && v.nextDueDate!.isBefore(now));
+    return !vaccinations.any(
+      (v) => v.nextDueDate != null && v.nextDueDate!.isBefore(now),
+    );
   }
 }

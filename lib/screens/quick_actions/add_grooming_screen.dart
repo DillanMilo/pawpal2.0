@@ -163,13 +163,15 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   @override
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
+    final primaryText = AppTheme.primaryText(context);
+    final secondaryText = AppTheme.secondaryText(context);
 
     if (_selectedPet == null && petProvider.pets.isNotEmpty) {
       _selectedPet = petProvider.selectedPet ?? petProvider.pets.first;
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.pageBackground(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -179,22 +181,19 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBackground(context),
               borderRadius: BorderRadius.circular(12),
-              border: AppTheme.thickBorder,
+              border: AppTheme.borderFor(context),
             ),
-            child: const Icon(
-              Icons.arrow_back_rounded,
-              color: AppTheme.textPrimary,
-            ),
+            child: Icon(Icons.arrow_back_rounded, color: primaryText),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Add Grooming',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: primaryText,
           ),
         ),
       ),
@@ -228,9 +227,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             left: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Grooming Date',
-                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 13, color: secondaryText),
                 ),
                 const SizedBox(height: 8),
                 _buildDatePicker(_groomingDate, () => _selectDate(true)),
@@ -239,9 +238,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             right: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Next Appointment',
-                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 13, color: secondaryText),
                 ),
                 const SizedBox(height: 8),
                 _buildDatePicker(
@@ -333,10 +332,10 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: AppTheme.textPrimary,
+        color: AppTheme.primaryText(context),
       ),
     );
   }
@@ -346,13 +345,13 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardBackground(context),
           borderRadius: BorderRadius.circular(20),
-          border: AppTheme.thickBorder,
+          border: AppTheme.borderFor(context),
         ),
-        child: const Text(
+        child: Text(
           'No pets added yet. Add a pet first!',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.secondaryText(context)),
         ),
       );
     }
@@ -372,9 +371,11 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primaryColor : Colors.white,
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(16),
-                border: AppTheme.thickBorder,
+                border: AppTheme.borderFor(context),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -402,7 +403,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                     pet.name,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      color: isSelected
+                          ? Colors.white
+                          : AppTheme.primaryText(context),
                     ),
                   ),
                 ],
@@ -415,6 +418,8 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   }
 
   Widget _buildServicesGrid() {
+    final isDark = AppTheme.isDark(context);
+
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -438,10 +443,14 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? AppTheme.accentPeach : Colors.white,
+                color: isSelected
+                    ? AppTheme.accentPeach
+                    : AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected ? AppTheme.accentPeach : Colors.black,
+                  color: isSelected
+                      ? AppTheme.accentPeach
+                      : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
                   width: 2,
                 ),
               ),
@@ -459,7 +468,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                     service['name'],
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      color: isSelected
+                          ? Colors.white
+                          : AppTheme.primaryText(context),
                     ),
                   ),
                 ],
@@ -478,20 +489,27 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
     int maxLines = 1,
     TextInputType? keyboardType,
   }) {
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surfaceBackground(context),
         borderRadius: BorderRadius.circular(20),
-        border: AppTheme.thickBorder,
+        border: AppTheme.borderFor(context),
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
+        style: TextStyle(color: AppTheme.primaryText(context)),
+        cursorColor: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: AppTheme.textLight),
-          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          hintStyle: TextStyle(color: AppTheme.mutedText(context)),
+          prefixIcon: Icon(
+            icon,
+            color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -537,15 +555,17 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(20),
-            border: AppTheme.thickBorder,
+            border: AppTheme.borderFor(context),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.calendar_today_rounded,
-                color: AppTheme.primaryColor,
+                color: AppTheme.isDark(context)
+                    ? AppTheme.primaryLight
+                    : AppTheme.primaryColor,
                 size: 20,
               ),
               const SizedBox(width: 10),
@@ -556,8 +576,8 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                       : (isOptional ? 'Not set' : 'Select'),
                   style: TextStyle(
                     color: date != null
-                        ? AppTheme.textPrimary
-                        : AppTheme.textLight,
+                        ? AppTheme.primaryText(context)
+                        : AppTheme.mutedText(context),
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,

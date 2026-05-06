@@ -10,6 +10,7 @@ class ServicesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.pageBackground(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -21,14 +22,14 @@ class ServicesScreen extends StatelessWidget {
                 'Services',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.primaryText(context),
                 ),
               ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
               const SizedBox(height: 8),
               Text(
                     'Find nearby services for your pet',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.secondaryText(context),
                     ),
                   )
                   .animate()
@@ -90,6 +91,8 @@ class ServicesScreen extends StatelessWidget {
     required ServiceType serviceType,
     required int delay,
   }) {
+    final isDark = AppTheme.isDark(context);
+
     return Semantics(
           button: true,
           label: '$title: $subtitle',
@@ -102,10 +105,10 @@ class ServicesScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(24),
-                border: AppTheme.thickBorder,
-                boxShadow: AppTheme.softShadow,
+                border: AppTheme.borderFor(context),
+                boxShadow: AppTheme.shadowFor(context),
               ),
               child: Row(
                 children: [
@@ -113,7 +116,7 @@ class ServicesScreen extends StatelessWidget {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      color: tint,
+                      color: isDark ? accent.withValues(alpha: 0.16) : tint,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Icon(icon, color: accent, size: 32),
@@ -125,8 +128,8 @@ class ServicesScreen extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.primaryText(context),
                             fontSize: 21,
                             fontWeight: FontWeight.w800,
                           ),
@@ -134,8 +137,8 @@ class ServicesScreen extends StatelessWidget {
                         const SizedBox(height: 5),
                         Text(
                           subtitle,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
+                          style: TextStyle(
+                            color: AppTheme.secondaryText(context),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -147,7 +150,7 @@ class ServicesScreen extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppTheme.inkColor,
+                      color: isDark ? AppTheme.primaryColor : AppTheme.inkColor,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(

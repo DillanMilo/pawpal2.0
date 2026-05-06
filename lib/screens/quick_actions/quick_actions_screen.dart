@@ -15,7 +15,7 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.pageBackground(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -25,22 +25,22 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBackground(context),
               borderRadius: BorderRadius.circular(12),
-              border: AppTheme.thickBorder,
+              border: AppTheme.borderFor(context),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_rounded,
-              color: AppTheme.textPrimary,
+              color: AppTheme.primaryText(context),
             ),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Quick Actions',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: AppTheme.primaryText(context),
           ),
         ),
       ),
@@ -71,6 +71,7 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.of(context).size.height * 0.86;
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    final isDark = AppTheme.isDark(context);
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 12),
@@ -80,9 +81,12 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
           constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
+              color: AppTheme.pageBackground(context),
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              boxShadow: AppTheme.mediumShadow,
+              border: isDark
+                  ? Border.all(color: AppTheme.darkDivider, width: 1.2)
+                  : null,
+              boxShadow: isDark ? [] : AppTheme.mediumShadow,
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
@@ -94,19 +98,21 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
                     height: 5,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.dividerColor,
+                      color: isDark
+                          ? AppTheme.darkDivider
+                          : AppTheme.dividerColor,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Quick Actions',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: AppTheme.textPrimary,
+                            color: AppTheme.primaryText(context),
                           ),
                         ),
                       ),
@@ -190,6 +196,8 @@ class QuickActionsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtitleColor = AppTheme.secondaryText(context);
+
     return Stack(
       children: [
         // Background decorative blobs
@@ -231,11 +239,11 @@ class QuickActionsContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!compact) ...[
-                  const Text(
+                  Text(
                     'What would you like to do?',
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppTheme.textSecondary,
+                      color: subtitleColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ).animate().fadeIn(duration: 400.ms),
@@ -254,6 +262,7 @@ class QuickActionsContent extends StatelessWidget {
                       final isAddPet = card['route'] == '/add-pet';
 
                       return _buildActionCard(
+                            context: context,
                             title: card['title'],
                             subtitle: card['subtitle'],
                             type: card['type'],
@@ -286,6 +295,7 @@ class QuickActionsContent extends StatelessWidget {
   }
 
   Widget _buildActionCard({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required String type,
@@ -294,6 +304,13 @@ class QuickActionsContent extends StatelessWidget {
     bool isAddPet = false,
     bool compact = false,
   }) {
+    final isDark = AppTheme.isDark(context);
+    final cardColor = isAddPet
+        ? color.withValues(alpha: isDark ? 0.18 : 0.1)
+        : AppTheme.cardBackground(context);
+    final titleColor = isAddPet ? color : AppTheme.primaryText(context);
+    final subtitleColor = AppTheme.secondaryText(context);
+
     return Semantics(
       button: true,
       label: '$title: $subtitle',
@@ -304,12 +321,12 @@ class QuickActionsContent extends StatelessWidget {
           margin: EdgeInsets.only(bottom: compact ? 10 : 16),
           padding: EdgeInsets.all(compact ? 16 : 20),
           decoration: BoxDecoration(
-            color: isAddPet ? color.withValues(alpha: 0.1) : Colors.white,
+            color: cardColor,
             borderRadius: BorderRadius.circular(compact ? 22 : 28),
             border: isAddPet
                 ? Border.all(color: color, width: 2.5)
-                : AppTheme.thickBorder,
-            boxShadow: AppTheme.softShadow,
+                : AppTheme.borderFor(context),
+            boxShadow: AppTheme.shadowFor(context),
           ),
           child: Row(
             children: [
@@ -331,15 +348,15 @@ class QuickActionsContent extends StatelessWidget {
                       style: TextStyle(
                         fontSize: compact ? 17 : 20,
                         fontWeight: FontWeight.w700,
-                        color: isAddPet ? color : AppTheme.textPrimary,
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textSecondary,
+                        color: subtitleColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -352,7 +369,9 @@ class QuickActionsContent extends StatelessWidget {
                 width: compact ? 36 : 40,
                 height: compact ? 36 : 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: isAddPet ? 0.2 : 0.1),
+                  color: color.withValues(
+                    alpha: isDark ? 0.18 : (isAddPet ? 0.2 : 0.1),
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

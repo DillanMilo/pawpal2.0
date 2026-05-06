@@ -8,6 +8,7 @@ import 'services/notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/pet_provider.dart';
 import 'providers/activity_provider.dart';
+import 'providers/theme_provider.dart';
 import 'utils/theme.dart';
 import 'utils/router.dart';
 
@@ -73,14 +74,34 @@ class PawPalApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => PetProvider()),
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
+      child: Consumer2<AuthProvider, ThemeProvider>(
+        builder: (context, authProvider, themeProvider, _) {
           return MaterialApp.router(
             title: 'PawPal',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            builder: (context, child) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              SystemChrome.setSystemUIOverlayStyle(
+                SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: isDark
+                      ? Brightness.light
+                      : Brightness.dark,
+                  systemNavigationBarColor: isDark
+                      ? AppTheme.darkBackground
+                      : Colors.white,
+                  systemNavigationBarIconBrightness: isDark
+                      ? Brightness.light
+                      : Brightness.dark,
+                ),
+              );
+              return child ?? const SizedBox.shrink();
+            },
             routerConfig: AppRouter.router(authProvider),
           );
         },

@@ -240,6 +240,39 @@ class AppTheme {
   static const Color darkTextSecondary = Color(0xFFB0B0C0);
   static const Color darkTextLight = Color(0xFF8888A0);
 
+  static bool isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color pageBackground(BuildContext context) =>
+      isDark(context) ? darkBackground : backgroundColor;
+
+  static Color cardBackground(BuildContext context) =>
+      isDark(context) ? darkCard : cardColor;
+
+  static Color surfaceBackground(BuildContext context) =>
+      isDark(context) ? darkSurface : surfaceColor;
+
+  static Color primaryText(BuildContext context) =>
+      isDark(context) ? darkTextPrimary : textPrimary;
+
+  static Color secondaryText(BuildContext context) =>
+      isDark(context) ? darkTextSecondary : textSecondary;
+
+  static Color mutedText(BuildContext context) =>
+      isDark(context) ? darkTextLight : textLight;
+
+  static Border borderFor(BuildContext context) => Border.all(
+    color: isDark(context) ? darkDivider : dividerColor,
+    width: isDark(context) ? 1.4 : 1.2,
+  );
+
+  static List<BoxShadow> shadowFor(BuildContext context) =>
+      isDark(context) ? [] : softShadow;
+
+  static Color softTint(BuildContext context, Color color) => isDark(context)
+      ? color.withValues(alpha: 0.16)
+      : color.withValues(alpha: 0.1);
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

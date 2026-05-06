@@ -226,6 +226,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.pageBackground(context),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,13 +249,14 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.cardBackground(context),
                               borderRadius: BorderRadius.circular(14),
-                              boxShadow: AppTheme.softShadow,
+                              border: AppTheme.borderFor(context),
+                              boxShadow: AppTheme.shadowFor(context),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.arrow_back_rounded,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryText(context),
                             ),
                           ),
                         ),
@@ -267,7 +269,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryText(context),
                             ),
                       ),
                     ],
@@ -277,9 +279,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppTheme.cardBackground(context),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: AppTheme.softShadow,
+                      border: AppTheme.borderFor(context),
+                      boxShadow: AppTheme.shadowFor(context),
                     ),
                     child: Row(
                       children: [
@@ -287,11 +290,14 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                           child: TextField(
                             controller: _locationController,
                             focusNode: _locationFocusNode,
+                            style: TextStyle(
+                              color: AppTheme.primaryText(context),
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Postal code or city...',
-                              prefixIcon: const Icon(
+                              prefixIcon: Icon(
                                 Icons.location_on_rounded,
-                                color: AppTheme.textLight,
+                                color: AppTheme.mutedText(context),
                               ),
                               border: InputBorder.none,
                               filled: false,
@@ -299,8 +305,8 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                                 horizontal: 16,
                                 vertical: 14,
                               ),
-                              hintStyle: const TextStyle(
-                                color: AppTheme.textLight,
+                              hintStyle: TextStyle(
+                                color: AppTheme.mutedText(context),
                               ),
                             ),
                             keyboardType: TextInputType.text,
@@ -350,7 +356,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                           'Using your current location',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.secondaryText(context),
                           ),
                         ),
                       ],
@@ -379,7 +385,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
             const SizedBox(height: 16),
             Text(
               'Finding nearby $_screenTitle...',
-              style: const TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
             ),
           ],
         ),
@@ -396,22 +402,25 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
               Icon(
                 Icons.location_off_rounded,
                 size: 64,
-                color: AppTheme.textLight,
+                color: AppTheme.mutedText(context),
               ),
               const SizedBox(height: 16),
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                style: TextStyle(
+                  color: AppTheme.secondaryText(context),
                   fontSize: 16,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'You can retry location access or search by postal code or city above.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.textLight, fontSize: 14),
+                style: TextStyle(
+                  color: AppTheme.mutedText(context),
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 24),
               Wrap(
@@ -444,19 +453,22 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(_screenIcon, size: 64, color: AppTheme.textLight),
+            Icon(_screenIcon, size: 64, color: AppTheme.mutedText(context)),
             const SizedBox(height: 16),
             Text(
               'No $_screenTitle found nearby',
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Try searching a different area',
-              style: TextStyle(color: AppTheme.textLight, fontSize: 14),
+              style: TextStyle(
+                color: AppTheme.mutedText(context),
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -477,9 +489,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
     return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(24),
-            boxShadow: AppTheme.softShadow,
+            border: AppTheme.borderFor(context),
+            boxShadow: AppTheme.shadowFor(context),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,7 +510,9 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       height: 140,
-                      color: AppTheme.dividerColor,
+                      color: AppTheme.isDark(context)
+                          ? AppTheme.darkSurface
+                          : AppTheme.dividerColor,
                       child: const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primaryColor,
@@ -507,11 +522,13 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                     ),
                     errorWidget: (context, url, error) => Container(
                       height: 140,
-                      color: AppTheme.dividerColor,
+                      color: AppTheme.isDark(context)
+                          ? AppTheme.darkSurface
+                          : AppTheme.dividerColor,
                       child: Icon(
                         _screenIcon,
                         size: 48,
-                        color: AppTheme.textLight,
+                        color: AppTheme.mutedText(context),
                       ),
                     ),
                   ),
@@ -553,10 +570,10 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                         Expanded(
                           child: Text(
                             place.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryText(context),
                             ),
                           ),
                         ),
@@ -590,18 +607,18 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_on_outlined,
                           size: 16,
-                          color: AppTheme.textLight,
+                          color: AppTheme.mutedText(context),
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             place.address,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.secondaryText(context),
                             ),
                           ),
                         ),
@@ -640,19 +657,19 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                           const SizedBox(width: 8),
                           Text(
                             '${place.rating}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryText(context),
                             ),
                           ),
                           if (place.userRatingsTotal != null) ...[
                             const SizedBox(width: 4),
                             Text(
                               '(${place.userRatingsTotal} reviews)',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppTheme.textLight,
+                                color: AppTheme.mutedText(context),
                               ),
                             ),
                           ],

@@ -103,13 +103,21 @@ class _MainShellState extends State<MainShell> {
   }
 
   Widget _buildNavBarBackground(BuildContext context, int selectedIndex) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: AppTheme.mediumShadow,
-        border: AppTheme.thickBorder,
+        boxShadow: isDark
+            ? AppTheme.coloredShadow(Colors.black)
+            : AppTheme.mediumShadow,
+        border: Border.all(
+          color: isDark ? AppTheme.darkDivider : AppTheme.dividerColor,
+          width: 1.2,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

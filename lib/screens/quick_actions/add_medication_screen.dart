@@ -140,13 +140,14 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   @override
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
+    final primaryText = AppTheme.primaryText(context);
 
     if (_selectedPet == null && petProvider.pets.isNotEmpty) {
       _selectedPet = petProvider.selectedPet ?? petProvider.pets.first;
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.pageBackground(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -156,22 +157,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBackground(context),
               borderRadius: BorderRadius.circular(12),
-              border: AppTheme.thickBorder,
+              border: AppTheme.borderFor(context),
             ),
-            child: const Icon(
-              Icons.arrow_back_rounded,
-              color: AppTheme.textPrimary,
-            ),
+            child: Icon(Icons.arrow_back_rounded, color: primaryText),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Add Medication',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: primaryText,
           ),
         ),
       ),
@@ -330,10 +328,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: AppTheme.textPrimary,
+        color: AppTheme.primaryText(context),
       ),
     );
   }
@@ -343,13 +341,13 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardBackground(context),
           borderRadius: BorderRadius.circular(20),
-          border: AppTheme.thickBorder,
+          border: AppTheme.borderFor(context),
         ),
-        child: const Text(
+        child: Text(
           'No pets added yet. Add a pet first!',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.secondaryText(context)),
         ),
       );
     }
@@ -369,9 +367,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primaryColor : Colors.white,
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(16),
-                border: AppTheme.thickBorder,
+                border: AppTheme.borderFor(context),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -399,7 +399,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     pet.name,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      color: isSelected
+                          ? Colors.white
+                          : AppTheme.primaryText(context),
                     ),
                   ),
                 ],
@@ -418,20 +420,27 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surfaceBackground(context),
         borderRadius: BorderRadius.circular(20),
-        border: AppTheme.thickBorder,
+        border: AppTheme.borderFor(context),
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         validator: validator,
+        style: TextStyle(color: AppTheme.primaryText(context)),
+        cursorColor: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: AppTheme.textLight),
-          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          hintStyle: TextStyle(color: AppTheme.mutedText(context)),
+          prefixIcon: Icon(
+            icon,
+            color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -477,15 +486,17 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(20),
-            border: AppTheme.thickBorder,
+            border: AppTheme.borderFor(context),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.calendar_today_rounded,
-                color: AppTheme.primaryColor,
+                color: AppTheme.isDark(context)
+                    ? AppTheme.primaryLight
+                    : AppTheme.primaryColor,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -496,8 +507,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                       : (isOptional ? 'Ongoing' : 'Select'),
                   style: TextStyle(
                     color: date != null
-                        ? AppTheme.textPrimary
-                        : AppTheme.textLight,
+                        ? AppTheme.primaryText(context)
+                        : AppTheme.mutedText(context),
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,

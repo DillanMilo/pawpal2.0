@@ -16,6 +16,14 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText = isDark
+        ? AppTheme.darkTextPrimary
+        : AppTheme.textPrimary;
+    final secondaryText = isDark
+        ? AppTheme.darkTextSecondary
+        : AppTheme.textSecondary;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
       child: Row(
@@ -27,19 +35,19 @@ class HomeHeader extends StatelessWidget {
               children: [
                 Text(
                   '$greeting,',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    color: AppTheme.textSecondary,
+                    color: secondaryText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   userName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
+                    color: primaryText,
                     letterSpacing: 0,
                   ),
                 ),
@@ -56,15 +64,20 @@ class HomeHeader extends StatelessWidget {
 class _NotificationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () => context.push('/reminders'),
       child: Container(
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: AppTheme.inkColor,
+          color: isDark ? AppTheme.darkSurface : AppTheme.inkColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: AppTheme.softShadow,
+          border: isDark ? Border.all(color: AppTheme.darkDivider) : null,
+          boxShadow: isDark
+              ? AppTheme.coloredShadow(AppTheme.primaryColor)
+              : AppTheme.softShadow,
         ),
         child: Stack(
           alignment: Alignment.center,

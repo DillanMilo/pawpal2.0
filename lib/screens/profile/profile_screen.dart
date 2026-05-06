@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../providers/activity_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../services/notification_service.dart';
 import '../../utils/theme.dart';
 
@@ -61,6 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authProvider = context.watch<AuthProvider>();
     final petProvider = context.watch<PetProvider>();
     final activityProvider = context.watch<ActivityProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final user = authProvider.userProfile;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
@@ -228,6 +230,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'App',
             children: [
               _MenuItem(
+                icon: Icons.palette_outlined,
+                title: 'Appearance',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      themeProvider.label,
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
+                onTap: () => _showSettingsDialog(context),
+              ),
+              _MenuItem(
                 icon: Icons.emoji_events_outlined,
                 title: 'Achievements',
                 onTap: () => _showAchievementsDialog(context),
@@ -280,49 +301,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showSettingsDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('Dark Mode'),
-              trailing: Switch(
-                value: false,
-                onChanged: (value) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Dark mode coming soon!')),
-                  );
-                },
-              ),
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    'Appearance',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<PawPalThemePreference>(
+                      selected: {themeProvider.preference},
+                      onSelectionChanged: (selection) {
+                        themeProvider.setPreference(selection.first);
+                      },
+                      segments: const [
+                        ButtonSegment(
+                          value: PawPalThemePreference.light,
+                          icon: Icon(Icons.light_mode_outlined),
+                          label: Text('Light'),
+                        ),
+                        ButtonSegment(
+                          value: PawPalThemePreference.dark,
+                          icon: Icon(Icons.dark_mode_outlined),
+                          label: Text('Dark'),
+                        ),
+                        ButtonSegment(
+                          value: PawPalThemePreference.automatic,
+                          icon: Icon(Icons.schedule_outlined),
+                          label: Text('Auto'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Text(
+                    'Auto uses light mode during the day and dark mode in the evening.',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Divider(height: 24),
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text('Language'),
+                  trailing: const Text('English'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('More languages coming soon!'),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cloud_sync),
+                  title: const Text('Sync Data'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Data synced!')),
+                    );
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.language),
-              title: const Text('Language'),
-              trailing: const Text('English'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('More languages coming soon!')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.cloud_sync),
-              title: const Text('Sync Data'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Data synced!')));
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

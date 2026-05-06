@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final greeting = _getGreeting(now.hour);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -444,6 +444,11 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback onTap, {
     bool isActive = false,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveText = isDark
+        ? AppTheme.darkTextSecondary
+        : AppTheme.textSecondary;
+
     return Semantics(
       button: true,
       link: true,
@@ -462,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: isActive ? color : AppTheme.textSecondary,
+                  color: isActive ? color : inactiveText,
                 ),
               ),
             ],
@@ -852,15 +857,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary;
+    final actionColor = isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: titleColor,
             letterSpacing: 0,
           ),
         ),
@@ -872,12 +881,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'See All',
                   style: TextStyle(
-                    color: AppTheme.primaryColor,
+                    color: actionColor,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, size: 20),
+                Icon(Icons.chevron_right_rounded, size: 20, color: actionColor),
               ],
             ),
           ),

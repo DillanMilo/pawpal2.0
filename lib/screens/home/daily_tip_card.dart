@@ -15,9 +15,14 @@ class DailyTipCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.playfulGradient,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, AppTheme.actionBlueLight],
+        ),
         borderRadius: BorderRadius.circular(32),
-        boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
+        border: Border.all(color: AppTheme.actionBlue.withValues(alpha: 0.22)),
+        boxShadow: AppTheme.coloredShadow(AppTheme.actionBlue),
       ),
       child: Row(
         children: [
@@ -27,17 +32,29 @@ class DailyTipCard extends StatelessWidget {
               children: [
                 const Text(
                   'Daily Tip',
-                  style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppTheme.actionBlueDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   tip['title']!,
-                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   tip['tip']!,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

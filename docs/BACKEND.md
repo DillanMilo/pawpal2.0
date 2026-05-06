@@ -596,11 +596,14 @@ final response = await _client.auth.signInWithPassword(
 ```dart
 final response = await _client.auth.signInWithOAuth(
   OAuthProvider.google,
-  redirectTo: 'io.supabase.pawpal://login-callback/',
+  redirectTo: kIsWeb
+      ? 'https://your-production-domain.com/auth/callback'
+      : 'com.creativecurrents.pawpal://login-callback/',
 );
 ```
 
-- **Redirect URI**: `io.supabase.pawpal://login-callback/`
+- **Native redirect URI**: `com.creativecurrents.pawpal://login-callback/`
+- **Web redirect path**: `/auth/callback`
 - Opens a browser/webview for the Google consent flow.
 - On success, Supabase creates the `auth.users` row and the trigger creates the `public.users` profile.
 
@@ -609,7 +612,9 @@ final response = await _client.auth.signInWithOAuth(
 ```dart
 final response = await _client.auth.signInWithOAuth(
   OAuthProvider.apple,
-  redirectTo: 'io.supabase.pawpal://login-callback/',
+  redirectTo: kIsWeb
+      ? 'https://your-production-domain.com/auth/callback'
+      : 'com.creativecurrents.pawpal://login-callback/',
 );
 ```
 
@@ -1209,7 +1214,7 @@ For each bucket, add storage policies to restrict uploads/deletes to authenticat
 2. Enable the "Google Identity" (OAuth 2.0) API.
 3. Create OAuth 2.0 Client IDs (Web, iOS, Android as needed).
 4. In Supabase Dashboard > Authentication > Providers, enable Google and paste the Client ID and Secret.
-5. Add `io.supabase.pawpal://login-callback/` as an authorized redirect URI.
+5. Add the Supabase OAuth callback URL in Google Cloud, and add the app redirect URLs in Supabase URL Configuration.
 
 #### Apple OAuth
 

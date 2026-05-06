@@ -289,9 +289,9 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.playfulGradient,
+                    gradient: AppTheme.actionBlueGradient,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: AppTheme.coloredShadow(AppTheme.primaryColor),
+                    boxShadow: AppTheme.coloredShadow(AppTheme.actionBlue),
                   ),
                   child: Center(
                     child: _isLoading

@@ -13,6 +13,7 @@ Use these values consistently across Supabase, Google Cloud, Apple Developer, iO
 | iOS bundle ID | `com.creativecurrents.pawpal` |
 | Android application ID | `com.creativecurrents.pawpal` |
 | Native app redirect URL | `com.creativecurrents.pawpal://login-callback/` |
+| Web OAuth callback path | `/auth/callback` |
 
 ## Supabase redirect URLs
 
@@ -22,8 +23,8 @@ In Supabase Dashboard > Authentication > URL Configuration:
 2. Add these Additional Redirect URLs:
    - `com.creativecurrents.pawpal://login-callback/`
    - `com.creativecurrents.pawpal://**`
-   - local development origins you actively use, for example `http://127.0.0.1:8080/**`
-   - the production web URL, for example `https://your-production-domain.com/**`
+   - local development callback URLs you actively use, for example `http://127.0.0.1:8080/auth/callback`
+   - the production callback URL, for example `https://your-production-domain.com/auth/callback`
 
 ## Google provider
 
@@ -70,3 +71,4 @@ The app is configured for OAuth redirects with:
 - OAuth redirect URL in `lib/services/auth_service.dart`
 
 The Supabase Flutter SDK handles the returned OAuth callback and session recovery for deep links.
+Web OAuth returns to `/auth/callback` so the auth fragment does not collide with Flutter hash routes such as `#/login`.

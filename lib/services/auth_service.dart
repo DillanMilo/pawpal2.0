@@ -57,7 +57,15 @@ class AuthService {
   }
 
   String get _oauthRedirectUrl {
-    if (kIsWeb) return Uri.base.origin;
+    if (kIsWeb) {
+      return Uri(
+        scheme: Uri.base.scheme,
+        host: Uri.base.host,
+        port: Uri.base.hasPort ? Uri.base.port : null,
+        path: '/auth/callback',
+      ).toString();
+    }
+
     return 'com.creativecurrents.pawpal://login-callback/';
   }
 

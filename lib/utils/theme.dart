@@ -19,6 +19,9 @@ class AppTheme {
   static const Color accentLavender = Color(0xFFA88BEA);
   static const Color accentMint = Color(0xFF8DDDBD);
   static const Color accentRose = Color(0xFFE78DAE);
+  static const Color actionBlue = Color(0xFF4FB8FF);
+  static const Color actionBlueLight = Color(0xFFE7F6FF);
+  static const Color actionBlueDark = Color(0xFF1F7FD1);
 
   // Status Colors
   static const Color errorColor = Color(0xFFFF5252);
@@ -62,6 +65,12 @@ class AppTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [Color(0xFFE7F8FF), Color(0xFFEAFBE6)],
+  );
+
+  static const LinearGradient actionBlueGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF7DD3FF), Color(0xFF2F9BEE)],
   );
 
   // Pet Category Colors - Vibrant but harmonious

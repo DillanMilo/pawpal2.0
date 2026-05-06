@@ -50,20 +50,24 @@ class AppRouter {
       refreshListenable: authProvider,
       redirect: (context, state) {
         final isAuthenticated = authProvider.isAuthenticated;
-        final isLoading = authProvider.status == AuthStatus.initial;
+        final isResolvingAuth =
+            authProvider.status == AuthStatus.initial ||
+            authProvider.status == AuthStatus.loading;
         final isAuthRoute =
             state.matchedLocation == '/login' ||
             state.matchedLocation == '/register' ||
             state.matchedLocation == '/forgot-password';
         final isSplash = state.matchedLocation == '/splash';
+        final isAuthCallback = state.matchedLocation == '/auth/callback';
 
-        // Show splash while loading
-        if (isLoading && !isSplash) {
-          return '/splash';
+        // Keep OAuth callbacks stable while Supabase recovers the session.
+        if (isAuthCallback) {
+          if (isResolvingAuth) return null;
+          return isAuthenticated ? '/home' : '/login';
         }
 
-        // Redirect to login if not authenticated
-        if (!isAuthenticated && !isAuthRoute && !isSplash && !isLoading) {
+        // Redirect to login if not authenticated.
+        if (!isAuthenticated && !isAuthRoute && !isSplash && !isResolvingAuth) {
           return '/login';
         }
 
@@ -73,7 +77,7 @@ class AppRouter {
         }
 
         // Redirect from splash once loaded
-        if (isSplash && !isLoading) {
+        if (isSplash && !isResolvingAuth) {
           return isAuthenticated ? '/home' : '/login';
         }
 
@@ -126,6 +130,10 @@ class AppRouter {
         GoRoute(
           path: '/forgot-password',
           builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        GoRoute(
+          path: '/auth/callback',
+          builder: (context, state) => const SplashScreen(),
         ),
 
         // Main app shell with bottom navigation

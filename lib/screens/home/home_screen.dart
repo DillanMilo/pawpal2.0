@@ -894,6 +894,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMainFAB() {
     return FloatingActionButton.extended(
       onPressed: () => context.push('/log-activity'),
+      backgroundColor: AppTheme.actionBlue,
+      foregroundColor: Colors.white,
       icon: const Icon(Icons.add_rounded),
       label: const Text(
         'Log Activity',
@@ -905,7 +907,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActiveTimerFAB(ActivityProvider activityProvider) {
     return FloatingActionButton.extended(
       onPressed: () => context.push('/log-activity'),
-      backgroundColor: AppTheme.secondaryColor,
+      backgroundColor: AppTheme.actionBlueDark,
+      foregroundColor: Colors.white,
       icon: const Icon(Icons.timer_rounded),
       label: Text(
         '${activityProvider.activeActivityType}: ${activityProvider.formattedTimer}',

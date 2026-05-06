@@ -265,19 +265,6 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                             icon: const Icon(Icons.play_arrow),
                             label: const Text('Resume'),
                           ),
-                        const SizedBox(width: 12),
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            _stopTimer();
-                            setState(() {
-                              _useTimer = false;
-                              _startTime = null;
-                              _elapsed = Duration.zero;
-                            });
-                          },
-                          icon: const Icon(Icons.stop),
-                          label: const Text('Reset'),
-                        ),
                       ],
                     ),
                   ] else ...[
@@ -399,6 +386,16 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
           // Save button
           ElevatedButton(
             onPressed: _isLoading ? null : _saveActivity,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.actionBlue,
+              foregroundColor: Colors.white,
+              elevation: 10,
+              shadowColor: AppTheme.actionBlue.withValues(alpha: 0.28),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
             child: _isLoading
                 ? const SizedBox(
                     height: 20,

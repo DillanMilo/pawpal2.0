@@ -170,13 +170,13 @@ class _MainShellState extends State<MainShell> {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.playfulGradient,
+                      gradient: AppTheme.actionBlueGradient,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          color: AppTheme.actionBlue.withValues(alpha: 0.38),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
                         ),
                       ],
                       border: Border.all(color: Colors.white, width: 5),

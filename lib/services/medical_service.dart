@@ -19,6 +19,32 @@ class MedicalService {
     return (response as List).map((e) => MedicalRecord.fromJson(e)).toList();
   }
 
+  // Get medical record counts by type for a set of pets.
+  Future<Map<MedicalRecordType, int>> getMedicalRecordCountsByType(
+    List<String> petIds,
+  ) async {
+    if (petIds.isEmpty) return {};
+
+    final counts = <MedicalRecordType, int>{};
+
+    for (final petId in petIds) {
+      final response = await _client
+          .from('medical_records')
+          .select('type')
+          .eq('pet_id', petId);
+
+      for (final row in response as List) {
+        final type = MedicalRecordType.values.firstWhere(
+          (value) => value.name == row['type'],
+          orElse: () => MedicalRecordType.condition,
+        );
+        counts[type] = (counts[type] ?? 0) + 1;
+      }
+    }
+
+    return counts;
+  }
+
   // Get medical records by type
   Future<List<MedicalRecord>> getMedicalRecordsByType(
     String petId,

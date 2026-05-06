@@ -12,7 +12,7 @@ class StatsOverview extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalPoints = activityProvider.totalPoints;
     final level = ActivityScoring.levelForPoints(totalPoints);
-    final pointsToNext = ActivityScoring.pointsToNextLevel(totalPoints);
+    final rankName = ActivityScoring.rankName(totalPoints);
 
     return IntrinsicHeight(
       child: Row(
@@ -36,9 +36,9 @@ class StatsOverview extends StatelessWidget {
               color: AppTheme.accentColor,
               value: '$totalPoints',
               label: 'Paw Points',
-              helper: 'Level $level',
+              helper: 'Level $level • $rankName',
               progress: ActivityScoring.levelProgress(totalPoints),
-              progressLabel: '$pointsToNext to next',
+              progressLabel: ActivityScoring.levelProgressLabel(totalPoints),
             ),
           ),
         ],

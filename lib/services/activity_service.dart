@@ -154,6 +154,24 @@ class ActivityService {
     return counts;
   }
 
+  // Get activity counts by type for the current user across all pets
+  Future<Map<String, int>> getUserActivityCountsByType() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return {};
+
+    final response = await _client
+        .from('activities')
+        .select('type')
+        .eq('user_id', userId);
+
+    final counts = <String, int>{};
+    for (final row in response as List) {
+      final type = row['type'] as String;
+      counts[type] = (counts[type] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   // Get current streak
   Future<int> getCurrentStreak() async {
     final userId = SupabaseService.currentUserId;

@@ -1,10 +1,14 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import 'supabase_service.dart';
 import '../models/user_profile.dart';
+import '../utils/constants.dart';
 
 class AuthService {
   final _client = SupabaseService.client;
+  final _uuid = const Uuid();
 
   // Sign up with email and password
   Future<AuthResponse> signUp({
@@ -84,6 +88,23 @@ class AuthService {
     return await _client.auth.updateUser(UserAttributes(password: newPassword));
   }
 
+  // Re-authenticate with the current password, then update to a new password.
+  Future<UserResponse> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final email = SupabaseService.currentUser?.email;
+    if (email == null) {
+      throw const AuthException('No signed-in email account found.');
+    }
+
+    await _client.auth.signInWithPassword(
+      email: email,
+      password: currentPassword,
+    );
+    return updatePassword(newPassword);
+  }
+
   // Get current user profile
   Future<UserProfile?> getCurrentUserProfile() async {
     final userId = SupabaseService.currentUserId;
@@ -127,6 +148,37 @@ class AuthService {
     return UserProfile.fromJson(response);
   }
 
+  // Upload a profile photo and return the public URL.
+  Future<String> uploadProfilePhoto(XFile photo, {String? previousUrl}) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final extension = _extensionFor(
+      photo.name.isNotEmpty ? photo.name : photo.path,
+    );
+    final path = '$userId/${_uuid.v4()}.$extension';
+    final bytes = await photo.readAsBytes();
+
+    await _client.storage
+        .from(AppConstants.profilePhotosBucket)
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: _contentTypeFor(extension),
+            upsert: false,
+          ),
+        );
+
+    if (previousUrl != null && previousUrl.isNotEmpty) {
+      await _deleteProfilePhoto(previousUrl);
+    }
+
+    return _client.storage
+        .from(AppConstants.profilePhotosBucket)
+        .getPublicUrl(path);
+  }
+
   // Create or repair user profile (internal)
   Future<void> _upsertUserProfile(
     String userId,
@@ -141,6 +193,46 @@ class AuthService {
       'notifications_enabled': true,
       'updated_at': now,
     }, onConflict: 'id');
+  }
+
+  Future<void> _deleteProfilePhoto(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final pathSegments = uri.pathSegments;
+      final bucketIndex = pathSegments.indexOf(
+        AppConstants.profilePhotosBucket,
+      );
+      if (bucketIndex != -1 && bucketIndex < pathSegments.length - 1) {
+        final path = pathSegments.sublist(bucketIndex + 1).join('/');
+        await _client.storage.from(AppConstants.profilePhotosBucket).remove([
+          path,
+        ]);
+      }
+    } catch (_) {
+      // Profile updates should not fail because cleanup of an old image failed.
+    }
+  }
+
+  String _extensionFor(String fileName) {
+    final rawExtension = fileName.split('.').last.toLowerCase();
+    if (rawExtension == 'jpg' ||
+        rawExtension == 'jpeg' ||
+        rawExtension == 'png' ||
+        rawExtension == 'webp') {
+      return rawExtension == 'jpg' ? 'jpeg' : rawExtension;
+    }
+    return 'jpeg';
+  }
+
+  String _contentTypeFor(String extension) {
+    switch (extension) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
+    }
   }
 
   // Delete account

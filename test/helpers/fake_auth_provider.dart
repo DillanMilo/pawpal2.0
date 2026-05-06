@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pawpal/models/user_profile.dart';
 import 'package:pawpal/providers/auth_provider.dart';
 
@@ -55,6 +56,23 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
 
   @override
   Future<bool> updateProfile(UserProfile profile) async => false;
+
+  @override
+  Future<bool> updateProfileDetails({
+    required String name,
+    String? phoneNumber,
+    String? zipCode,
+    XFile? photo,
+  }) async => false;
+
+  @override
+  Future<bool> updateNotificationPreference(bool enabled) async => false;
+
+  @override
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async => false;
 
   @override
   void clearError() {

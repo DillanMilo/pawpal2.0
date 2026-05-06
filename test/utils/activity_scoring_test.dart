@@ -49,17 +49,26 @@ void main() {
       expect(ActivityScoring.levelForPoints(0), 1);
       expect(ActivityScoring.levelForPoints(249), 1);
       expect(ActivityScoring.levelForPoints(250), 2);
+      expect(ActivityScoring.levelForPoints(4750), 20);
+      expect(ActivityScoring.levelForPoints(5000), 20);
+      expect(ActivityScoring.levelForPoints(99999), 20);
       expect(ActivityScoring.pointsIntoCurrentLevel(375), 125);
       expect(ActivityScoring.pointsToNextLevel(375), 125);
       expect(ActivityScoring.levelProgress(125), 0.5);
+      expect(ActivityScoring.pointsToNextLevel(5000), 0);
+      expect(ActivityScoring.levelProgress(5000), 1.0);
     });
 
-    test('returns rank names from point bands', () {
+    test('returns rank names from level progression', () {
       expect(ActivityScoring.rankName(0), 'New Pal');
       expect(ActivityScoring.rankName(250), 'Care Cadet');
-      expect(ActivityScoring.rankName(750), 'Routine Builder');
-      expect(ActivityScoring.rankName(1500), 'Wellness Pro');
-      expect(ActivityScoring.rankName(3000), 'PawPal Elite');
+      expect(ActivityScoring.rankName(750), 'Walk Wrangler');
+      expect(ActivityScoring.rankName(1500), 'Wellness Watcher');
+      expect(ActivityScoring.rankName(4750), 'PawPal Elite');
+      expect(ActivityScoring.nextRankName(79), 'Care Cadet');
+      expect(ActivityScoring.nextRankName(5000), isNull);
+      expect(ActivityScoring.levelProgressLabel(79), '171 to Care Cadet');
+      expect(ActivityScoring.levelProgressLabel(5000), 'Max rank reached');
     });
   });
 }

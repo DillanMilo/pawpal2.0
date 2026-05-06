@@ -13,6 +13,7 @@ class ActivityProvider with ChangeNotifier {
 
   List<Activity> _activities = [];
   Map<String, int> _weeklySummary = {};
+  Map<String, int> _activityCountsByType = {};
   int _totalPoints = 0;
   int _currentStreak = 0;
   bool _isLoading = false;
@@ -25,6 +26,9 @@ class ActivityProvider with ChangeNotifier {
 
   List<Activity> get activities => _activities;
   Map<String, int> get weeklySummary => _weeklySummary;
+  Map<String, int> get activityCountsByType => _activityCountsByType;
+  int get totalActivities =>
+      _activityCountsByType.values.fold<int>(0, (sum, count) => sum + count);
   int get totalPoints => _totalPoints;
   int get currentStreak => _currentStreak;
   bool get isLoading => _isLoading;
@@ -33,7 +37,11 @@ class ActivityProvider with ChangeNotifier {
   DateTime? get timerStartTime => _timerStartTime;
   String? get activeActivityType => _activeActivityType;
 
-  Future<void> loadActivities(String petId, {int? limit, bool forceRefresh = false}) async {
+  Future<void> loadActivities(
+    String petId, {
+    int? limit,
+    bool forceRefresh = false,
+  }) async {
     if (!forceRefresh &&
         _lastFetchedPetId == petId &&
         _lastFetched != null &&
@@ -87,6 +95,8 @@ class ActivityProvider with ChangeNotifier {
     try {
       _totalPoints = await _activityService.getTotalPoints();
       _currentStreak = await _activityService.getCurrentStreak();
+      _activityCountsByType = await _activityService
+          .getUserActivityCountsByType();
       _lastStatsFetched = DateTime.now();
       notifyListeners();
     } catch (e) {
@@ -109,7 +119,9 @@ class ActivityProvider with ChangeNotifier {
       // Reload stats
       await loadStats(forceRefresh: true);
       if (activity.petId.isNotEmpty) {
-        _weeklySummary = await _activityService.getWeeklySummary(activity.petId);
+        _weeklySummary = await _activityService.getWeeklySummary(
+          activity.petId,
+        );
       }
 
       return true;
@@ -217,6 +229,7 @@ class ActivityProvider with ChangeNotifier {
   void reset() {
     _activities = [];
     _weeklySummary = {};
+    _activityCountsByType = {};
     _totalPoints = 0;
     _currentStreak = 0;
     _isLoading = false;

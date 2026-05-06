@@ -2,6 +2,31 @@ import 'constants.dart';
 
 class ActivityScoring {
   static const int pointsPerLevel = 250;
+  static const int maxLevel = 20;
+  static const int maxPoints = maxLevel * pointsPerLevel;
+
+  static const List<String> levelTitles = [
+    'New Pal',
+    'Care Cadet',
+    'Routine Rookie',
+    'Walk Wrangler',
+    'Playtime Pro',
+    'Training Scout',
+    'Wellness Watcher',
+    'Treat Tactician',
+    'Grooming Guide',
+    'Adventure Buddy',
+    'Streak Specialist',
+    'Health Hero',
+    'Routine Builder',
+    'Paw Planner',
+    'Care Captain',
+    'Wellness Pro',
+    'Pack Leader',
+    'PawPal Champion',
+    'Legendary Guardian',
+    'PawPal Elite',
+  ];
 
   static const Map<String, int> durationBonusPerTenMinutes = {
     'Walk': 2,
@@ -39,15 +64,18 @@ class ActivityScoring {
 
   static int levelForPoints(int totalPoints) {
     if (totalPoints <= 0) return 1;
-    return (totalPoints ~/ pointsPerLevel) + 1;
+    if (totalPoints >= maxPoints) return maxLevel;
+    return ((totalPoints ~/ pointsPerLevel) + 1).clamp(1, maxLevel);
   }
 
   static int pointsIntoCurrentLevel(int totalPoints) {
     if (totalPoints <= 0) return 0;
+    if (totalPoints >= maxPoints) return pointsPerLevel;
     return totalPoints % pointsPerLevel;
   }
 
   static int pointsToNextLevel(int totalPoints) {
+    if (totalPoints >= maxPoints) return 0;
     final current = pointsIntoCurrentLevel(totalPoints);
     return current == 0 && totalPoints > 0
         ? pointsPerLevel
@@ -59,10 +87,26 @@ class ActivityScoring {
   }
 
   static String rankName(int totalPoints) {
-    if (totalPoints >= 3000) return 'PawPal Elite';
-    if (totalPoints >= 1500) return 'Wellness Pro';
-    if (totalPoints >= 750) return 'Routine Builder';
-    if (totalPoints >= 250) return 'Care Cadet';
-    return 'New Pal';
+    return levelTitle(levelForPoints(totalPoints));
+  }
+
+  static String levelTitle(int level) {
+    final index = level.clamp(1, maxLevel) - 1;
+    return levelTitles[index];
+  }
+
+  static String? nextRankName(int totalPoints) {
+    final level = levelForPoints(totalPoints);
+    if (totalPoints >= maxPoints || level >= maxLevel) return null;
+    return levelTitle(level + 1);
+  }
+
+  static String levelProgressLabel(int totalPoints) {
+    final pointsRemaining = pointsToNextLevel(totalPoints);
+    if (totalPoints >= maxPoints) return 'Max rank reached';
+
+    final nextRank = nextRankName(totalPoints);
+    if (nextRank == null) return '$pointsRemaining to max';
+    return '$pointsRemaining to $nextRank';
   }
 }

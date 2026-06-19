@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'supabase_service.dart';
 import '../models/pet.dart';
@@ -24,8 +25,11 @@ class PetService {
 
   // Get a single pet by ID
   Future<Pet?> getPet(String petId) async {
-    final response =
-        await _client.from('pets').select().eq('id', petId).maybeSingle();
+    final response = await _client
+        .from('pets')
+        .select()
+        .eq('id', petId)
+        .maybeSingle();
 
     if (response == null) return null;
     return Pet.fromJson(response);
@@ -43,8 +47,7 @@ class PetService {
     data['created_at'] = now;
     data['updated_at'] = now;
 
-    final response =
-        await _client.from('pets').insert(data).select().single();
+    final response = await _client.from('pets').insert(data).select().single();
 
     return Pet.fromJson(response);
   }
@@ -76,13 +79,23 @@ class PetService {
   }
 
   // Upload pet photo
-  Future<String> uploadPhoto(String petId, File file) async {
-    final extension = file.path.split('.').last;
+  Future<String> uploadPhoto(String petId, XFile photo) async {
+    final extension = _extensionFor(
+      photo.name.isNotEmpty ? photo.name : photo.path,
+    );
     final path = '$petId/${_uuid.v4()}.$extension';
+    final bytes = await photo.readAsBytes();
 
     await _client.storage
         .from(AppConstants.petPhotosBucket)
-        .upload(path, file);
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: _contentTypeFor(extension),
+            upsert: false,
+          ),
+        );
 
     final url = _client.storage
         .from(AppConstants.petPhotosBucket)
@@ -103,6 +116,28 @@ class PetService {
       }
     } catch (e) {
       // Ignore deletion errors
+    }
+  }
+
+  String _extensionFor(String fileName) {
+    final rawExtension = fileName.split('.').last.toLowerCase();
+    if (rawExtension == 'jpg' ||
+        rawExtension == 'jpeg' ||
+        rawExtension == 'png' ||
+        rawExtension == 'webp') {
+      return rawExtension == 'jpg' ? 'jpeg' : rawExtension;
+    }
+    return 'jpeg';
+  }
+
+  String _contentTypeFor(String extension) {
+    switch (extension) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
     }
   }
 

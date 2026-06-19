@@ -35,6 +35,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>PawPal uses the camera to scan pet passport QR codes.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PawPal uses your location to find nearby pet stores, veterinarians, and grooming services.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PawPal lets you choose pet and profile photos from your photo library.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

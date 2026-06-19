@@ -140,6 +140,27 @@ void main() {
       expect(copy.name, pet.name);
       expect(copy.weight, pet.weight);
     });
+
+    test('can clear nullable fields', () {
+      final pet = Pet.fromJson(fullJson());
+      final updated = pet.copyWith(
+        breed: null,
+        dateOfBirth: null,
+        photoUrl: null,
+        weight: null,
+        colorMarkings: null,
+        microchipNumber: null,
+        adoptionDate: null,
+      );
+
+      expect(updated.breed, isNull);
+      expect(updated.dateOfBirth, isNull);
+      expect(updated.photoUrl, isNull);
+      expect(updated.weight, isNull);
+      expect(updated.colorMarkings, isNull);
+      expect(updated.microchipNumber, isNull);
+      expect(updated.adoptionDate, isNull);
+    });
   });
 
   group('Pet computed properties', () {

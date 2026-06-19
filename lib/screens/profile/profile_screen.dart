@@ -345,6 +345,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Danger Zone',
             children: [
               _MenuItem(
+                icon: Icons.delete_forever_outlined,
+                title: 'Delete Account',
+                iconColor: AppTheme.errorColor,
+                titleColor: AppTheme.errorColor,
+                onTap: () => _showDeleteAccountDialog(context),
+              ),
+              _MenuItem(
                 icon: Icons.logout,
                 title: 'Sign Out',
                 iconColor: AppTheme.errorColor,
@@ -896,6 +903,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(fontSize: 12),
         ),
       ],
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    var isDeleting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text('Delete Account?'),
+          content: const Text(
+            'This permanently deletes your PawPal account, pets, reminders, activities, appointments, and medical records. This cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+
+                      final authProvider = context.read<AuthProvider>();
+                      final success = await authProvider.deleteAccount();
+
+                      if (!dialogContext.mounted) return;
+
+                      if (success) {
+                        context.read<PetProvider>().reset();
+                        context.read<ActivityProvider>().reset();
+                        Navigator.pop(dialogContext);
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Your account has been deleted.'),
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      setDialogState(() => isDeleting = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              authProvider.error ??
+                                  'Failed to delete account. Please try again.',
+                            ),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    },
+              style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
+              child: isDeleting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Delete'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

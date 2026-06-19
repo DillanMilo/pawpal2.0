@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +32,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
   DateTime? _dateOfBirth;
   DateTime? _adoptionDate;
   bool _spayedNeutered = false;
-  File? _newPhotoFile;
+  XFile? _newPhotoFile;
   String? _existingPhotoUrl;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -90,7 +90,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
 
     if (pickedFile != null) {
       setState(() {
-        _newPhotoFile = File(pickedFile.path);
+        _newPhotoFile = pickedFile;
       });
     }
   }
@@ -152,14 +152,15 @@ class _EditPetScreenState extends State<EditPetScreen> {
       photoFile: _newPhotoFile,
     );
 
+    if (!mounted) return;
     setState(() => _isSaving = false);
 
-    if (success && mounted) {
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${updatedPet.name} has been updated!')),
       );
       context.pop();
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(petProvider.error ?? 'Failed to update pet'),
@@ -213,7 +214,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
                     ),
                     child: ClipOval(
                       child: _newPhotoFile != null
-                          ? Image.file(_newPhotoFile!, fit: BoxFit.cover)
+                          ? _SelectedPetPhoto(photo: _newPhotoFile!)
                           : _existingPhotoUrl != null
                           ? CachedNetworkImage(
                               imageUrl: _existingPhotoUrl!,
@@ -418,6 +419,26 @@ class _EditPetScreenState extends State<EditPetScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SelectedPetPhoto extends StatelessWidget {
+  final XFile photo;
+
+  const _SelectedPetPhoto({required this.photo});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: photo.readAsBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Icon(Icons.pets, size: 40, color: AppTheme.textLight);
+        }
+
+        return Image.memory(snapshot.data!, fit: BoxFit.cover);
+      },
     );
   }
 }

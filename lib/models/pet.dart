@@ -1,4 +1,6 @@
 class Pet {
+  static const Object _unset = Object();
+
   final String id;
   final String userId;
   final String name;
@@ -103,15 +105,15 @@ class Pet {
     String? userId,
     String? name,
     String? species,
-    String? breed,
-    DateTime? dateOfBirth,
+    Object? breed = _unset,
+    Object? dateOfBirth = _unset,
     String? gender,
-    String? photoUrl,
-    double? weight,
-    String? colorMarkings,
-    String? microchipNumber,
+    Object? photoUrl = _unset,
+    Object? weight = _unset,
+    Object? colorMarkings = _unset,
+    Object? microchipNumber = _unset,
     bool? spayedNeutered,
-    DateTime? adoptionDate,
+    Object? adoptionDate = _unset,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -120,15 +122,25 @@ class Pet {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       species: species ?? this.species,
-      breed: breed ?? this.breed,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      breed: identical(breed, _unset) ? this.breed : breed as String?,
+      dateOfBirth: identical(dateOfBirth, _unset)
+          ? this.dateOfBirth
+          : dateOfBirth as DateTime?,
       gender: gender ?? this.gender,
-      photoUrl: photoUrl ?? this.photoUrl,
-      weight: weight ?? this.weight,
-      colorMarkings: colorMarkings ?? this.colorMarkings,
-      microchipNumber: microchipNumber ?? this.microchipNumber,
+      photoUrl: identical(photoUrl, _unset)
+          ? this.photoUrl
+          : photoUrl as String?,
+      weight: identical(weight, _unset) ? this.weight : weight as double?,
+      colorMarkings: identical(colorMarkings, _unset)
+          ? this.colorMarkings
+          : colorMarkings as String?,
+      microchipNumber: identical(microchipNumber, _unset)
+          ? this.microchipNumber
+          : microchipNumber as String?,
       spayedNeutered: spayedNeutered ?? this.spayedNeutered,
-      adoptionDate: adoptionDate ?? this.adoptionDate,
+      adoptionDate: identical(adoptionDate, _unset)
+          ? this.adoptionDate
+          : adoptionDate as DateTime?,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

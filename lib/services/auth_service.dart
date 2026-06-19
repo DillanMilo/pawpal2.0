@@ -237,11 +237,9 @@ class AuthService {
 
   // Delete account
   Future<void> deleteAccount() async {
-    final userId = SupabaseService.currentUserId;
-    if (userId == null) return;
+    if (SupabaseService.currentUserId == null) return;
 
-    // Delete user data (cascades will handle related data)
-    await _client.from('users').delete().eq('id', userId);
+    await _client.functions.invoke('delete-account');
     await signOut();
   }
 }

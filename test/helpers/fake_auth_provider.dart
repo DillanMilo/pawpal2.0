@@ -75,6 +75,9 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
   }) async => false;
 
   @override
+  Future<bool> deleteAccount() async => false;
+
+  @override
   void clearError() {
     _error = null;
     notifyListeners();

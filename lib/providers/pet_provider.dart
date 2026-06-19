@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/pet.dart';
 import '../services/pet_service.dart';
 import '../utils/connectivity.dart';
@@ -77,7 +77,7 @@ class PetProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createPet(Pet pet, {File? photoFile}) async {
+  Future<bool> createPet(Pet pet, {XFile? photoFile}) async {
     try {
       _isLoading = true;
       _error = null;
@@ -108,7 +108,7 @@ class PetProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updatePet(Pet pet, {File? photoFile}) async {
+  Future<bool> updatePet(Pet pet, {XFile? photoFile}) async {
     try {
       _isLoading = true;
       _error = null;

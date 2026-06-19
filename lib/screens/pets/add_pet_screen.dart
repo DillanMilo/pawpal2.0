@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +29,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
   DateTime? _dateOfBirth;
   DateTime? _adoptionDate;
   bool _spayedNeutered = false;
-  File? _photoFile;
+  XFile? _photoFile;
   bool _isLoading = false;
 
   @override
@@ -53,7 +53,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
     if (pickedFile != null) {
       setState(() {
-        _photoFile = File(pickedFile.path);
+        _photoFile = pickedFile;
       });
     }
   }
@@ -116,14 +116,15 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
     final success = await petProvider.createPet(pet, photoFile: _photoFile);
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('${pet.name} has been added!')));
       context.pop();
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(petProvider.error ?? 'Failed to add pet'),
@@ -160,33 +161,29 @@ class _AddPetScreenState extends State<AddPetScreen> {
                         color: AppTheme.dividerColor,
                         width: 2,
                       ),
-                      image: _photoFile != null
-                          ? DecorationImage(
-                              image: FileImage(_photoFile!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
                     ),
-                    child: _photoFile == null
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt,
-                                size: 32,
-                                color: AppTheme.textLight,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Add Photo',
-                                style: TextStyle(
+                    child: ClipOval(
+                      child: _photoFile != null
+                          ? _SelectedPetPhoto(photo: _photoFile!)
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.camera_alt,
+                                  size: 32,
                                   color: AppTheme.textLight,
-                                  fontSize: 12,
                                 ),
-                              ),
-                            ],
-                          )
-                        : null,
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Add Photo',
+                                  style: TextStyle(
+                                    color: AppTheme.textLight,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
                   ),
                 ),
               ),
@@ -362,6 +359,26 @@ class _AddPetScreenState extends State<AddPetScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SelectedPetPhoto extends StatelessWidget {
+  final XFile photo;
+
+  const _SelectedPetPhoto({required this.photo});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: photo.readAsBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Icon(Icons.pets, size: 40, color: AppTheme.textLight);
+        }
+
+        return Image.memory(snapshot.data!, fit: BoxFit.cover);
+      },
     );
   }
 }

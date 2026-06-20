@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'supabase_service.dart';
 import '../models/pet.dart';
 import '../utils/constants.dart';
+import '../utils/image_upload.dart';
 
 class PetService {
   final _client = SupabaseService.client;
@@ -80,11 +81,13 @@ class PetService {
 
   // Upload pet photo
   Future<String> uploadPhoto(String petId, XFile photo) async {
-    final extension = _extensionFor(
-      photo.name.isNotEmpty ? photo.name : photo.path,
-    );
-    final path = '$petId/${_uuid.v4()}.$extension';
     final bytes = await photo.readAsBytes();
+    final imageType = resolveImageUploadType(
+      bytes: bytes,
+      mimeType: _safeMimeType(photo),
+      fileName: _safeFileName(photo),
+    );
+    final path = '$petId/${_uuid.v4()}.${imageType.extension}';
 
     await _client.storage
         .from(AppConstants.petPhotosBucket)
@@ -92,7 +95,7 @@ class PetService {
           path,
           bytes,
           fileOptions: FileOptions(
-            contentType: _contentTypeFor(extension),
+            contentType: imageType.contentType,
             upsert: false,
           ),
         );
@@ -119,25 +122,20 @@ class PetService {
     }
   }
 
-  String _extensionFor(String fileName) {
-    final rawExtension = fileName.split('.').last.toLowerCase();
-    if (rawExtension == 'jpg' ||
-        rawExtension == 'jpeg' ||
-        rawExtension == 'png' ||
-        rawExtension == 'webp') {
-      return rawExtension == 'jpg' ? 'jpeg' : rawExtension;
+  String? _safeMimeType(XFile photo) {
+    try {
+      return photo.mimeType;
+    } catch (_) {
+      return null;
     }
-    return 'jpeg';
   }
 
-  String _contentTypeFor(String extension) {
-    switch (extension) {
-      case 'png':
-        return 'image/png';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'image/jpeg';
+  String? _safeFileName(XFile photo) {
+    try {
+      final name = photo.name;
+      return name.isEmpty ? null : name;
+    } catch (_) {
+      return null;
     }
   }
 

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
+import '../../widgets/pet_date_picker.dart';
 
 class AddPetScreen extends StatefulWidget {
   const AddPetScreen({super.key});
@@ -59,26 +59,23 @@ class _AddPetScreenState extends State<AddPetScreen> {
   }
 
   Future<void> _selectDate(bool isDateOfBirth) async {
-    final initialDate = isDateOfBirth
-        ? (_dateOfBirth ?? DateTime.now())
-        : (_adoptionDate ?? DateTime.now());
-
-    final pickedDate = await showDatePicker(
+    final result = await showPetDatePicker(
       context: context,
-      initialDate: initialDate,
+      title: isDateOfBirth ? 'Date of Birth' : 'Adoption Date',
+      selectedDate: isDateOfBirth ? _dateOfBirth : _adoptionDate,
       firstDate: DateTime(1990),
       lastDate: DateTime.now(),
     );
 
-    if (pickedDate != null) {
-      setState(() {
-        if (isDateOfBirth) {
-          _dateOfBirth = pickedDate;
-        } else {
-          _adoptionDate = pickedDate;
-        }
-      });
-    }
+    if (!mounted || result == null) return;
+
+    setState(() {
+      if (isDateOfBirth) {
+        _dateOfBirth = result.date;
+      } else {
+        _adoptionDate = result.date;
+      }
+    });
   }
 
   Future<void> _savePet() async {
@@ -250,26 +247,15 @@ class _AddPetScreenState extends State<AddPetScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Date of Birth
-            InkWell(
+            PetDateField(
+              labelText: 'Date of Birth',
+              emptyText: 'Select date',
+              icon: Icons.cake,
+              selectedDate: _dateOfBirth,
               onTap: () => _selectDate(true),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Date of Birth',
-                  prefixIcon: Icon(Icons.cake),
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                child: Text(
-                  _dateOfBirth != null
-                      ? DateFormat('MMMM d, y').format(_dateOfBirth!)
-                      : 'Select date',
-                  style: TextStyle(
-                    color: _dateOfBirth != null
-                        ? AppTheme.textPrimary
-                        : AppTheme.textLight,
-                  ),
-                ),
-              ),
+              onClear: _dateOfBirth == null
+                  ? null
+                  : () => setState(() => _dateOfBirth = null),
             ),
             const SizedBox(height: 16),
 
@@ -318,26 +304,15 @@ class _AddPetScreenState extends State<AddPetScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Adoption date
-            InkWell(
+            PetDateField(
+              labelText: 'Adoption Date',
+              emptyText: 'Select date',
+              icon: Icons.home,
+              selectedDate: _adoptionDate,
               onTap: () => _selectDate(false),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Adoption Date',
-                  prefixIcon: Icon(Icons.home),
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                child: Text(
-                  _adoptionDate != null
-                      ? DateFormat('MMMM d, y').format(_adoptionDate!)
-                      : 'Select date',
-                  style: TextStyle(
-                    color: _adoptionDate != null
-                        ? AppTheme.textPrimary
-                        : AppTheme.textLight,
-                  ),
-                ),
-              ),
+              onClear: _adoptionDate == null
+                  ? null
+                  : () => setState(() => _adoptionDate = null),
             ),
             const SizedBox(height: 32),
 

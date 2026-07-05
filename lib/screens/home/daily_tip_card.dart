@@ -5,24 +5,32 @@ import '../../widgets/brand_mark.dart';
 class DailyTipCard extends StatelessWidget {
   final Map<String, String> tip;
 
-  const DailyTipCard({
-    super.key,
-    required this.tip,
-  });
+  const DailyTipCard({super.key, required this.tip});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, AppTheme.actionBlueLight],
-        ),
+        gradient: isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.darkCard,
+                  AppTheme.actionBlueDark.withValues(alpha: 0.25),
+                ],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, AppTheme.actionBlueLight],
+              ),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(color: AppTheme.actionBlue.withValues(alpha: 0.22)),
-        boxShadow: AppTheme.coloredShadow(AppTheme.actionBlue),
+        boxShadow: isDark ? null : AppTheme.coloredShadow(AppTheme.actionBlue),
       ),
       child: Row(
         children: [
@@ -30,10 +38,12 @@ class DailyTipCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Daily Tip',
                   style: TextStyle(
-                    color: AppTheme.actionBlueDark,
+                    color: isDark
+                        ? AppTheme.actionBlue
+                        : AppTheme.actionBlueDark,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -41,8 +51,8 @@ class DailyTipCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   tip['title']!,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.primaryText(context),
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
@@ -50,8 +60,8 @@ class DailyTipCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   tip['tip']!,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.secondaryText(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),

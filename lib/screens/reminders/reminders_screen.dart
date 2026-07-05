@@ -331,9 +331,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   );
 
                   try {
-                    await _reminderService.createReminder(reminder);
-                    await NotificationService().scheduleReminderNotification(
+                    // Schedule against the created reminder: it carries the
+                    // real id, which the notification ids are derived from.
+                    final created = await _reminderService.createReminder(
                       reminder,
+                    );
+                    await NotificationService().scheduleReminderNotification(
+                      created,
                     );
                     if (!mounted || !modalContext.mounted) return;
                     Navigator.pop(modalContext);
@@ -361,7 +365,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   Future<void> _completeReminder(Reminder reminder) async {
     try {
-      await _reminderService.markAsCompleted(reminder.id);
+      final result = await _reminderService.markAsCompleted(reminder.id);
+      await NotificationService().cancelReminderNotifications(reminder.id);
+      if (result.next != null) {
+        await NotificationService().scheduleReminderNotification(result.next!);
+      }
       await _loadReminders();
       if (mounted) {
         ScaffoldMessenger.of(
@@ -400,6 +408,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (confirmed == true) {
       try {
         await _reminderService.deleteReminder(reminder.id);
+        await NotificationService().cancelReminderNotifications(reminder.id);
         await _loadReminders();
         if (mounted) {
           ScaffoldMessenger.of(

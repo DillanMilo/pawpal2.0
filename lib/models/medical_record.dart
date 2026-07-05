@@ -79,10 +79,15 @@ class MedicalRecord {
       frequency: json['frequency'] as String?,
       documentUrl: json['document_url'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
+
+  // DATE columns must stay calendar dates; converting to UTC could shift
+  // them to the previous day for users east of Greenwich.
+  static String? _dateOnly(DateTime? value) =>
+      value?.toIso8601String().split('T').first;
 
   Map<String, dynamic> toJson() {
     return {
@@ -91,16 +96,16 @@ class MedicalRecord {
       'type': type.name,
       'title': title,
       'description': description,
-      'date': date.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
-      'next_due_date': nextDueDate?.toIso8601String(),
+      'date': _dateOnly(date),
+      'end_date': _dateOnly(endDate),
+      'next_due_date': _dateOnly(nextDueDate),
       'provider': provider,
       'dosage': dosage,
       'frequency': frequency,
       'document_url': documentUrl,
       'metadata': metadata,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

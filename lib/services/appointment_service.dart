@@ -36,7 +36,7 @@ class AppointmentService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return [];
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     var query = _client
         .from('appointments')
         .select()
@@ -65,8 +65,8 @@ class AppointmentService {
         .from('appointments')
         .select()
         .eq('user_id', userId)
-        .gte('date_time', start.toIso8601String())
-        .lte('date_time', end.toIso8601String())
+        .gte('date_time', start.toUtc().toIso8601String())
+        .lte('date_time', end.toUtc().toIso8601String())
         .order('date_time', ascending: true);
 
     return (response as List).map((e) => Appointment.fromJson(e)).toList();
@@ -89,7 +89,7 @@ class AppointmentService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) throw Exception('User not authenticated');
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final data = appointment.toJson();
     data['id'] = _uuid.v4();
     data['user_id'] = userId;
@@ -108,7 +108,7 @@ class AppointmentService {
   // Update an appointment
   Future<Appointment> updateAppointment(Appointment appointment) async {
     final data = appointment.toJson();
-    data['updated_at'] = DateTime.now().toIso8601String();
+    data['updated_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('appointments')
@@ -122,14 +122,11 @@ class AppointmentService {
 
   // Mark appointment as completed
   Future<Appointment> markAsCompleted(String appointmentId) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('appointments')
-        .update({
-          'is_completed': true,
-          'updated_at': now,
-        })
+        .update({'is_completed': true, 'updated_at': now})
         .eq('id', appointmentId)
         .select()
         .single();

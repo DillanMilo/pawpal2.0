@@ -75,10 +75,15 @@ class Pet {
       adoptionDate: json['adoption_date'] != null
           ? DateTime.parse(json['adoption_date'] as String)
           : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
+
+  // DATE columns must stay calendar dates; converting to UTC could shift
+  // them to the previous day for users east of Greenwich.
+  static String? _dateOnly(DateTime? value) =>
+      value?.toIso8601String().split('T').first;
 
   Map<String, dynamic> toJson() {
     return {
@@ -87,16 +92,16 @@ class Pet {
       'name': name,
       'species': species,
       'breed': breed,
-      'date_of_birth': dateOfBirth?.toIso8601String(),
+      'date_of_birth': _dateOnly(dateOfBirth),
       'gender': gender,
       'photo_url': photoUrl,
       'weight': weight,
       'color_markings': colorMarkings,
       'microchip_number': microchipNumber,
       'spayed_neutered': spayedNeutered,
-      'adoption_date': adoptionDate?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'adoption_date': _dateOnly(adoptionDate),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

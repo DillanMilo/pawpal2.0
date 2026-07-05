@@ -33,10 +33,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>PawPal uses the camera to scan pet passport QR codes.</string>
+	<string>PawPal uses the camera to scan pet passport QR codes and take pet photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>PawPal uses your location to find nearby pet stores, veterinarians, and grooming services.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

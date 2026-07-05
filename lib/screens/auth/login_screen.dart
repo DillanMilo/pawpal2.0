@@ -69,168 +69,177 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                const _PetMosaicHeader(),
-                const SizedBox(height: 24),
-                const Text(
-                  'Track your pet\'s care,\nhealth, and daily routine',
-                  style: TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
-                    height: 1.05,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sign in to continue to PawPal',
-                  style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-                const _AuthBrandSignature(),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!RegExp(
-                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                    ).hasMatch(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Password field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _handleLogin(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    const _PetMosaicHeader(),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Track your pet\'s care,\nhealth, and daily routine',
+                      style: TextStyle(
+                        fontSize: 27,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        height: 1.05,
                       ),
-                      tooltip: _obscurePassword
-                          ? 'Show password'
-                          : 'Hide password',
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Sign in to continue to PawPal',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    const _AuthBrandSignature(),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                        ).hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
                       },
                     ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 8),
-                // Forgot password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push('/forgot-password'),
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: authProvider.isLoading ? null : _handleLogin,
-                  child: authProvider.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                    const SizedBox(height: 16),
+                    // Password field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _handleLogin(),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                           ),
-                        )
-                      : const Text('Log In'),
-                ),
-                if (AppConstants.enableGoogleAuth ||
-                    AppConstants.enableAppleAuth) ...[
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'or continue with',
-                          style: TextStyle(
-                            color: AppTheme.textLight,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
                       ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  if (AppConstants.enableGoogleAuth) ...[
-                    OutlinedButton.icon(
-                      onPressed: authProvider.isLoading
-                          ? null
-                          : () => _handleOAuthLogin(
-                              authProvider.signInWithGoogle,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    // Forgot password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => context.push('/forgot-password'),
+                        child: const Text('Forgot Password?'),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: authProvider.isLoading ? null : _handleLogin,
+                      child: authProvider.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Text('Log In'),
+                    ),
+                    if (AppConstants.enableGoogleAuth ||
+                        AppConstants.enableAppleAuth) ...[
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'or continue with',
+                              style: TextStyle(
+                                color: AppTheme.textLight,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                      icon: const Icon(Icons.g_mobiledata, size: 24),
-                      label: const Text('Continue with Google'),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  if (AppConstants.enableAppleAuth)
-                    OutlinedButton.icon(
-                      onPressed: authProvider.isLoading
-                          ? null
-                          : () =>
-                                _handleOAuthLogin(authProvider.signInWithApple),
-                      icon: const Icon(Icons.apple, size: 24),
-                      label: const Text('Continue with Apple'),
-                    ),
-                ],
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(color: AppTheme.textSecondary),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/register'),
-                      child: const Text('Sign Up'),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      if (AppConstants.enableGoogleAuth) ...[
+                        OutlinedButton.icon(
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () => _handleOAuthLogin(
+                                  authProvider.signInWithGoogle,
+                                ),
+                          icon: const Icon(Icons.g_mobiledata, size: 24),
+                          label: const Text('Continue with Google'),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      if (AppConstants.enableAppleAuth)
+                        OutlinedButton.icon(
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () => _handleOAuthLogin(
+                                  authProvider.signInWithApple,
+                                ),
+                          icon: const Icon(Icons.apple, size: 24),
+                          label: const Text('Continue with Apple'),
+                        ),
+                    ],
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account? ",
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/register'),
+                          child: const Text('Sign Up'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

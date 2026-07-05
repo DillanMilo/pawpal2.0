@@ -71,10 +71,10 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBackground(context),
         borderRadius: BorderRadius.circular(22),
-        boxShadow: AppTheme.softShadow,
-        border: AppTheme.thickBorder,
+        boxShadow: AppTheme.shadowFor(context),
+        border: AppTheme.borderFor(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,18 +90,18 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: AppTheme.primaryText(context),
               letterSpacing: 0,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: AppTheme.textSecondary,
+              color: AppTheme.secondaryText(context),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -135,9 +135,9 @@ class _StatCard extends StatelessWidget {
                 progressLabel!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppTheme.textLight,
+                  color: AppTheme.mutedText(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -49,12 +49,12 @@ class Reminder {
       type: json['type'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
-      dueDate: DateTime.parse(json['due_date'] as String),
+      dueDate: DateTime.parse(json['due_date'] as String).toLocal(),
       isCompleted: json['is_completed'] as bool? ?? false,
       isRecurring: json['is_recurring'] as bool? ?? false,
       recurringPattern: json['recurring_pattern'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
 
@@ -66,12 +66,12 @@ class Reminder {
       'type': type,
       'title': title,
       'description': description,
-      'due_date': dueDate.toIso8601String(),
+      'due_date': dueDate.toUtc().toIso8601String(),
       'is_completed': isCompleted,
       'is_recurring': isRecurring,
       'recurring_pattern': recurringPattern,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

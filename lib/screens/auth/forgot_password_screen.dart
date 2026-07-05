@@ -29,8 +29,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
-    final success =
-        await authProvider.resetPassword(_emailController.text.trim());
+    final success = await authProvider.resetPassword(
+      _emailController.text.trim(),
+    );
 
     setState(() {
       _isLoading = false;
@@ -60,7 +61,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: _emailSent ? _buildSuccessView() : _buildFormView(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: _emailSent ? _buildSuccessView() : _buildFormView(),
+            ),
+          ),
         ),
       ),
     );
@@ -102,10 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 8),
           const Text(
             'Enter your email address and we\'ll send you a link to reset your password',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppTheme.textSecondary,
-            ),
+            style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -183,10 +186,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 8),
         Text(
           'We\'ve sent a password reset link to\n${_emailController.text}',
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppTheme.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),

@@ -64,6 +64,24 @@
   - [x] Replaced abandoned qr_flutter with pretty_qr_code
   - [x] Migrated 50 withOpacity() calls to withValues(alpha:)
 
+- [x] Phase 9: Full Audit & Store Readiness (COMPLETE - 2026-07-05)
+  - [x] Reminder notifications: schedule against the created reminder (was scheduling every reminder under id ''), cancel on complete/delete, reschedule recurring next occurrence
+  - [x] Deterministic FNV-1a notification IDs (String.hashCode isn't stable across launches)
+  - [x] Android: USE_EXACT_ALARM + RECEIVE_BOOT_COMPLETED permissions, flutter_local_notifications receivers (notifications survive reboot), runtime permission request on shell load
+  - [x] Timezone correctness: models store UTC / display local; DATE columns serialize as calendar dates; all service range queries compare in UTC (fixes streaks, "today" lists, due badges for non-UTC users)
+  - [x] Monthly recurring reminders clamp to end of month (Jan 31 -> Feb 28)
+  - [x] Home screen shows real reminders (placeholder demo reminders removed); activity chart no longer shows random sample data for new users
+  - [x] Dark mode: fixed hardcoded white cards/text on home, stats, daily tip, offline banner, paw button
+  - [x] Activity timer FAB ticks live (provider-level ticker); log screen timer hardened
+  - [x] Provider hygiene: auth stream subscription disposed, concurrent-fetch guards
+  - [x] iOS: PrivacyInfo.xcprivacy added + registered in Xcode project, ITSAppUsesNonExemptEncryption declared
+  - [x] Auth screens constrained to 480px on web/tablet
+  - [x] Profile: Help & Support opens mail composer (was "coming soon"), dead Language row removed, name/email overflow handled
+  - [x] Pet detail Activity tab "View History" wired up (was a no-op)
+  - [x] Medical record counts use one query instead of one per pet
+  - [x] Migration 009: composite indexes for pet-scoped appointment/reminder/medical queries
+  - [x] 143 tests passing
+
 ## Iteration Log
 | Iteration | Task Completed | Files Changed |
 |-----------|---------------|---------------|

@@ -137,7 +137,7 @@ class AuthService {
   // Update user profile
   Future<UserProfile> updateUserProfile(UserProfile profile) async {
     final data = profile.toJson();
-    data['updated_at'] = DateTime.now().toIso8601String();
+    data['updated_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('users')
@@ -188,7 +188,7 @@ class AuthService {
     String email,
     String? name,
   ) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     await _client.from('users').upsert({
       'id': userId,
       'email': email,

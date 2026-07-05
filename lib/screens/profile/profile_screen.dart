@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/medical_record.dart';
 import '../../models/user_profile.dart';
 import '../../providers/auth_provider.dart';
@@ -29,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _reminderNotifications = true;
   bool _streakNotifications = true;
+  bool _dailyActivityReminder = false;
   Map<MedicalRecordType, int> _medicalRecordCountsByType = {};
   bool _isLoadingAchievementData = false;
 
@@ -55,6 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           true;
       _reminderNotifications = prefs.getBool('reminder_notifications') ?? true;
       _streakNotifications = prefs.getBool('streak_notifications') ?? true;
+      _dailyActivityReminder =
+          prefs.getBool('daily_activity_reminder') ?? false;
     });
   }
 
@@ -69,6 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!value) {
         _reminderNotifications = false;
         _streakNotifications = false;
+        _dailyActivityReminder = false;
       }
     });
     await _setNotificationPref('notifications_enabled', value);
@@ -78,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!value) {
       await _setNotificationPref('reminder_notifications', false);
       await _setNotificationPref('streak_notifications', false);
+      await _setNotificationPref('daily_activity_reminder', false);
       await NotificationService().cancelAllNotifications();
     }
   }
@@ -93,8 +99,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (value) {
       await NotificationService().scheduleStreakReminder();
     } else {
-      await NotificationService().cancelNotification(0);
+      // ID 1 is the streak reminder; the daily reminder (ID 0) has its own
+      // toggle.
       await NotificationService().cancelNotification(1);
+    }
+  }
+
+  Future<void> _onDailyReminderToggle(bool value) async {
+    setState(() => _dailyActivityReminder = value);
+    await _setNotificationPref('daily_activity_reminder', value);
+    if (value) {
+      await NotificationService().scheduleDailyActivityReminder(
+        hour: 9,
+        minute: 0,
+      );
+    } else {
+      await NotificationService().cancelNotification(0);
     }
   }
 
@@ -196,6 +216,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 16),
                 Text(
                   user?.name ?? 'Pet Parent',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -204,7 +227,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppTheme.secondaryText(context),
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -281,6 +310,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   onTap: () {},
                 ),
+                _MenuItem(
+                  icon: Icons.wb_sunny_outlined,
+                  title: 'Daily Reminder (9 AM)',
+                  trailing: Switch(
+                    value: _dailyActivityReminder,
+                    onChanged: _onDailyReminderToggle,
+                  ),
+                  onTap: () {},
+                ),
               ],
               _MenuItem(
                 icon: Icons.lock_outline,
@@ -326,11 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _MenuItem(
                 icon: Icons.help_outline,
                 title: 'Help & Support',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Help center coming soon!')),
-                  );
-                },
+                onTap: () => _contactSupport(context),
               ),
               _MenuItem(
                 icon: Icons.info_outline,
@@ -373,6 +407,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _contactSupport(BuildContext context) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: 'creativecurrentsx@gmail.com',
+      query: 'subject=PawPal Support',
+    );
+    final launched = await canLaunchUrl(uri) && await launchUrl(uri);
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email us at creativecurrentsx@gmail.com'),
+        ),
+      );
+    }
   }
 
   void _showSettingsDialog(BuildContext context) {
@@ -436,20 +486,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-                const Divider(height: 24),
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('Language'),
-                  trailing: const Text('English'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('More languages coming soon!'),
-                      ),
-                    );
-                  },
                 ),
               ],
             ),

@@ -457,7 +457,7 @@ class _PetDetailScreenState extends State<PetDetailScreen>
       'Activity History',
       'See all the fun things you\'ve done together!',
       'View History',
-      () {},
+      () => context.push('/pet/${_pet!.id}/activity-history'),
     );
   }
 

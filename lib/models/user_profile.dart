@@ -30,8 +30,8 @@ class UserProfile {
       phoneNumber: json['phone_number'] as String?,
       zipCode: json['zip_code'] as String?,
       notificationsEnabled: json['notifications_enabled'] as bool? ?? true,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
 
@@ -44,8 +44,8 @@ class UserProfile {
       'phone_number': phoneNumber,
       'zip_code': zipCode,
       'notifications_enabled': notificationsEnabled,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -16,13 +17,27 @@ class NotificationService {
 
   bool _initialized = false;
 
+  /// Deterministic 31-bit FNV-1a hash. String.hashCode is not guaranteed to
+  /// be stable across app launches, which would make previously scheduled
+  /// notifications impossible to cancel.
+  static int stableNotificationId(String key) {
+    var hash = 0x811c9dc5;
+    for (final unit in key.codeUnits) {
+      hash ^= unit;
+      hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    }
+    return hash & 0x7FFFFFFF;
+  }
+
   Future<void> initialize() async {
     if (_initialized) return;
 
     // Initialize timezone
     tz_data.initializeTimeZones();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -67,11 +82,14 @@ class NotificationService {
   }
 
   Future<bool> requestPermissions() async {
-    final androidPlugin =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    final iosPlugin = _notifications.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final iosPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
 
     bool? granted;
     if (androidPlugin != null) {
@@ -144,15 +162,50 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    await _zonedScheduleWithFallback(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      details: details,
       payload: payload,
     );
+  }
+
+  /// Schedules an exact notification, falling back to inexact scheduling when
+  /// the OS denies exact alarms (possible on Android 12/13 OEM builds).
+  Future<void> _zonedScheduleWithFallback({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    required NotificationDetails details,
+    String? payload,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    try {
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
+        payload: payload,
+      );
+    } on PlatformException {
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
+        payload: payload,
+      );
+    }
   }
 
   /// Returns true if the given notification preference key is enabled.
@@ -172,7 +225,7 @@ class NotificationService {
 
     if (notifyTime.isAfter(DateTime.now())) {
       await scheduleNotification(
-        id: reminder.id.hashCode,
+        id: stableNotificationId(reminder.id),
         title: 'Reminder: ${reminder.title}',
         body: 'Due in 1 hour - ${reminder.type}',
         scheduledDate: notifyTime,
@@ -183,7 +236,7 @@ class NotificationService {
     // Also schedule at due time
     if (reminder.dueDate.isAfter(DateTime.now())) {
       await scheduleNotification(
-        id: '${reminder.id}_due'.hashCode,
+        id: stableNotificationId('${reminder.id}_due'),
         title: 'Reminder Due: ${reminder.title}',
         body: '${reminder.type} is due now!',
         scheduledDate: reminder.dueDate,
@@ -197,8 +250,8 @@ class NotificationService {
   }
 
   Future<void> cancelReminderNotifications(String reminderId) async {
-    await _notifications.cancel(reminderId.hashCode);
-    await _notifications.cancel('${reminderId}_due'.hashCode);
+    await _notifications.cancel(stableNotificationId(reminderId));
+    await _notifications.cancel(stableNotificationId('${reminderId}_due'));
   }
 
   Future<void> cancelAllNotifications() async {
@@ -214,7 +267,7 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
-    if (!await _isNotificationEnabled('streak_notifications')) return;
+    if (!await _isNotificationEnabled('daily_activity_reminder')) return;
 
     const androidDetails = AndroidNotificationDetails(
       'pawpal_daily',
@@ -243,13 +296,12 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    await _notifications.zonedSchedule(
-      0, // ID for daily reminder
-      "Don't forget your pet!",
-      'Log an activity with your furry friend today',
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    await _zonedScheduleWithFallback(
+      id: 0, // ID for daily reminder
+      title: "Don't forget your pet!",
+      body: 'Log an activity with your furry friend today',
+      scheduledDate: scheduledDate,
+      details: details,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: 'daily_activity',
     );
@@ -286,13 +338,12 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    await _notifications.zonedSchedule(
-      1, // ID for streak reminder
-      'Keep your streak alive!',
-      "You haven't logged any activity today. Don't lose your streak!",
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    await _zonedScheduleWithFallback(
+      id: 1, // ID for streak reminder
+      title: 'Keep your streak alive!',
+      body: "You haven't logged any activity today. Don't lose your streak!",
+      scheduledDate: scheduledDate,
+      details: details,
       payload: 'streak_reminder',
     );
   }

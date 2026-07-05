@@ -59,8 +59,8 @@ class ReminderService {
         .select()
         .eq('user_id', userId)
         .eq('is_completed', false)
-        .gte('due_date', now.toIso8601String())
-        .lte('due_date', weekFromNow.toIso8601String())
+        .gte('due_date', now.toUtc().toIso8601String())
+        .lte('due_date', weekFromNow.toUtc().toIso8601String())
         .order('due_date', ascending: true);
 
     return (response as List).map((e) => Reminder.fromJson(e)).toList();
@@ -71,7 +71,7 @@ class ReminderService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return [];
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('reminders')
@@ -97,8 +97,8 @@ class ReminderService {
         .from('reminders')
         .select()
         .eq('user_id', userId)
-        .gte('due_date', startOfDay.toIso8601String())
-        .lt('due_date', endOfDay.toIso8601String())
+        .gte('due_date', startOfDay.toUtc().toIso8601String())
+        .lt('due_date', endOfDay.toUtc().toIso8601String())
         .order('due_date', ascending: true);
 
     return (response as List).map((e) => Reminder.fromJson(e)).toList();
@@ -109,15 +109,18 @@ class ReminderService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) throw Exception('User not authenticated');
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final data = reminder.toJson();
     data['id'] = _uuid.v4();
     data['user_id'] = userId;
     data['created_at'] = now;
     data['updated_at'] = now;
 
-    final response =
-        await _client.from('reminders').insert(data).select().single();
+    final response = await _client
+        .from('reminders')
+        .insert(data)
+        .select()
+        .single();
 
     return Reminder.fromJson(response);
   }
@@ -125,7 +128,7 @@ class ReminderService {
   // Update a reminder
   Future<Reminder> updateReminder(Reminder reminder) async {
     final data = reminder.toJson();
-    data['updated_at'] = DateTime.now().toIso8601String();
+    data['updated_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('reminders')
@@ -137,16 +140,17 @@ class ReminderService {
     return Reminder.fromJson(response);
   }
 
-  // Mark reminder as completed
-  Future<Reminder> markAsCompleted(String reminderId) async {
-    final now = DateTime.now().toIso8601String();
+  // Mark reminder as completed. Returns the completed reminder plus the
+  // next occurrence when the reminder is recurring, so callers can schedule
+  // a notification for it.
+  Future<({Reminder completed, Reminder? next})> markAsCompleted(
+    String reminderId,
+  ) async {
+    final now = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('reminders')
-        .update({
-          'is_completed': true,
-          'updated_at': now,
-        })
+        .update({'is_completed': true, 'updated_at': now})
         .eq('id', reminderId)
         .select()
         .single();
@@ -154,15 +158,16 @@ class ReminderService {
     final reminder = Reminder.fromJson(response);
 
     // If recurring, create next reminder
+    Reminder? next;
     if (reminder.isRecurring && reminder.recurringPattern != null) {
-      await _createNextRecurringReminder(reminder);
+      next = await _createNextRecurringReminder(reminder);
     }
 
-    return reminder;
+    return (completed: reminder, next: next);
   }
 
   // Create next recurring reminder
-  Future<void> _createNextRecurringReminder(Reminder original) async {
+  Future<Reminder?> _createNextRecurringReminder(Reminder original) async {
     DateTime nextDue;
     switch (original.recurringPattern) {
       case 'daily':
@@ -172,16 +177,24 @@ class ReminderService {
         nextDue = original.dueDate.add(const Duration(days: 7));
         break;
       case 'monthly':
+        var year = original.dueDate.year;
+        var month = original.dueDate.month + 1;
+        if (month > 12) {
+          month = 1;
+          year++;
+        }
+        // Clamp to the last day of the next month (Jan 31 -> Feb 28/29).
+        final lastDay = DateTime(year, month + 1, 0).day;
         nextDue = DateTime(
-          original.dueDate.year,
-          original.dueDate.month + 1,
-          original.dueDate.day,
+          year,
+          month,
+          original.dueDate.day > lastDay ? lastDay : original.dueDate.day,
           original.dueDate.hour,
           original.dueDate.minute,
         );
         break;
       default:
-        return;
+        return null;
     }
 
     final newReminder = Reminder(
@@ -198,7 +211,7 @@ class ReminderService {
       updatedAt: DateTime.now(),
     );
 
-    await createReminder(newReminder);
+    return createReminder(newReminder);
   }
 
   // Delete a reminder

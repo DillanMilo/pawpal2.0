@@ -41,7 +41,7 @@ class PetService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) throw Exception('User not authenticated');
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final data = pet.toJson();
     data['id'] = _uuid.v4();
     data['user_id'] = userId;
@@ -56,7 +56,7 @@ class PetService {
   // Update a pet
   Future<Pet> updatePet(Pet pet) async {
     final data = pet.toJson();
-    data['updated_at'] = DateTime.now().toIso8601String();
+    data['updated_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('pets')

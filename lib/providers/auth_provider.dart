@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,7 @@ class AuthProvider with ChangeNotifier {
   AuthStatus _status = AuthStatus.initial;
   UserProfile? _userProfile;
   String? _error;
+  StreamSubscription<AuthState>? _authSub;
 
   AuthStatus get status => _status;
   UserProfile? get userProfile => _userProfile;
@@ -26,7 +28,7 @@ class AuthProvider with ChangeNotifier {
 
   void _init() {
     // Listen to auth state changes
-    SupabaseService.authStateChanges.listen((data) {
+    _authSub = SupabaseService.authStateChanges.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.signedIn) {
         _loadUserProfile();
@@ -290,5 +292,11 @@ class AuthProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }

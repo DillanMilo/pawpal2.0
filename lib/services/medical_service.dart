@@ -27,19 +27,17 @@ class MedicalService {
 
     final counts = <MedicalRecordType, int>{};
 
-    for (final petId in petIds) {
-      final response = await _client
-          .from('medical_records')
-          .select('type')
-          .eq('pet_id', petId);
+    final response = await _client
+        .from('medical_records')
+        .select('type')
+        .inFilter('pet_id', petIds);
 
-      for (final row in response as List) {
-        final type = MedicalRecordType.values.firstWhere(
-          (value) => value.name == row['type'],
-          orElse: () => MedicalRecordType.condition,
-        );
-        counts[type] = (counts[type] ?? 0) + 1;
-      }
+    for (final row in response as List) {
+      final type = MedicalRecordType.values.firstWhere(
+        (value) => value.name == row['type'],
+        orElse: () => MedicalRecordType.condition,
+      );
+      counts[type] = (counts[type] ?? 0) + 1;
     }
 
     return counts;
@@ -62,7 +60,9 @@ class MedicalService {
 
   // Get active medications
   Future<List<MedicalRecord>> getActiveMedications(String petId) async {
-    final now = DateTime.now().toIso8601String();
+    // end_date is a DATE column; compare with a local calendar date so a
+    // medication ending today is still active for the user's timezone.
+    final now = DateTime.now().toIso8601String().split('T').first;
     final response = await _client
         .from('medical_records')
         .select()
@@ -100,7 +100,7 @@ class MedicalService {
 
   // Create a medical record
   Future<MedicalRecord> createMedicalRecord(MedicalRecord record) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final data = record.toJson();
     data['id'] = _uuid.v4();
     data['created_at'] = now;
@@ -118,7 +118,7 @@ class MedicalService {
   // Update a medical record
   Future<MedicalRecord> updateMedicalRecord(MedicalRecord record) async {
     final data = record.toJson();
-    data['updated_at'] = DateTime.now().toIso8601String();
+    data['updated_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('medical_records')

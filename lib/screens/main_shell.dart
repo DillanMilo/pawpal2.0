@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/notification_service.dart';
 import '../utils/theme.dart';
 import '../utils/connectivity.dart';
 import 'quick_actions/quick_actions_screen.dart';
@@ -32,6 +33,11 @@ class _MainShellState extends State<MainShell> {
         if (mounted) setState(() => _isOffline = !online);
       },
     );
+    // Ask for notification permission once the user is signed in and the
+    // shell is visible (Android 13+ requires a runtime request).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().requestPermissions();
+    });
   }
 
   @override
@@ -58,16 +64,25 @@ class _MainShellState extends State<MainShell> {
           if (_isOffline)
             MaterialBanner(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              content: const Text(
+              content: Text(
                 "You're offline. Some features may be limited.",
-                style: TextStyle(color: Colors.white, fontSize: 13),
+                style: TextStyle(
+                  color: AppTheme.isDark(context)
+                      ? AppTheme.darkTextPrimary
+                      : Colors.white,
+                  fontSize: 13,
+                ),
               ),
-              leading: const Icon(
+              leading: Icon(
                 Icons.wifi_off_rounded,
-                color: Colors.white,
+                color: AppTheme.isDark(context)
+                    ? AppTheme.darkTextPrimary
+                    : Colors.white,
                 size: 20,
               ),
-              backgroundColor: Colors.grey.shade700,
+              backgroundColor: AppTheme.isDark(context)
+                  ? AppTheme.darkCard
+                  : Colors.grey.shade700,
               actions: const [SizedBox.shrink()],
             ),
           Expanded(child: widget.child),
@@ -187,7 +202,10 @@ class _MainShellState extends State<MainShell> {
                           offset: const Offset(0, 10),
                         ),
                       ],
-                      border: Border.all(color: Colors.white, width: 5),
+                      border: Border.all(
+                        color: AppTheme.surfaceBackground(context),
+                        width: 5,
+                      ),
                     ),
                     child: const Icon(
                       Icons.pets_rounded,

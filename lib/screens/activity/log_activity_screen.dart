@@ -46,6 +46,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
   }
 
   void _startTimer() {
+    _timer?.cancel();
     setState(() {
       _useTimer = true;
       _startTime = DateTime.now();
@@ -53,6 +54,10 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       setState(() {
         _elapsed = DateTime.now().difference(_startTime!);
       });

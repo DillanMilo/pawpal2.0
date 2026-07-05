@@ -9,6 +9,7 @@ class PetProvider with ChangeNotifier {
 
   static const _cacheThreshold = Duration(minutes: 5);
   DateTime? _lastFetched;
+  bool _isFetching = false;
 
   List<Pet> _pets = [];
   Pet? _selectedPet;
@@ -27,6 +28,7 @@ class PetProvider with ChangeNotifier {
         DateTime.now().difference(_lastFetched!) < _cacheThreshold) {
       return;
     }
+    if (_isFetching) return;
 
     final isOnline = await ConnectivityHelper.instance.hasInternetConnection();
 
@@ -40,6 +42,7 @@ class PetProvider with ChangeNotifier {
     }
 
     try {
+      _isFetching = true;
       _isLoading = true;
       _error = null;
       notifyListeners();
@@ -62,6 +65,7 @@ class PetProvider with ChangeNotifier {
     } catch (e) {
       _error = e.toString();
     } finally {
+      _isFetching = false;
       _isLoading = false;
       notifyListeners();
     }

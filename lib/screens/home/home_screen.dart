@@ -5,9 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
+import '../../models/reminder.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../providers/activity_provider.dart';
+import '../../services/notification_service.dart';
+import '../../services/reminder_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/placeholder_data.dart';
 import '../../widgets/activity_icon.dart';
@@ -23,14 +26,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late List<Map<String, dynamic>> _reminders;
+  final ReminderService _reminderService = ReminderService();
+  List<Reminder> _reminders = [];
   late ScrollController _scrollController;
   late Map<String, String> _dailyTip;
 
   @override
   void initState() {
     super.initState();
-    _reminders = List.from(PlaceholderData.sampleReminders);
     _scrollController = ScrollController();
     // Select a daily tip once on init - won't change during scrolling
     _dailyTip = PlaceholderData
@@ -58,6 +61,47 @@ class _HomeScreenState extends State<HomeScreen> {
         petProvider.selectedPet!.id,
         limit: 10,
       );
+    }
+
+    await _loadReminders();
+  }
+
+  Future<void> _loadReminders() async {
+    try {
+      final reminders = await _reminderService.getActiveReminders();
+      if (mounted) setState(() => _reminders = reminders);
+    } catch (_) {
+      // The home dashboard stays usable without reminders; the reminders
+      // screen surfaces its own errors.
+    }
+  }
+
+  Future<void> _completeReminder(Reminder reminder) async {
+    try {
+      final result = await _reminderService.markAsCompleted(reminder.id);
+      await NotificationService().cancelReminderNotifications(reminder.id);
+      if (result.next != null) {
+        await NotificationService().scheduleReminderNotification(result.next!);
+      }
+      await _loadReminders();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Completed: ${reminder.title}!'),
+            duration: const Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
@@ -188,10 +232,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardBackground(context),
           borderRadius: BorderRadius.circular(24),
-          border: AppTheme.thickBorder,
-          boxShadow: AppTheme.softShadow,
+          border: AppTheme.borderFor(context),
+          boxShadow: AppTheme.shadowFor(context),
         ),
         child: Row(
           children: [
@@ -213,12 +257,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Add Your First Pet',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.primaryText(context),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -226,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Start tracking activities, health & more!',
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.secondaryText(context),
                     ),
                   ),
                 ],
@@ -264,6 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final isSelected = petProvider.selectedPet?.id == pet.id;
         return _buildPetCard(pet, isSelected, () {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             petProvider.selectPet(pet);
             activityProvider.loadActivities(pet.id, limit: 10);
           });
@@ -278,112 +323,124 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = screenWidth - 64;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: 400.ms,
-        curve: Curves.easeOutBack,
-        width: cardWidth,
-        margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: isSelected ? AppTheme.mediumShadow : AppTheme.softShadow,
-          border: isSelected
-              ? Border.all(color: AppTheme.inkColor, width: 1.5)
-              : AppTheme.thickBorder,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(18),
-                image: pet.photoUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(pet.photoUrl),
-                        fit: BoxFit.cover,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: 'Select ${pet.name}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: 400.ms,
+          curve: Curves.easeOutBack,
+          width: cardWidth,
+          margin: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground(context),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: isSelected && !AppTheme.isDark(context)
+                ? AppTheme.mediumShadow
+                : AppTheme.shadowFor(context),
+            border: isSelected
+                ? Border.all(
+                    color: AppTheme.isDark(context)
+                        ? AppTheme.primaryLight
+                        : AppTheme.inkColor,
+                    width: 1.5,
+                  )
+                : AppTheme.borderFor(context),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                  image: pet.photoUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(pet.photoUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: pet.photoUrl == null
+                    ? Center(
+                        child: Icon(Icons.pets_rounded, color: color, size: 32),
                       )
                     : null,
               ),
-              child: pet.photoUrl == null
-                  ? Center(
-                      child: Icon(Icons.pets_rounded, color: color, size: 32),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    pet.name,
-                    style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.softLavender
-                              : color.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: Text(
-                          pet.species,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? AppTheme.primaryDark : color,
-                          ),
-                        ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      pet.name,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryText(context),
                       ),
-                      if (pet.breed != null) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.softLavender
+                                : color.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
                           child: Text(
-                            pet.breed,
+                            pet.species,
                             style: TextStyle(
-                              fontSize: 13,
-                              color: isSelected
-                                  ? AppTheme.textPrimary
-                                  : AppTheme.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected ? AppTheme.primaryDark : color,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (pet.breed != null) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              pet.breed,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isSelected
+                                    ? AppTheme.primaryText(context)
+                                    : AppTheme.secondaryText(context),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Container(
-                width: 28,
-                height: 28,
-                decoration: const BoxDecoration(
-                  color: AppTheme.inkColor,
-                  shape: BoxShape.circle,
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.check, color: Colors.white, size: 18),
               ),
-          ],
+              if (isSelected)
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.inkColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 18),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -478,9 +535,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActivityGraphSection(ActivityProvider activityProvider) {
-    final weeklySummary = activityProvider.weeklySummary.isNotEmpty
-        ? activityProvider.weeklySummary
-        : _generateSampleWeeklyData();
+    final weeklySummary = activityProvider.weeklySummary;
+    final hasActivityData = weeklySummary.values.any((points) => points > 0);
 
     final sortedKeys = weeklySummary.keys.toList()..sort();
     final maxValue = weeklySummary.values.fold<int>(
@@ -499,16 +555,16 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(24),
-            border: AppTheme.thickBorder,
-            boxShadow: AppTheme.softShadow,
+            border: AppTheme.borderFor(context),
+            boxShadow: AppTheme.shadowFor(context),
           ),
           child: Column(
             children: [
               SizedBox(
                 height: 200,
-                child: weeklySummary.isEmpty
+                child: !hasActivityData
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -521,10 +577,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            const Text(
+                            Text(
                               'Start logging activities!',
                               style: TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.secondaryText(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -566,8 +622,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: const EdgeInsets.only(top: 8),
                                     child: Text(
                                       DateFormat('E').format(date),
-                                      style: const TextStyle(
-                                        color: AppTheme.textSecondary,
+                                      style: TextStyle(
+                                        color: AppTheme.secondaryText(context),
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -584,8 +640,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 getTitlesWidget: (value, meta) {
                                   return Text(
                                     value.toInt().toString(),
-                                    style: const TextStyle(
-                                      color: AppTheme.textLight,
+                                    style: TextStyle(
+                                      color: AppTheme.mutedText(context),
                                       fontSize: 11,
                                     ),
                                   );
@@ -701,9 +757,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: AppTheme.textSecondary,
+            color: AppTheme.secondaryText(context),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -719,25 +775,8 @@ class _HomeScreenState extends State<HomeScreen> {
         date.day == now.day;
   }
 
-  Map<String, int> _generateSampleWeeklyData() {
-    final now = DateTime.now();
-    final data = <String, int>{};
-    final random = math.Random();
-
-    for (int i = 6; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
-      final dateStr = DateFormat('yyyy-MM-dd').format(date);
-      data[dateStr] = random.nextInt(80) + 20;
-    }
-
-    return data;
-  }
-
   Widget _buildRemindersSection() {
-    final activeReminders = _reminders
-        .where((r) => r['completed'] != true)
-        .take(2)
-        .toList();
+    final activeReminders = _reminders.take(2).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,16 +790,16 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBackground(context),
               borderRadius: BorderRadius.circular(24),
-              border: AppTheme.thickBorder,
+              border: AppTheme.borderFor(context),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'All caught up!',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.secondaryText(context),
                 ),
               ),
             ),
@@ -771,86 +810,86 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildReminderCard(Map<String, dynamic> reminder) {
-    final color = Color(reminder['color'] as int);
-    final isCompleted = reminder['completed'] == true;
+  String _reminderDueLabel(Reminder reminder) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final dueDay = DateTime(
+      reminder.dueDate.year,
+      reminder.dueDate.month,
+      reminder.dueDate.day,
+    );
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          reminder['completed'] = !isCompleted;
-        });
-        if (!isCompleted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Completed: ${reminder['title']}!'),
-              duration: const Duration(seconds: 1),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: AppTheme.softShadow,
-          border: AppTheme.thickBorder,
-        ),
-        child: Row(
-          children: [
-            ActivityIcon(type: reminder['type'], size: 28),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    reminder['title'],
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
+    final time = DateFormat('h:mm a').format(reminder.dueDate);
+    if (dueDay.isBefore(today)) {
+      final days = today.difference(dueDay).inDays;
+      return 'Overdue by $days ${days == 1 ? 'day' : 'days'}';
+    } else if (dueDay == today) {
+      return 'Today at $time';
+    } else if (dueDay == tomorrow) {
+      return 'Tomorrow at $time';
+    }
+    return DateFormat('MMM d, h:mm a').format(reminder.dueDate);
+  }
+
+  Widget _buildReminderCard(Reminder reminder) {
+    final color = reminder.isDue
+        ? AppTheme.errorColor
+        : reminder.isDueToday
+        ? AppTheme.warningColor
+        : AppTheme.primaryColor;
+
+    return Semantics(
+      button: true,
+      label: '${reminder.title} reminder, ${_reminderDueLabel(reminder)}',
+      child: GestureDetector(
+        onTap: () => context.push('/reminders'),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground(context),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: AppTheme.shadowFor(context),
+            border: AppTheme.borderFor(context),
+          ),
+          child: Row(
+            children: [
+              ActivityIcon(type: reminder.type, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      reminder.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryText(context),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    reminder['time'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: color,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 4),
+                    Text(
+                      _reminderDueLabel(reminder),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: isCompleted ? AppTheme.successColor : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isCompleted
-                      ? AppTheme.successColor
-                      : AppTheme.textLight.withValues(alpha: 0.5),
-                  width: 2,
+                  ],
                 ),
               ),
-              child: isCompleted
-                  ? const Icon(Icons.check, color: Colors.white, size: 20)
-                  : null,
-            ),
-          ],
+              IconButton(
+                onPressed: () => _completeReminder(reminder),
+                tooltip: 'Mark as complete',
+                icon: const Icon(Icons.check_circle_outline),
+                color: AppTheme.successColor,
+              ),
+            ],
+          ),
         ),
       ),
     );

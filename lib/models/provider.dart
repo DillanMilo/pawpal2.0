@@ -47,7 +47,7 @@ class ServiceProvider {
       'thursday',
       'friday',
       'saturday',
-      'sunday'
+      'sunday',
     ];
     final todayHours = openingHours![dayNames[now.weekday - 1]];
     if (todayHours == null || todayHours.toLowerCase() == 'closed') {
@@ -79,8 +79,9 @@ class ServiceProvider {
       rating: (json['rating'] as num?)?.toDouble(),
       reviewCount: json['review_count'] as int?,
       photoUrl: json['photo_url'] as String?,
-      openingHours: (json['opening_hours'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, v as String)),
+      openingHours: (json['opening_hours'] as Map<String, dynamic>?)?.map(
+        (k, v) => MapEntry(k, v as String),
+      ),
       services: (json['services'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),

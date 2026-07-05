@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/activity.dart';
 import '../services/activity_service.dart';
@@ -23,6 +24,8 @@ class ActivityProvider with ChangeNotifier {
   DateTime? _timerStartTime;
   String? _activeActivityType;
   String? _activeActivityPetId;
+  Timer? _timerTicker;
+  bool _isFetching = false;
 
   List<Activity> get activities => _activities;
   Map<String, int> get weeklySummary => _weeklySummary;
@@ -48,6 +51,7 @@ class ActivityProvider with ChangeNotifier {
         DateTime.now().difference(_lastFetched!) < _cacheThreshold) {
       return;
     }
+    if (_isFetching) return;
 
     final isOnline = await ConnectivityHelper.instance.hasInternetConnection();
 
@@ -59,6 +63,7 @@ class ActivityProvider with ChangeNotifier {
     }
 
     try {
+      _isFetching = true;
       _isLoading = true;
       _error = null;
       notifyListeners();
@@ -70,6 +75,7 @@ class ActivityProvider with ChangeNotifier {
     } catch (e) {
       _error = e.toString();
     } finally {
+      _isFetching = false;
       _isLoading = false;
       notifyListeners();
     }
@@ -163,6 +169,12 @@ class ActivityProvider with ChangeNotifier {
     _timerStartTime = DateTime.now();
     _activeActivityType = activityType;
     _activeActivityPetId = petId;
+    // Tick every second so listeners (e.g. the home screen FAB) show a live
+    // elapsed time instead of a frozen value.
+    _timerTicker?.cancel();
+    _timerTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      notifyListeners();
+    });
     notifyListeners();
   }
 
@@ -184,6 +196,9 @@ class ActivityProvider with ChangeNotifier {
         _activeActivityPetId == null) {
       return null;
     }
+
+    _timerTicker?.cancel();
+    _timerTicker = null;
 
     final endTime = DateTime.now();
     final duration = endTime.difference(_timerStartTime!).inMinutes;
@@ -215,6 +230,8 @@ class ActivityProvider with ChangeNotifier {
   }
 
   void cancelTimer() {
+    _timerTicker?.cancel();
+    _timerTicker = null;
     _timerStartTime = null;
     _activeActivityType = null;
     _activeActivityPetId = null;
@@ -237,9 +254,17 @@ class ActivityProvider with ChangeNotifier {
     _lastFetched = null;
     _lastFetchedPetId = null;
     _lastStatsFetched = null;
+    _timerTicker?.cancel();
+    _timerTicker = null;
     _timerStartTime = null;
     _activeActivityType = null;
     _activeActivityPetId = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _timerTicker?.cancel();
+    super.dispose();
   }
 }

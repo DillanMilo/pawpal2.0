@@ -65,6 +65,7 @@ void main() {
       expect(find.byIcon(Icons.visibility_off_outlined), findsNothing);
 
       // Tap the visibility toggle
+      await tester.ensureVisible(find.byIcon(Icons.visibility_outlined));
       await tester.tap(find.byIcon(Icons.visibility_outlined));
       await tester.pumpAndSettle();
 

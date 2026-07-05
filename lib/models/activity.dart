@@ -43,9 +43,9 @@ class Activity {
       petId: json['pet_id'] as String,
       userId: json['user_id'] as String,
       type: json['type'] as String,
-      startTime: DateTime.parse(json['start_time'] as String),
+      startTime: DateTime.parse(json['start_time'] as String).toLocal(),
       endTime: json['end_time'] != null
-          ? DateTime.parse(json['end_time'] as String)
+          ? DateTime.parse(json['end_time'] as String).toLocal()
           : null,
       durationMinutes: json['duration_minutes'] as int?,
       distance: (json['distance'] as num?)?.toDouble(),
@@ -55,7 +55,7 @@ class Activity {
           .toList(),
       points: json['points'] as int? ?? 0,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
     );
   }
 
@@ -65,15 +65,15 @@ class Activity {
       'pet_id': petId,
       'user_id': userId,
       'type': type,
-      'start_time': startTime.toIso8601String(),
-      'end_time': endTime?.toIso8601String(),
+      'start_time': startTime.toUtc().toIso8601String(),
+      'end_time': endTime?.toUtc().toIso8601String(),
       'duration_minutes': durationMinutes,
       'distance': distance,
       'notes': notes,
       'photo_urls': photoUrls,
       'points': points,
       'metadata': metadata,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
 

@@ -46,14 +46,14 @@ class Appointment {
       petId: json['pet_id'] as String?,
       type: json['type'] as String,
       title: json['title'] as String,
-      dateTime: DateTime.parse(json['date_time'] as String),
+      dateTime: DateTime.parse(json['date_time'] as String).toLocal(),
       provider: json['provider'] as String?,
       providerAddress: json['provider_address'] as String?,
       notes: json['notes'] as String?,
       reminderMinutesBefore: json['reminder_minutes_before'] as int?,
       isCompleted: json['is_completed'] as bool? ?? false,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
 
@@ -64,14 +64,14 @@ class Appointment {
       'pet_id': petId,
       'type': type,
       'title': title,
-      'date_time': dateTime.toIso8601String(),
+      'date_time': dateTime.toUtc().toIso8601String(),
       'provider': provider,
       'provider_address': providerAddress,
       'notes': notes,
       'reminder_minutes_before': reminderMinutesBefore,
       'is_completed': isCompleted,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

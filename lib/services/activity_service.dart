@@ -33,8 +33,8 @@ class ActivityService {
         .from('activities')
         .select()
         .eq('pet_id', petId)
-        .gte('start_time', start.toIso8601String())
-        .lte('start_time', end.toIso8601String())
+        .gte('start_time', start.toUtc().toIso8601String())
+        .lte('start_time', end.toUtc().toIso8601String())
         .order('start_time', ascending: false);
 
     return (response as List).map((e) => Activity.fromJson(e)).toList();
@@ -92,7 +92,7 @@ class ActivityService {
     data['id'] = _uuid.v4();
     data['user_id'] = userId;
     data['points'] = points;
-    data['created_at'] = DateTime.now().toIso8601String();
+    data['created_at'] = DateTime.now().toUtc().toIso8601String();
 
     final response = await _client
         .from('activities')
@@ -186,15 +186,15 @@ class ActivityService {
         .from('activities')
         .select('start_time')
         .eq('user_id', userId)
-        .gte('start_time', cutoff.toIso8601String())
+        .gte('start_time', cutoff.toUtc().toIso8601String())
         .order('start_time', ascending: false);
 
     if ((response as List).isEmpty) return 0;
 
-    // Build a set of unique active dates (date only, no time)
+    // Build a set of unique active dates (local calendar days)
     final activeDates = <DateTime>{};
     for (final row in response) {
-      final dt = DateTime.parse(row['start_time'] as String);
+      final dt = DateTime.parse(row['start_time'] as String).toLocal();
       activeDates.add(DateTime(dt.year, dt.month, dt.day));
     }
 

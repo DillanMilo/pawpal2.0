@@ -5,9 +5,6 @@ class AppConstants {
   static String get supabaseUrl => _env('SUPABASE_URL');
   static String get supabaseAnonKey => _env('SUPABASE_ANON_KEY');
 
-  // Google Places API Configuration (loaded from .env)
-  static String get googlePlacesApiKey => _env('GOOGLE_PLACES_API_KEY');
-
   // Optional auth providers. Keep disabled until configured in Supabase.
   static bool get enableGoogleAuth => _envBool('APP_ENABLE_GOOGLE_AUTH');
   static bool get enableAppleAuth => _envBool('APP_ENABLE_APPLE_AUTH');

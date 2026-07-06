@@ -181,10 +181,10 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             // Passport Card
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(32),
-                border: AppTheme.thickBorder,
-                boxShadow: AppTheme.softShadow,
+                border: AppTheme.borderFor(context),
+                boxShadow: AppTheme.shadowFor(context),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -276,10 +276,10 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(32),
-                border: AppTheme.thickBorder,
-                boxShadow: AppTheme.softShadow,
+                border: AppTheme.borderFor(context),
+                boxShadow: AppTheme.shadowFor(context),
               ),
               child: Column(
                 children: [
@@ -390,10 +390,10 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardBackground(context),
                 borderRadius: BorderRadius.circular(24),
-                border: AppTheme.thickBorder,
-                boxShadow: AppTheme.softShadow,
+                border: AppTheme.borderFor(context),
+                boxShadow: AppTheme.shadowFor(context),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),

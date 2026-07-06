@@ -37,10 +37,7 @@ class SplashScreen extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             // Loading indicator
-            const SpinKitPulse(
-              color: Colors.white,
-              size: 50,
-            ),
+            const SpinKitPulse(color: Colors.white, size: 50),
           ],
         ),
       ),

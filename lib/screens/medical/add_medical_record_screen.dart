@@ -77,7 +77,8 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
         initialDate = _endDate ?? DateTime.now();
         break;
       case 'nextDueDate':
-        initialDate = _nextDueDate ?? DateTime.now().add(const Duration(days: 30));
+        initialDate =
+            _nextDueDate ?? DateTime.now().add(const Duration(days: 30));
         break;
       default:
         initialDate = DateTime.now();
@@ -148,15 +149,21 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_isEditing ? 'Record updated successfully' : 'Record added successfully')),
+          SnackBar(
+            content: Text(
+              _isEditing
+                  ? 'Record updated successfully'
+                  : 'Record added successfully',
+            ),
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
 
@@ -177,10 +184,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
             // Record type selector
             const Text(
               'Record Type',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -319,7 +323,8 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                           IconButton(
                             icon: const Icon(Icons.clear),
                             tooltip: 'Clear next due date',
-                            onPressed: () => setState(() => _nextDueDate = null),
+                            onPressed: () =>
+                                setState(() => _nextDueDate = null),
                           ),
                         const Icon(Icons.arrow_drop_down),
                       ],

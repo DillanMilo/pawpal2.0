@@ -373,20 +373,20 @@ class _PetDetailScreenState extends State<PetDetailScreen>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBackground(context),
         borderRadius: BorderRadius.circular(32),
-        boxShadow: AppTheme.softShadow,
-        border: AppTheme.thickBorder,
+        boxShadow: AppTheme.shadowFor(context),
+        border: AppTheme.borderFor(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: AppTheme.primaryText(context),
             ),
           ),
           const SizedBox(height: 20),
@@ -415,16 +415,16 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                style: TextStyle(
+                  color: AppTheme.secondaryText(context),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 value,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.primaryText(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -500,17 +500,17 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             const SizedBox(height: 32),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
-                color: AppTheme.textPrimary,
+                color: AppTheme.primaryText(context),
               ),
             ),
             const SizedBox(height: 12),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
                 fontSize: 16,
               ),
               textAlign: TextAlign.center,

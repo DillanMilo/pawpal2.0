@@ -3,8 +3,8 @@
   "short_name": "PawPal",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#7B61FF",
-  "theme_color": "#7B61FF",
+  "background_color": "#FBFAFE",
+  "theme_color": "#9D7BEA",
   "description": "PawPal - Your all-in-one pet management companion",
   "orientation": "portrait-primary",
   "icons": [

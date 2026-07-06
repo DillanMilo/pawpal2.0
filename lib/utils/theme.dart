@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Corner radius scale — keep new surfaces on these steps.
+  static const double radiusSmall = 12; // chips, icon tiles
+  static const double radiusMedium = 16; // inputs, inner panels
+  static const double radiusLarge = 20; // buttons, pills
+  static const double radiusXLarge = 24; // cards, sheets
+  static const double radiusHero = 32; // hero cards
+
   // Minimal, soft color palette
   static const Color inkColor = Color(0xFF171717);
   static const Color primaryColor = Color(0xFF9D7BEA);

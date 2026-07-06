@@ -314,7 +314,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         onTap: () => _showAppointmentSheet(appointment: appointment),
         child: Padding(
           padding: const EdgeInsets.all(16),

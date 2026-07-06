@@ -45,9 +45,9 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
       _records = await _medicalService.getMedicalRecords(widget.petId);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
       }
     }
     setState(() => _isLoading = false);
@@ -59,9 +59,9 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
       setState(() {});
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading records: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading records: $e')));
       }
     }
   }
@@ -74,9 +74,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_pet == null) {
@@ -105,15 +103,15 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
         ),
       ),
       body: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildRecordsList(null),
-                _buildRecordsList(MedicalRecordType.vaccination),
-                _buildRecordsList(MedicalRecordType.medication),
-                _buildRecordsList(MedicalRecordType.condition),
-                _buildVisitsList(),
-              ],
-            ),
+        controller: _tabController,
+        children: [
+          _buildRecordsList(null),
+          _buildRecordsList(MedicalRecordType.vaccination),
+          _buildRecordsList(MedicalRecordType.medication),
+          _buildRecordsList(MedicalRecordType.condition),
+          _buildVisitsList(),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddRecordDialog(),
         tooltip: 'Add medical record',
@@ -148,9 +146,11 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
 
   Widget _buildVisitsList() {
     final visits = _records
-        .where((r) =>
-            r.type == MedicalRecordType.vetVisit ||
-            r.type == MedicalRecordType.groomingVisit)
+        .where(
+          (r) =>
+              r.type == MedicalRecordType.vetVisit ||
+              r.type == MedicalRecordType.groomingVisit,
+        )
         .toList();
 
     if (visits.isEmpty) {
@@ -214,10 +214,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -244,10 +241,8 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddMedicalRecordScreen(
-          petId: widget.petId,
-          existingRecord: record,
-        ),
+        builder: (context) =>
+            AddMedicalRecordScreen(petId: widget.petId, existingRecord: record),
       ),
     ).then((_) => _loadRecords());
   }
@@ -286,7 +281,9 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: _getRecordColor(record.type).withValues(alpha: 0.1),
+                      color: _getRecordColor(
+                        record.type,
+                      ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -330,8 +327,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                     if (record.provider != null)
                       _DetailRow(label: 'Provider', value: record.provider!),
                     if (record.description != null)
-                      _DetailRow(
-                          label: 'Notes', value: record.description!),
+                      _DetailRow(label: 'Notes', value: record.description!),
                     if (record.dosage != null)
                       _DetailRow(label: 'Dosage', value: record.dosage!),
                     if (record.frequency != null)
@@ -339,8 +335,9 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                     if (record.nextDueDate != null)
                       _DetailRow(
                         label: 'Next Due',
-                        value:
-                            DateFormat('MMMM d, y').format(record.nextDueDate!),
+                        value: DateFormat(
+                          'MMMM d, y',
+                        ).format(record.nextDueDate!),
                       ),
                     const SizedBox(height: 24),
                     Row(
@@ -406,15 +403,15 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
         await _medicalService.deleteMedicalRecord(record.id);
         await _loadRecords();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Record deleted')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Record deleted')));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting record: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error deleting record: $e')));
         }
       }
     }
@@ -444,21 +441,21 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
   Color _getRecordColor(MedicalRecordType type) {
     switch (type) {
       case MedicalRecordType.vaccination:
-        return Colors.blue;
+        return AppTheme.actionBlue;
       case MedicalRecordType.medication:
-        return Colors.purple;
+        return AppTheme.primaryColor;
       case MedicalRecordType.allergy:
-        return Colors.orange;
+        return AppTheme.accentPeach;
       case MedicalRecordType.condition:
-        return Colors.red;
+        return AppTheme.errorColor;
       case MedicalRecordType.vetVisit:
-        return Colors.teal;
+        return AppTheme.secondaryColor;
       case MedicalRecordType.groomingVisit:
-        return Colors.pink;
+        return AppTheme.accentRose;
       case MedicalRecordType.surgery:
-        return Colors.red;
+        return AppTheme.errorColor;
       case MedicalRecordType.labResult:
-        return Colors.green;
+        return AppTheme.successColor;
     }
   }
 
@@ -503,93 +500,92 @@ class _MedicalRecordCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardBackground(context),
           borderRadius: BorderRadius.circular(24),
-          border: AppTheme.thickBorder,
-          boxShadow: AppTheme.softShadow,
+          border: AppTheme.borderFor(context),
+          boxShadow: AppTheme.shadowFor(context),
         ),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _getColor().withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _getColor().withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(_getIcon(), color: _getColor()),
                 ),
-                child: Icon(_getIcon(), color: _getColor()),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      record.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: AppTheme.textLight,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('MMM d, y').format(record.date),
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 13,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: AppTheme.mutedText(context),
                           ),
-                        ),
-                        if (record.nextDueDate != null) ...[
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('MMM d, y').format(record.date),
+                            style: TextStyle(
+                              color: AppTheme.secondaryText(context),
+                              fontSize: 13,
                             ),
-                            decoration: BoxDecoration(
-                              color: record.isDue
-                                  ? AppTheme.errorColor.withValues(alpha: 0.1)
-                                  : AppTheme.warningColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              record.isDue ? 'Due!' : 'Upcoming',
-                              style: TextStyle(
+                          ),
+                          if (record.nextDueDate != null) ...[
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
                                 color: record.isDue
-                                    ? AppTheme.errorColor
-                                    : AppTheme.warningColor,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                                    ? AppTheme.errorColor.withValues(alpha: 0.1)
+                                    : AppTheme.warningColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                record.isDue ? 'Due!' : 'Upcoming',
+                                style: TextStyle(
+                                  color: record.isDue
+                                      ? AppTheme.errorColor
+                                      : AppTheme.warningColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: AppTheme.textLight,
-              ),
-            ],
+                Icon(Icons.chevron_right, color: AppTheme.mutedText(context)),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -618,21 +614,21 @@ class _MedicalRecordCard extends StatelessWidget {
   Color _getColor() {
     switch (record.type) {
       case MedicalRecordType.vaccination:
-        return Colors.blue;
+        return AppTheme.actionBlue;
       case MedicalRecordType.medication:
-        return Colors.purple;
+        return AppTheme.primaryColor;
       case MedicalRecordType.allergy:
-        return Colors.orange;
+        return AppTheme.accentPeach;
       case MedicalRecordType.condition:
-        return Colors.red;
+        return AppTheme.errorColor;
       case MedicalRecordType.vetVisit:
-        return Colors.teal;
+        return AppTheme.secondaryColor;
       case MedicalRecordType.groomingVisit:
-        return Colors.pink;
+        return AppTheme.accentRose;
       case MedicalRecordType.surgery:
-        return Colors.red;
+        return AppTheme.errorColor;
       case MedicalRecordType.labResult:
-        return Colors.green;
+        return AppTheme.successColor;
     }
   }
 }
@@ -641,10 +637,7 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailRow({
-    required this.label,
-    required this.value,
-  });
+  const _DetailRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -655,18 +648,10 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );

@@ -69,94 +69,91 @@ class _PetCard extends StatelessWidget {
           width: 120,
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-          color: isSelected
-              ? categoryColor.withValues(alpha: 0.1)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? categoryColor : AppTheme.dividerColor,
-            width: isSelected ? 2 : 1,
+            color: isSelected
+                ? categoryColor.withValues(alpha: 0.1)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? categoryColor : AppTheme.dividerColor,
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: categoryColor.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: categoryColor.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Pet photo
+              Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: categoryColor.withValues(alpha: 0.3),
+                    width: 3,
                   ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Pet photo
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: categoryColor.withValues(alpha: 0.3),
-                  width: 3,
+                ),
+                child: ClipOval(
+                  child: pet.photoUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: pet.photoUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: categoryColor.withValues(alpha: 0.1),
+                            child: Icon(
+                              Icons.pets,
+                              color: categoryColor,
+                              size: 30,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: categoryColor.withValues(alpha: 0.1),
+                            child: Icon(
+                              Icons.pets,
+                              color: categoryColor,
+                              size: 30,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: categoryColor.withValues(alpha: 0.1),
+                          child: Icon(
+                            Icons.pets,
+                            color: categoryColor,
+                            size: 30,
+                          ),
+                        ),
                 ),
               ),
-              child: ClipOval(
-                child: pet.photoUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: pet.photoUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: categoryColor.withValues(alpha: 0.1),
-                          child: Icon(
-                            Icons.pets,
-                            color: categoryColor,
-                            size: 30,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: categoryColor.withValues(alpha: 0.1),
-                          child: Icon(
-                            Icons.pets,
-                            color: categoryColor,
-                            size: 30,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: categoryColor.withValues(alpha: 0.1),
-                        child: Icon(
-                          Icons.pets,
-                          color: categoryColor,
-                          size: 30,
-                        ),
-                      ),
+              const SizedBox(height: 12),
+              // Pet name
+              Text(
+                pet.name,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? categoryColor : AppTheme.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(height: 12),
-            // Pet name
-            Text(
-              pet.name,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? categoryColor : AppTheme.textPrimary,
+              const SizedBox(height: 2),
+              // Pet species
+              Text(
+                pet.species,
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            // Pet species
-            Text(
-              pet.species,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

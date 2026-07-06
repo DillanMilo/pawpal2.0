@@ -171,7 +171,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     }
 
     // Location denied and no results yet for this tab
-    if (_locationDenied && (_results[type] == null || _results[type]!.isEmpty)) {
+    if (_locationDenied &&
+        (_results[type] == null || _results[type]!.isEmpty)) {
       return _buildLocationDenied(type);
     }
 
@@ -246,10 +247,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               const SizedBox(height: 16),
               const Text(
                 'No places found nearby',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -298,10 +296,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             const SizedBox(height: 16),
             const Text(
               'Location Access Needed',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -346,7 +341,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   height: 120,
-                  color: Colors.grey[200],
+                  color: AppTheme.softTint(context, AppTheme.primaryColor),
                   child: const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryColor,
@@ -356,8 +351,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 ),
                 errorWidget: (context, url, error) => Container(
                   height: 80,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.storefront, size: 40, color: Colors.grey),
+                  color: AppTheme.softTint(context, AppTheme.primaryColor),
+                  child: Icon(
+                    Icons.storefront,
+                    size: 40,
+                    color: AppTheme.mutedText(context),
+                  ),
                 ),
               ),
             Padding(
@@ -384,13 +383,13 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.1),
+                            color: AppTheme.successColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
                             'Open',
                             style: TextStyle(
-                              color: Colors.green,
+                              color: AppTheme.successColor,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -402,8 +401,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   // Address
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 14, color: Colors.grey),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: AppTheme.mutedText(context),
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -423,8 +425,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.star_rounded,
-                            size: 16, color: Colors.amber),
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 16,
+                          color: Colors.amber,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${place.rating}',
@@ -437,9 +442,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           const SizedBox(width: 4),
                           Text(
                             '(${place.userRatingsTotal})',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey,
+                              color: AppTheme.mutedText(context),
                             ),
                           ),
                         ],

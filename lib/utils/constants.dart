@@ -20,7 +20,8 @@ class AppConstants {
     }
   }
 
-  static bool _envBool(String key) => _env(key, 'false').toLowerCase() == 'true';
+  static bool _envBool(String key) =>
+      _env(key, 'false').toLowerCase() == 'true';
 
   // App Info
   static const String appName = 'PawPal';

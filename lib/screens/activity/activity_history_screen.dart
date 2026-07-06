@@ -38,9 +38,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading activities: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading activities: $e')));
       }
     }
     setState(() => _isLoading = false);
@@ -133,20 +133,19 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredActivities.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: _loadActivities,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _groupedActivities.length,
-                          itemBuilder: (context, index) {
-                            final date =
-                                _groupedActivities.keys.elementAt(index);
-                            final activities = _groupedActivities[date]!;
-                            return _buildDaySection(date, activities);
-                          },
-                        ),
-                      ),
+                ? _buildEmptyState()
+                : RefreshIndicator(
+                    onRefresh: _loadActivities,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _groupedActivities.length,
+                      itemBuilder: (context, index) {
+                        final date = _groupedActivities.keys.elementAt(index);
+                        final activities = _groupedActivities[date]!;
+                        return _buildDaySection(date, activities);
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -179,11 +178,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             value: _formatDuration(totalDuration),
             label: 'Total Time',
           ),
-          _StatCard(
-            icon: Icons.star,
-            value: '$totalPoints',
-            label: 'Points',
-          ),
+          _StatCard(icon: Icons.star, value: '$totalPoints', label: 'Points'),
         ],
       ),
     );
@@ -192,8 +187,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   Widget _buildDaySection(String date, List<Activity> activities) {
     final parsedDate = DateTime.parse(date);
     final dayLabel = _getDayLabel(parsedDate);
-    final dayPoints =
-        activities.fold<int>(0, (sum, a) => sum + a.points);
+    final dayPoints = activities.fold<int>(0, (sum, a) => sum + a.points);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,10 +253,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             const SizedBox(height: 16),
             const Text(
               'No activities found',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -335,15 +326,16 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                     Navigator.pop(context);
                   },
                 ),
-                ...AppConstants.activityTypes
-                    .map((type) => _FilterChip(
-                          label: type,
-                          isSelected: _selectedType == type,
-                          onTap: () {
-                            setState(() => _selectedType = type);
-                            Navigator.pop(context);
-                          },
-                        )),
+                ...AppConstants.activityTypes.map(
+                  (type) => _FilterChip(
+                    label: type,
+                    isSelected: _selectedType == type,
+                    onTap: () {
+                      setState(() => _selectedType = type);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -405,17 +397,11 @@ class _StatCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppTheme.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
         ),
       ],
     );
@@ -469,7 +455,6 @@ class _ActivityCard extends StatelessWidget {
 
   const _ActivityCard({required this.activity});
 
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -478,11 +463,7 @@ class _ActivityCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            ActivityIcon(
-              type: activity.type,
-              size: 22,
-              showBorder: false,
-            ),
+            ActivityIcon(type: activity.type, size: 22, showBorder: false),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

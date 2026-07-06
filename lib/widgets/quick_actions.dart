@@ -24,9 +24,7 @@ class QuickActions extends StatelessWidget {
           final type = AppConstants.activityTypes[index];
           return _ActionButton(
             type: type,
-            onTap: selectedPet != null
-                ? () => onActivitySelected(type)
-                : null,
+            onTap: selectedPet != null ? () => onActivitySelected(type) : null,
           );
         },
       ),
@@ -38,10 +36,7 @@ class _ActionButton extends StatelessWidget {
   final String type;
   final VoidCallback? onTap;
 
-  const _ActionButton({
-    required this.type,
-    this.onTap,
-  });
+  const _ActionButton({required this.type, this.onTap});
 
   IconData get _icon {
     switch (type) {

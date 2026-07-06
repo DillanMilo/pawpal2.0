@@ -7,11 +7,7 @@ class BrandMark extends StatelessWidget {
   final double size;
   final bool withShadow;
 
-  const BrandMark({
-    super.key,
-    this.size = 96,
-    this.withShadow = true,
-  });
+  const BrandMark({super.key, this.size = 96, this.withShadow = true});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +35,7 @@ class BrandTipIcon extends StatelessWidget {
   final String type;
   final double size;
 
-  const BrandTipIcon({
-    super.key,
-    required this.type,
-    this.size = 64,
-  });
+  const BrandTipIcon({super.key, required this.type, this.size = 64});
 
   IconData get _icon {
     switch (type) {
@@ -83,7 +75,10 @@ class BrandTipIcon extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(size * 0.28),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.32), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.32),
+          width: 1.5,
+        ),
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -94,10 +89,7 @@ class BrandTipIcon extends StatelessWidget {
             child: Container(
               width: size * 0.2,
               height: size * 0.2,
-              decoration: BoxDecoration(
-                color: _accent,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: _accent, shape: BoxShape.circle),
             ),
           ),
           Icon(_icon, color: Colors.white, size: size * 0.52),

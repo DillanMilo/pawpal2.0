@@ -39,8 +39,8 @@ class _PetListScreenState extends State<PetListScreen> {
         child: petProvider.isLoading
             ? const Center(child: CircularProgressIndicator())
             : petProvider.pets.isEmpty
-                ? _buildEmptyState()
-                : _buildPetList(petProvider),
+            ? _buildEmptyState()
+            : _buildPetList(petProvider),
       ),
     );
   }
@@ -60,18 +60,12 @@ class _PetListScreenState extends State<PetListScreen> {
             const SizedBox(height: 24),
             const Text(
               'No pets yet',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Add your first pet to get started with PawPal',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -96,7 +90,8 @@ class _PetListScreenState extends State<PetListScreen> {
             AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
 
         return Semantics(
-          label: 'Select ${pet.name}, ${pet.species}${pet.breed != null ? ', ${pet.breed}' : ''}',
+          label:
+              'Select ${pet.name}, ${pet.species}${pet.breed != null ? ', ${pet.breed}' : ''}',
           button: true,
           child: Card(
             margin: const EdgeInsets.only(bottom: 16),
@@ -105,151 +100,151 @@ class _PetListScreenState extends State<PetListScreen> {
               borderRadius: BorderRadius.circular(16),
               child: Padding(
                 padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Pet photo
-                  Hero(
-                    tag: 'pet-photo-${pet.id}',
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: categoryColor.withValues(alpha: 0.3),
-                          width: 3,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: pet.photoUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: pet.photoUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: categoryColor.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.pets,
-                                    color: categoryColor,
-                                    size: 40,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: categoryColor.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.pets,
-                                    color: categoryColor,
-                                    size: 40,
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                color: categoryColor.withValues(alpha: 0.1),
-                                child: Icon(
-                                  Icons.pets,
-                                  color: categoryColor,
-                                  size: 40,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Pet info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          pet.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                child: Row(
+                  children: [
+                    // Pet photo
+                    Hero(
+                      tag: 'pet-photo-${pet.id}',
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: categoryColor.withValues(alpha: 0.3),
+                            width: 3,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: categoryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                pet.species,
-                                style: TextStyle(
-                                  color: categoryColor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                        child: ClipOval(
+                          child: pet.photoUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: pet.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: categoryColor.withValues(alpha: 0.1),
+                                    child: Icon(
+                                      Icons.pets,
+                                      color: categoryColor,
+                                      size: 40,
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        color: categoryColor.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        child: Icon(
+                                          Icons.pets,
+                                          color: categoryColor,
+                                          size: 40,
+                                        ),
+                                      ),
+                                )
+                              : Container(
+                                  color: categoryColor.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.pets,
+                                    color: categoryColor,
+                                    size: 40,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Pet info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pet.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: categoryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  pet.species,
+                                  style: TextStyle(
+                                    color: categoryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                            if (pet.breed != null) ...[
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  pet.breed!,
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
+                              if (pet.breed != null) ...[
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    pet.breed!,
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.cake_outlined,
+                                size: 14,
+                                color: AppTheme.textLight,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                pet.ageDisplay,
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Icon(
+                                pet.gender == 'Male'
+                                    ? Icons.male
+                                    : pet.gender == 'Female'
+                                    ? Icons.female
+                                    : Icons.transgender,
+                                size: 14,
+                                color: AppTheme.textLight,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                pet.gender,
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13,
                                 ),
                               ),
                             ],
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.cake_outlined,
-                              size: 14,
-                              color: AppTheme.textLight,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              pet.ageDisplay,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Icon(
-                              pet.gender == 'Male'
-                                  ? Icons.male
-                                  : pet.gender == 'Female'
-                                      ? Icons.female
-                                      : Icons.transgender,
-                              size: 14,
-                              color: AppTheme.textLight,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              pet.gender,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  // Arrow
-                  Icon(
-                    Icons.chevron_right,
-                    color: AppTheme.textLight,
-                  ),
-                ],
+                    // Arrow
+                    Icon(Icons.chevron_right, color: AppTheme.textLight),
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         );
       },

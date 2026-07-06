@@ -257,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: Icons.local_fire_department,
                   value: '${activityProvider.currentStreak}',
                   label: 'Day Streak',
-                  color: Colors.orange,
+                  color: AppTheme.accentRose,
                 ),
               ),
               const SizedBox(width: 12),
@@ -864,7 +864,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         description: 'Keep a 7-day activity streak.',
         currentValue: activityProvider.currentStreak,
         threshold: 7,
-        color: Colors.orange,
+        color: AppTheme.accentRose,
       ),
       _AchievementMilestone(
         icon: Icons.school_rounded,

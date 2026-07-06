@@ -16,6 +16,7 @@ create anything. Current state:
 | Keystore file | `~/pawpal-upload-key.jks` (your home folder) |
 | Format | PKCS12, RSA 2048, alias `upload`, cert valid to Nov 2053 |
 | Passwords + config | `android/key.properties` (gitignored, owner-only permissions) |
+| **Personal reference (includes the password)** | **`~/pawpal-upload-key-README.md`** — full plain-English guide kept next to the keystore, deliberately outside this repo so the password can never reach GitHub |
 
 The Gradle build reads `android/key.properties` automatically. Release
 builds are signed with this key; if the file is missing, the build fails
@@ -87,17 +88,20 @@ servers, **not** from phones. So:
 
 ### Exact steps
 
-1. Go to https://console.cloud.google.com/apis/credentials
-2. **Check the project picker** (top bar, next to "Google Cloud"). The key
-   lives in whichever project you created it in — it is *not* in the
-   RuckHouse project. Switch projects until you find an API key whose value
-   matches `AIzaSyCB…FRFg` (use **Show key** to compare the ending).
+1. Go to https://console.cloud.google.com/apis/credentials and make sure
+   the project picker (top bar) shows the **PawPal** project.
+2. There is one API key there: **"Browser key (auto created by Firebase)"**.
+   Click **Show key** and confirm it ends in `FRFg` — that's the app's key.
 3. Click the key's name to edit it.
-4. Under **API restrictions**, select **Restrict key**, then in the
-   dropdown check exactly these two:
+4. It already has an API restriction list (Firebase added ~25 of its own
+   APIs). In the **API restrictions** dropdown, make sure these two are
+   checked **in addition to** whatever is already there:
    - **Places API** (the classic one — *not* "Places API (New)"; the app
      calls the classic endpoints)
    - **Geocoding API**
+
+   Don't remove the pre-existing Firebase entries — adding to the list is
+   safe, removing could break something that still uses the key.
 5. Click **Save**. Takes effect within a few minutes.
 
 ### Verify nothing broke

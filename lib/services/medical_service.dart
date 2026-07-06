@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'supabase_service.dart';
 import '../models/medical_record.dart';
@@ -146,14 +147,24 @@ class MedicalService {
     await _client.from('medical_records').delete().eq('id', recordId);
   }
 
-  // Upload medical document
-  Future<String> uploadDocument(String petId, File file) async {
-    final extension = file.path.split('.').last;
+  // Upload medical document. Uses XFile + bytes so it works on web too —
+  // dart:io File throws "Unsupported operation: _Namespace" in browsers.
+  Future<String> uploadDocument(String petId, XFile file) async {
+    final bytes = await file.readAsBytes();
+    final name = file.name;
+    final extension = name.contains('.') ? name.split('.').last : 'bin';
     final path = '$petId/${_uuid.v4()}.$extension';
 
     await _client.storage
         .from(AppConstants.medicalDocsBucket)
-        .upload(path, file);
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: file.mimeType ?? 'application/octet-stream',
+            upsert: false,
+          ),
+        );
 
     return path;
   }

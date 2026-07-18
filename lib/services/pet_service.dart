@@ -6,6 +6,8 @@ import '../models/pet.dart';
 import '../utils/constants.dart';
 import '../utils/image_upload.dart';
 
+enum PetPhotoType { profile, cover }
+
 class PetService {
   final _client = SupabaseService.client;
   final _uuid = const Uuid();
@@ -19,7 +21,8 @@ class PetService {
         .from('pets')
         .select()
         .eq('user_id', userId)
-        .order('created_at', ascending: false);
+        .order('display_order', ascending: true)
+        .order('created_at', ascending: true);
 
     return (response as List).map((e) => Pet.fromJson(e)).toList();
   }
@@ -68,6 +71,17 @@ class PetService {
     return Pet.fromJson(response);
   }
 
+  Future<void> updatePetDisplayOrders(List<Pet> pets) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+
+    for (var index = 0; index < pets.length; index++) {
+      await _client
+          .from('pets')
+          .update({'display_order': index, 'updated_at': now})
+          .eq('id', pets[index].id);
+    }
+  }
+
   // Delete a pet
   Future<void> deletePet(String petId) async {
     // Delete pet photo from storage if exists
@@ -75,19 +89,28 @@ class PetService {
     if (pet?.photoUrl != null) {
       await _deletePhoto(pet!.photoUrl!);
     }
+    if (pet?.coverPhotoUrl != null) {
+      await _deletePhoto(pet!.coverPhotoUrl!);
+    }
 
     await _client.from('pets').delete().eq('id', petId);
   }
 
   // Upload pet photo
-  Future<String> uploadPhoto(String petId, XFile photo) async {
+  Future<String> uploadPhoto(
+    String petId,
+    XFile photo, {
+    PetPhotoType type = PetPhotoType.profile,
+    String? previousUrl,
+  }) async {
     final bytes = await photo.readAsBytes();
     final imageType = resolveImageUploadType(
       bytes: bytes,
       mimeType: _safeMimeType(photo),
       fileName: _safeFileName(photo),
     );
-    final path = '$petId/${_uuid.v4()}.${imageType.extension}';
+    final folder = type == PetPhotoType.cover ? 'cover' : 'profile';
+    final path = '$petId/$folder/${_uuid.v4()}.${imageType.extension}';
 
     await _client.storage
         .from(AppConstants.petPhotosBucket)
@@ -99,6 +122,10 @@ class PetService {
             upsert: false,
           ),
         );
+
+    if (previousUrl != null && previousUrl.isNotEmpty) {
+      await _deletePhoto(previousUrl);
+    }
 
     final url = _client.storage
         .from(AppConstants.petPhotosBucket)

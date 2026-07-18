@@ -11,9 +11,9 @@ class AppTheme {
 
   // Minimal, soft color palette
   static const Color inkColor = Color(0xFF171717);
-  static const Color primaryColor = Color(0xFF9D7BEA);
+  static const Color primaryColor = Color(0xFF8B6BE8);
   static const Color primaryLight = Color(0xFFEFE7FF);
-  static const Color primaryDark = Color(0xFF6D54B5);
+  static const Color primaryDark = Color(0xFF6044B5);
 
   // Secondary - fresh mint
   static const Color secondaryColor = Color(0xFF69B99D);
@@ -36,7 +36,7 @@ class AppTheme {
   static const Color warningColor = Color(0xFFE9B949);
 
   // Background - Soft & Clean
-  static const Color backgroundColor = Color(0xFFFBFAFE);
+  static const Color backgroundColor = Color(0xFFF9F8FD);
   static const Color surfaceColor = Colors.white;
   static const Color cardColor = Colors.white;
   static const Color dividerColor = Color(0xFFE8E4EF);
@@ -77,7 +77,13 @@ class AppTheme {
   static const LinearGradient actionBlueGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7DD3FF), Color(0xFF2F9BEE)],
+    colors: [Color(0xFF9B7CF2), Color(0xFF4FB8FF)],
+  );
+
+  static const LinearGradient homeHeroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF171420), Color(0xFF4A347A), Color(0xFF7658D2)],
   );
 
   // Pet Category Colors - Vibrant but harmonious

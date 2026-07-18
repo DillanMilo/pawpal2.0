@@ -1,13 +1,12 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
+import '../../widgets/pet_image_pickers.dart';
 import '../../widgets/pet_date_picker.dart';
 
 class EditPetScreen extends StatefulWidget {
@@ -33,7 +32,9 @@ class _EditPetScreenState extends State<EditPetScreen> {
   DateTime? _adoptionDate;
   bool _spayedNeutered = false;
   XFile? _newPhotoFile;
+  XFile? _newCoverPhotoFile;
   String? _existingPhotoUrl;
+  String? _existingCoverPhotoUrl;
   bool _isLoading = true;
   bool _isSaving = false;
   Pet? _pet;
@@ -62,6 +63,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
         _adoptionDate = pet.adoptionDate;
         _spayedNeutered = pet.spayedNeutered;
         _existingPhotoUrl = pet.photoUrl;
+        _existingCoverPhotoUrl = pet.coverPhotoUrl;
         _isLoading = false;
       });
     } else {
@@ -79,18 +81,22 @@ class _EditPetScreenState extends State<EditPetScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage({required bool cover}) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
+      maxWidth: cover ? 1400 : 800,
+      maxHeight: cover ? 800 : 800,
       imageQuality: 80,
     );
 
     if (pickedFile != null) {
       setState(() {
-        _newPhotoFile = pickedFile;
+        if (cover) {
+          _newCoverPhotoFile = pickedFile;
+        } else {
+          _newPhotoFile = pickedFile;
+        }
       });
     }
   }
@@ -147,6 +153,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
     final success = await petProvider.updatePet(
       updatedPet,
       photoFile: _newPhotoFile,
+      coverPhotoFile: _newCoverPhotoFile,
     );
 
     if (!mounted) return;
@@ -190,60 +197,16 @@ class _EditPetScreenState extends State<EditPetScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Photo picker
-            Center(
-              child: Semantics(
-                label: 'Change pet photo',
-                button: true,
-                child: InkWell(
-                  onTap: _pickImage,
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppTheme.backgroundColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.dividerColor,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: _newPhotoFile != null
-                          ? _SelectedPetPhoto(photo: _newPhotoFile!)
-                          : _existingPhotoUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: _existingPhotoUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Icon(
-                                Icons.pets,
-                                size: 40,
-                                color: AppTheme.textLight,
-                              ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.camera_alt,
-                                  size: 32,
-                                  color: AppTheme.textLight,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Add Photo',
-                                  style: TextStyle(
-                                    color: AppTheme.textLight,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ),
-              ),
+            PetCoverPhotoPicker(
+              selectedPhoto: _newCoverPhotoFile,
+              existingPhotoUrl: _existingCoverPhotoUrl,
+              onTap: () => _pickImage(cover: true),
+            ),
+            const SizedBox(height: 18),
+            PetAvatarPhotoPicker(
+              selectedPhoto: _newPhotoFile,
+              existingPhotoUrl: _existingPhotoUrl,
+              onTap: () => _pickImage(cover: false),
             ),
             const SizedBox(height: 24),
 
@@ -394,26 +357,6 @@ class _EditPetScreenState extends State<EditPetScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SelectedPetPhoto extends StatelessWidget {
-  final XFile photo;
-
-  const _SelectedPetPhoto({required this.photo});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List>(
-      future: photo.readAsBytes(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Icon(Icons.pets, size: 40, color: AppTheme.textLight);
-        }
-
-        return Image.memory(snapshot.data!, fit: BoxFit.cover);
-      },
     );
   }
 }

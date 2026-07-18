@@ -1,10 +1,13 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:math' as math;
+import '../../models/pet.dart';
 import '../../models/reminder.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -29,12 +32,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final ReminderService _reminderService = ReminderService();
   List<Reminder> _reminders = [];
   late ScrollController _scrollController;
+  late PageController _petPageController;
+  Timer? _petCarouselTimer;
+  int _petCarouselLength = 0;
+  int _petPageIndex = 0;
   late Map<String, String> _dailyTip;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _petPageController = PageController(viewportFraction: 0.94);
     // Select a daily tip once on init - won't change during scrolling
     _dailyTip = PlaceholderData
         .petTips[math.Random().nextInt(PlaceholderData.petTips.length)];
@@ -45,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _petCarouselTimer?.cancel();
+    _petPageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -62,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         limit: 10,
       );
     }
+    _syncPetCarouselToSelectedPet(petProvider);
 
     await _loadReminders();
   }
@@ -114,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
         authProvider.userProfile?.name?.split(' ').first ?? 'Friend';
     final now = DateTime.now();
     final greeting = _getGreeting(now.hour);
+    _configurePetCarouselTimer(petProvider.pets.length);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -136,10 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Content
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
 
                     // Pet Carousel Section
                     _buildPetSection(petProvider, activityProvider)
@@ -147,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         .fadeIn(delay: 200.ms)
                         .slideX(begin: 0.1, end: 0),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     // Stats Cards
                     StatsOverview(activityProvider: activityProvider)
@@ -155,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         .fadeIn(delay: 400.ms)
                         .scale(begin: const Offset(0.9, 0.9)),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Quick Actions
                     _buildQuickActionsSection()
@@ -163,12 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         .fadeIn(delay: 600.ms)
                         .slideY(begin: 0.2, end: 0),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Upcoming Reminders
                     _buildRemindersSection().animate().fadeIn(delay: 700.ms),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Activity Graph (moved below reminders)
                     _buildActivityGraphSection(activityProvider)
@@ -176,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         .fadeIn(delay: 800.ms)
                         .scale(begin: const Offset(0.95, 0.95)),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Daily Tip
                     DailyTipCard(tip: _dailyTip)
@@ -192,12 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90),
-        child: activityProvider.hasActiveTimer
-            ? _buildActiveTimerFAB(activityProvider)
-            : _buildMainFAB(),
-      ),
+      floatingActionButton: activityProvider.hasActiveTimer
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 90),
+              child: _buildActiveTimerFAB(activityProvider),
+            )
+          : null,
     );
   }
 
@@ -217,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         if (hasPets)
           SizedBox(
-            height: 130,
+            height: 162,
             child: _buildPetsCarousel(petProvider, activityProvider),
           )
         else
@@ -299,29 +311,32 @@ class _HomeScreenState extends State<HomeScreen> {
     PetProvider petProvider,
     ActivityProvider activityProvider,
   ) {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
+    return PageView.builder(
+      controller: _petPageController,
       physics: const BouncingScrollPhysics(),
+      padEnds: false,
       itemCount: petProvider.pets.length,
+      onPageChanged: (index) {
+        _selectPetAtIndex(index, petProvider, activityProvider);
+      },
       itemBuilder: (context, index) {
         final pet = petProvider.pets[index];
         final isSelected = petProvider.selectedPet?.id == pet.id;
-        return _buildPetCard(pet, isSelected, () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            petProvider.selectPet(pet);
-            activityProvider.loadActivities(pet.id, limit: 10);
-          });
-        });
+        return Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: _buildPetCard(pet, isSelected, () {
+            _activatePetCard(index, petProvider, activityProvider);
+          }),
+        );
       },
     );
   }
 
-  Widget _buildPetCard(dynamic pet, bool isSelected, VoidCallback onTap) {
+  Widget _buildPetCard(Pet pet, bool isSelected, VoidCallback onTap) {
     final color =
         AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth - 64;
+    final isDark = AppTheme.isDark(context);
+    final hasCover = pet.coverPhotoUrl != null && pet.coverPhotoUrl!.isNotEmpty;
 
     return Semantics(
       button: true,
@@ -329,120 +344,262 @@ class _HomeScreenState extends State<HomeScreen> {
       label: 'Select ${pet.name}',
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: 400.ms,
-          curve: Curves.easeOutBack,
-          width: cardWidth,
-          margin: const EdgeInsets.only(right: 16),
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppTheme.cardBackground(context),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: isSelected && !AppTheme.isDark(context)
-                ? AppTheme.mediumShadow
-                : AppTheme.shadowFor(context),
-            border: isSelected
-                ? Border.all(
-                    color: AppTheme.isDark(context)
-                        ? AppTheme.primaryLight
-                        : AppTheme.inkColor,
-                    width: 1.5,
-                  )
-                : AppTheme.borderFor(context),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(18),
-                  image: pet.photoUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(pet.photoUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: pet.photoUrl == null
-                    ? Center(
-                        child: Icon(Icons.pets_rounded, color: color, size: 32),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      pet.name,
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.primaryText(context),
+        child: AnimatedScale(
+          duration: 320.ms,
+          curve: Curves.easeOutCubic,
+          scale: isSelected ? 1 : 0.96,
+          child: AnimatedContainer(
+            duration: 400.ms,
+            curve: Curves.easeOutBack,
+            padding: const EdgeInsets.all(18),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: isSelected || hasCover
+                  ? null
+                  : AppTheme.cardBackground(context),
+              gradient: hasCover
+                  ? null
+                  : isSelected
+                  ? (isDark
+                        ? const LinearGradient(
+                            colors: [AppTheme.darkCard, AppTheme.primaryDark],
+                          )
+                        : AppTheme.homeHeroGradient)
+                  : null,
+              image: hasCover
+                  ? DecorationImage(
+                      image: NetworkImage(pet.coverPhotoUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: isSelected && !AppTheme.isDark(context)
+                  ? AppTheme.mediumShadow
+                  : AppTheme.shadowFor(context),
+              border: isSelected
+                  ? Border.all(
+                      color: AppTheme.isDark(context)
+                          ? AppTheme.primaryLight
+                          : AppTheme.primaryColor.withValues(alpha: 0.55),
+                      width: 1.5,
+                    )
+                  : AppTheme.borderFor(context),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hasCover)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.68),
+                          Colors.black.withValues(alpha: 0.34),
+                        ],
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppTheme.softLavender
-                                : color.withValues(alpha: 0.10),
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: Text(
-                            pet.species,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected ? AppTheme.primaryDark : color,
-                            ),
-                          ),
-                        ),
-                        if (pet.breed != null) ...[
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              pet.breed,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isSelected
-                                    ? AppTheme.primaryText(context)
-                                    : AppTheme.secondaryText(context),
+                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: isSelected || hasCover
+                            ? Colors.white.withValues(alpha: 0.14)
+                            : color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: isSelected || hasCover
+                            ? Border.all(
+                                color: Colors.white.withValues(alpha: 0.2),
+                              )
+                            : null,
+                        image: pet.photoUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(pet.photoUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: pet.photoUrl == null
+                          ? Center(
+                              child: Icon(
+                                Icons.pets_rounded,
+                                color: isSelected || hasCover
+                                    ? Colors.white
+                                    : color,
+                                size: 32,
                               ),
-                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            pet.name,
+                            style: TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              color: isSelected || hasCover
+                                  ? Colors.white
+                                  : AppTheme.primaryText(context),
                             ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected || hasCover
+                                      ? Colors.white.withValues(alpha: 0.14)
+                                      : color.withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                                child: Text(
+                                  pet.species,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected || hasCover
+                                        ? Colors.white
+                                        : color,
+                                  ),
+                                ),
+                              ),
+                              if (pet.breed != null) ...[
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    pet.breed!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: isSelected || hasCover
+                                          ? Colors.white.withValues(alpha: 0.74)
+                                          : AppTheme.secondaryText(context),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
-                      ],
+                      ),
                     ),
+                    if (isSelected)
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
                   ],
                 ),
-              ),
-              if (isSelected)
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.inkColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 18),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  void _selectPetAtIndex(
+    int index,
+    PetProvider petProvider,
+    ActivityProvider activityProvider,
+  ) {
+    if (index < 0 || index >= petProvider.pets.length) return;
+
+    _petPageIndex = index;
+    final pet = petProvider.pets[index];
+    if (petProvider.selectedPet?.id == pet.id) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      petProvider.selectPet(pet);
+      activityProvider.loadActivities(pet.id, limit: 10);
+    });
+  }
+
+  Future<void> _activatePetCard(
+    int index,
+    PetProvider petProvider,
+    ActivityProvider activityProvider,
+  ) async {
+    if (index != _petPageIndex && _petPageController.hasClients) {
+      await _petPageController.animateToPage(
+        index,
+        duration: 420.ms,
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+
+    _selectPetAtIndex(index, petProvider, activityProvider);
+  }
+
+  void _syncPetCarouselToSelectedPet(PetProvider petProvider) {
+    final selectedPet = petProvider.selectedPet;
+    if (selectedPet == null) return;
+
+    final selectedIndex = petProvider.pets.indexWhere(
+      (pet) => pet.id == selectedPet.id,
+    );
+    if (selectedIndex == -1) return;
+
+    _petPageIndex = selectedIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_petPageController.hasClients) return;
+      _petPageController.jumpToPage(selectedIndex);
+    });
+  }
+
+  void _configurePetCarouselTimer(int petCount) {
+    if (_petCarouselLength == petCount &&
+        (petCount <= 1 || (_petCarouselTimer?.isActive ?? false))) {
+      return;
+    }
+
+    _petCarouselLength = petCount;
+    _petCarouselTimer?.cancel();
+    _petCarouselTimer = null;
+
+    if (petCount <= 1) return;
+
+    _petCarouselTimer = Timer.periodic(const Duration(seconds: 7), (_) {
+      _advancePetCarousel();
+    });
+  }
+
+  Future<void> _advancePetCarousel() async {
+    if (!mounted || !_petPageController.hasClients) return;
+
+    final petProvider = context.read<PetProvider>();
+    if (petProvider.pets.length <= 1) return;
+
+    final nextIndex = (_petPageIndex + 1) % petProvider.pets.length;
+    await _petPageController.animateToPage(
+      nextIndex,
+      duration: 520.ms,
+      curve: Curves.easeOutCubic,
     );
   }
 
@@ -451,45 +608,53 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Quick Actions'),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 100,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            children: [
-              _buildActionItem(
-                'Walk',
-                AppTheme.secondaryColor,
-                () => context.push('/log-activity', extra: 'Walk'),
-              ),
-              _buildActionItem(
-                'Play',
-                AppTheme.accentColor,
-                () => context.push('/log-activity', extra: 'Play'),
-              ),
-              _buildActionItem(
-                'Feed',
-                AppTheme.accentMint,
-                () => context.push('/log-activity', extra: 'Feed'),
-              ),
-              _buildActionItem(
-                'Groom',
-                AppTheme.accentPeach,
-                () => context.push('/add-grooming'),
-              ),
-              _buildActionItem(
-                'Vet',
-                AppTheme.primaryColor,
-                () => context.push('/add-vet-visit'),
-              ),
-              _buildActionItem(
-                'Log',
-                AppTheme.accentLavender,
-                () => context.push('/log-activity'),
-              ),
-            ],
-          ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final itemWidth = (constraints.maxWidth - 20) / 3;
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _buildActionItem(
+                  'Walk',
+                  AppTheme.secondaryColor,
+                  () => context.push('/log-activity', extra: 'Walk'),
+                  width: itemWidth,
+                ),
+                _buildActionItem(
+                  'Play',
+                  AppTheme.accentColor,
+                  () => context.push('/log-activity', extra: 'Play'),
+                  width: itemWidth,
+                ),
+                _buildActionItem(
+                  'Feed',
+                  AppTheme.accentMint,
+                  () => context.push('/log-activity', extra: 'Feed'),
+                  width: itemWidth,
+                ),
+                _buildActionItem(
+                  'Groom',
+                  AppTheme.accentPeach,
+                  () => context.push('/add-grooming'),
+                  width: itemWidth,
+                ),
+                _buildActionItem(
+                  'Vet',
+                  AppTheme.primaryColor,
+                  () => context.push('/add-vet-visit'),
+                  width: itemWidth,
+                ),
+                _buildActionItem(
+                  'Log',
+                  AppTheme.accentLavender,
+                  () => context.push('/log-activity'),
+                  width: itemWidth,
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -500,11 +665,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Color color,
     VoidCallback onTap, {
     bool isActive = false,
+    required double width,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inactiveText = isDark
-        ? AppTheme.darkTextSecondary
-        : AppTheme.textSecondary;
 
     return Semantics(
       button: true,
@@ -512,19 +675,41 @@ class _HomeScreenState extends State<HomeScreen> {
       label: '$label shortcut',
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
-          width: 82,
-          margin: const EdgeInsets.only(right: 14),
+        child: AnimatedContainer(
+          duration: 180.ms,
+          width: width,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 13),
+          decoration: BoxDecoration(
+            color: isActive
+                ? color.withValues(alpha: 0.14)
+                : AppTheme.cardBackground(context),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isActive
+                  ? color.withValues(alpha: 0.42)
+                  : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+            ),
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ActivityIcon(type: label, isActive: isActive, size: 28),
-              const SizedBox(height: 8),
+              ActivityIcon(
+                type: label,
+                isActive: isActive,
+                size: 21,
+                showBorder: false,
+              ),
+              const SizedBox(height: 7),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: isActive ? color : inactiveText,
+                  color: isActive
+                      ? color
+                      : (isDark
+                            ? AppTheme.darkTextPrimary
+                            : AppTheme.textPrimary),
                 ),
               ),
             ],
@@ -906,7 +1091,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 21,
             fontWeight: FontWeight.w800,
             color: titleColor,
             letterSpacing: 0,
@@ -937,19 +1122,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
-  }
-
-  Widget _buildMainFAB() {
-    return FloatingActionButton.extended(
-      onPressed: () => context.push('/log-activity'),
-      backgroundColor: AppTheme.actionBlue,
-      foregroundColor: Colors.white,
-      icon: const Icon(Icons.add_rounded),
-      label: const Text(
-        'Log Activity',
-        style: TextStyle(fontWeight: FontWeight.w700),
-      ),
-    ).animate().scale(delay: 1200.ms, curve: Curves.easeOutBack);
   }
 
   Widget _buildActiveTimerFAB(ActivityProvider activityProvider) {

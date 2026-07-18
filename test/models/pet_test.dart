@@ -14,11 +14,13 @@ void main() {
     'date_of_birth': birthDate.toIso8601String(),
     'gender': 'Male',
     'photo_url': 'https://example.com/photo.jpg',
+    'cover_photo_url': 'https://example.com/cover.jpg',
     'weight': 30.5,
     'color_markings': 'Golden',
     'microchip_number': 'MC-12345',
     'spayed_neutered': true,
     'adoption_date': DateTime(2022, 5, 1).toIso8601String(),
+    'display_order': 3,
     'created_at': now.toIso8601String(),
     'updated_at': now.toIso8601String(),
   };
@@ -45,11 +47,13 @@ void main() {
       expect(pet.dateOfBirth, birthDate);
       expect(pet.gender, 'Male');
       expect(pet.photoUrl, 'https://example.com/photo.jpg');
+      expect(pet.coverPhotoUrl, 'https://example.com/cover.jpg');
       expect(pet.weight, 30.5);
       expect(pet.colorMarkings, 'Golden');
       expect(pet.microchipNumber, 'MC-12345');
       expect(pet.spayedNeutered, true);
       expect(pet.adoptionDate, DateTime(2022, 5, 1));
+      expect(pet.displayOrder, 3);
       expect(pet.createdAt, now);
       expect(pet.updatedAt, now);
     });
@@ -62,11 +66,13 @@ void main() {
       expect(pet.breed, isNull);
       expect(pet.dateOfBirth, isNull);
       expect(pet.photoUrl, isNull);
+      expect(pet.coverPhotoUrl, isNull);
       expect(pet.weight, isNull);
       expect(pet.colorMarkings, isNull);
       expect(pet.microchipNumber, isNull);
       expect(pet.spayedNeutered, false);
       expect(pet.adoptionDate, isNull);
+      expect(pet.displayOrder, 0);
     });
 
     test('defaults spayedNeutered to false when missing', () {
@@ -89,6 +95,8 @@ void main() {
       expect(json['breed'], 'Golden Retriever');
       expect(json['weight'], 30.5);
       expect(json['spayed_neutered'], true);
+      expect(json['cover_photo_url'], 'https://example.com/cover.jpg');
+      expect(json['display_order'], 3);
       expect(json['date_of_birth'], isA<String>());
       expect(json['created_at'], isA<String>());
     });
@@ -100,6 +108,7 @@ void main() {
       expect(json['breed'], isNull);
       expect(json['date_of_birth'], isNull);
       expect(json['photo_url'], isNull);
+      expect(json['cover_photo_url'], isNull);
       expect(json['weight'], isNull);
       expect(json['adoption_date'], isNull);
     });
@@ -116,16 +125,19 @@ void main() {
       expect(roundTripped.weight, original.weight);
       expect(roundTripped.spayedNeutered, original.spayedNeutered);
       expect(roundTripped.dateOfBirth, original.dateOfBirth);
+      expect(roundTripped.coverPhotoUrl, original.coverPhotoUrl);
+      expect(roundTripped.displayOrder, original.displayOrder);
     });
   });
 
   group('Pet.copyWith', () {
     test('overrides specified fields and keeps others', () {
       final pet = Pet.fromJson(fullJson());
-      final updated = pet.copyWith(name: 'Max', weight: 35.0);
+      final updated = pet.copyWith(name: 'Max', weight: 35.0, displayOrder: 1);
 
       expect(updated.name, 'Max');
       expect(updated.weight, 35.0);
+      expect(updated.displayOrder, 1);
       // unchanged fields
       expect(updated.id, pet.id);
       expect(updated.species, pet.species);
@@ -147,6 +159,7 @@ void main() {
         breed: null,
         dateOfBirth: null,
         photoUrl: null,
+        coverPhotoUrl: null,
         weight: null,
         colorMarkings: null,
         microchipNumber: null,
@@ -156,6 +169,7 @@ void main() {
       expect(updated.breed, isNull);
       expect(updated.dateOfBirth, isNull);
       expect(updated.photoUrl, isNull);
+      expect(updated.coverPhotoUrl, isNull);
       expect(updated.weight, isNull);
       expect(updated.colorMarkings, isNull);
       expect(updated.microchipNumber, isNull);

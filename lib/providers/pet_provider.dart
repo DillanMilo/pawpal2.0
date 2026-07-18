@@ -81,23 +81,48 @@ class PetProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createPet(Pet pet, {XFile? photoFile}) async {
+  Future<bool> createPet(
+    Pet pet, {
+    XFile? photoFile,
+    XFile? coverPhotoFile,
+  }) async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      Pet newPet = await _petService.createPet(pet);
+      final nextDisplayOrder = _pets.isEmpty
+          ? 0
+          : _pets
+                    .map((pet) => pet.displayOrder)
+                    .reduce(
+                      (value, element) => value > element ? value : element,
+                    ) +
+                1;
+      Pet newPet = await _petService.createPet(
+        pet.copyWith(displayOrder: nextDisplayOrder),
+      );
 
       // Upload photo if provided
       if (photoFile != null) {
         final photoUrl = await _petService.uploadPhoto(newPet.id, photoFile);
         newPet = newPet.copyWith(photoUrl: photoUrl);
+      }
+      if (coverPhotoFile != null) {
+        final coverPhotoUrl = await _petService.uploadPhoto(
+          newPet.id,
+          coverPhotoFile,
+          type: PetPhotoType.cover,
+        );
+        newPet = newPet.copyWith(coverPhotoUrl: coverPhotoUrl);
+      }
+      if (photoFile != null || coverPhotoFile != null) {
         newPet = await _petService.updatePet(newPet);
       }
 
       _lastFetched = null;
-      _pets.insert(0, newPet);
+      _pets.add(newPet);
+      _pets.sort(_comparePetsByDisplayOrder);
 
       // Auto-select if first pet
       _selectedPet ??= newPet;
@@ -112,7 +137,11 @@ class PetProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updatePet(Pet pet, {XFile? photoFile}) async {
+  Future<bool> updatePet(
+    Pet pet, {
+    XFile? photoFile,
+    XFile? coverPhotoFile,
+  }) async {
     try {
       _isLoading = true;
       _error = null;
@@ -122,8 +151,21 @@ class PetProvider with ChangeNotifier {
 
       // Upload new photo if provided
       if (photoFile != null) {
-        final photoUrl = await _petService.uploadPhoto(pet.id, photoFile);
+        final photoUrl = await _petService.uploadPhoto(
+          pet.id,
+          photoFile,
+          previousUrl: pet.photoUrl,
+        );
         updatedPet = pet.copyWith(photoUrl: photoUrl);
+      }
+      if (coverPhotoFile != null) {
+        final coverPhotoUrl = await _petService.uploadPhoto(
+          pet.id,
+          coverPhotoFile,
+          type: PetPhotoType.cover,
+          previousUrl: pet.coverPhotoUrl,
+        );
+        updatedPet = updatedPet.copyWith(coverPhotoUrl: coverPhotoUrl);
       }
 
       updatedPet = await _petService.updatePet(updatedPet);
@@ -147,6 +189,43 @@ class PetProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> reorderPets(int oldIndex, int newIndex) async {
+    if (oldIndex < 0 ||
+        oldIndex >= _pets.length ||
+        newIndex < 0 ||
+        newIndex >= _pets.length ||
+        oldIndex == newIndex) {
+      return true;
+    }
+
+    final previousPets = List<Pet>.from(_pets);
+    final previousSelectedId = _selectedPet?.id;
+
+    final movedPet = _pets.removeAt(oldIndex);
+    _pets.insert(newIndex, movedPet);
+    _pets = [
+      for (var index = 0; index < _pets.length; index++)
+        _pets[index].copyWith(displayOrder: index),
+    ];
+    _selectedPet = _pets.isNotEmpty ? _pets.first : null;
+    _lastFetched = null;
+    notifyListeners();
+
+    try {
+      await _petService.updatePetDisplayOrders(_pets);
+      return true;
+    } catch (e) {
+      _pets = previousPets;
+      _selectedPet = previousPets
+          .where((pet) => pet.id == previousSelectedId)
+          .firstOrNull;
+      _selectedPet ??= previousPets.isNotEmpty ? previousPets.first : null;
+      _error = e.toString();
+      notifyListeners();
+      return false;
     }
   }
 
@@ -201,5 +280,11 @@ class PetProvider with ChangeNotifier {
     _error = null;
     _lastFetched = null;
     notifyListeners();
+  }
+
+  int _comparePetsByDisplayOrder(Pet a, Pet b) {
+    final orderComparison = a.displayOrder.compareTo(b.displayOrder);
+    if (orderComparison != 0) return orderComparison;
+    return a.createdAt.compareTo(b.createdAt);
   }
 }

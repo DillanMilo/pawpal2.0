@@ -221,6 +221,8 @@ class _PetDetailScreenState extends State<PetDetailScreen>
   }
 
   Widget _buildHeader(Color categoryColor) {
+    final coverPhotoUrl = _pet!.coverPhotoUrl;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -228,10 +230,31 @@ class _PetDetailScreenState extends State<PetDetailScreen>
           end: Alignment.bottomCenter,
           colors: [categoryColor, categoryColor.withValues(alpha: 0.8)],
         ),
+        image: coverPhotoUrl == null || coverPhotoUrl.isEmpty
+            ? null
+            : DecorationImage(
+                image: CachedNetworkImageProvider(coverPhotoUrl),
+                fit: BoxFit.cover,
+              ),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
+          if (coverPhotoUrl != null && coverPhotoUrl.isNotEmpty)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.18),
+                      categoryColor.withValues(alpha: 0.78),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Decorative circles
           Positioned(
             left: -50,

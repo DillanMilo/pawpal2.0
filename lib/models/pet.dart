@@ -9,11 +9,13 @@ class Pet {
   final DateTime? dateOfBirth;
   final String gender;
   final String? photoUrl;
+  final String? coverPhotoUrl;
   final double? weight;
   final String? colorMarkings;
   final String? microchipNumber;
   final bool spayedNeutered;
   final DateTime? adoptionDate;
+  final int displayOrder;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,11 +28,13 @@ class Pet {
     this.dateOfBirth,
     required this.gender,
     this.photoUrl,
+    this.coverPhotoUrl,
     this.weight,
     this.colorMarkings,
     this.microchipNumber,
     this.spayedNeutered = false,
     this.adoptionDate,
+    this.displayOrder = 0,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -68,6 +72,7 @@ class Pet {
           : null,
       gender: json['gender'] as String,
       photoUrl: json['photo_url'] as String?,
+      coverPhotoUrl: json['cover_photo_url'] as String?,
       weight: (json['weight'] as num?)?.toDouble(),
       colorMarkings: json['color_markings'] as String?,
       microchipNumber: json['microchip_number'] as String?,
@@ -75,6 +80,7 @@ class Pet {
       adoptionDate: json['adoption_date'] != null
           ? DateTime.parse(json['adoption_date'] as String)
           : null,
+      displayOrder: json['display_order'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
@@ -95,11 +101,13 @@ class Pet {
       'date_of_birth': _dateOnly(dateOfBirth),
       'gender': gender,
       'photo_url': photoUrl,
+      'cover_photo_url': coverPhotoUrl,
       'weight': weight,
       'color_markings': colorMarkings,
       'microchip_number': microchipNumber,
       'spayed_neutered': spayedNeutered,
       'adoption_date': _dateOnly(adoptionDate),
+      'display_order': displayOrder,
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };
@@ -114,11 +122,13 @@ class Pet {
     Object? dateOfBirth = _unset,
     String? gender,
     Object? photoUrl = _unset,
+    Object? coverPhotoUrl = _unset,
     Object? weight = _unset,
     Object? colorMarkings = _unset,
     Object? microchipNumber = _unset,
     bool? spayedNeutered,
     Object? adoptionDate = _unset,
+    int? displayOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -135,6 +145,9 @@ class Pet {
       photoUrl: identical(photoUrl, _unset)
           ? this.photoUrl
           : photoUrl as String?,
+      coverPhotoUrl: identical(coverPhotoUrl, _unset)
+          ? this.coverPhotoUrl
+          : coverPhotoUrl as String?,
       weight: identical(weight, _unset) ? this.weight : weight as double?,
       colorMarkings: identical(colorMarkings, _unset)
           ? this.colorMarkings
@@ -146,6 +159,7 @@ class Pet {
       adoptionDate: identical(adoptionDate, _unset)
           ? this.adoptionDate
           : adoptionDate as DateTime?,
+      displayOrder: displayOrder ?? this.displayOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +6,7 @@ import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
+import '../../widgets/pet_image_pickers.dart';
 import '../../widgets/pet_date_picker.dart';
 
 class AddPetScreen extends StatefulWidget {
@@ -30,6 +30,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
   DateTime? _adoptionDate;
   bool _spayedNeutered = false;
   XFile? _photoFile;
+  XFile? _coverPhotoFile;
   bool _isLoading = false;
 
   @override
@@ -42,18 +43,22 @@ class _AddPetScreenState extends State<AddPetScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage({required bool cover}) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
+      maxWidth: cover ? 1400 : 800,
+      maxHeight: cover ? 800 : 800,
       imageQuality: 80,
     );
 
     if (pickedFile != null) {
       setState(() {
-        _photoFile = pickedFile;
+        if (cover) {
+          _coverPhotoFile = pickedFile;
+        } else {
+          _photoFile = pickedFile;
+        }
       });
     }
   }
@@ -111,7 +116,11 @@ class _AddPetScreenState extends State<AddPetScreen> {
       updatedAt: now,
     );
 
-    final success = await petProvider.createPet(pet, photoFile: _photoFile);
+    final success = await petProvider.createPet(
+      pet,
+      photoFile: _photoFile,
+      coverPhotoFile: _coverPhotoFile,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -140,50 +149,16 @@ class _AddPetScreenState extends State<AddPetScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Photo picker
-            Center(
-              child: Semantics(
-                label: 'Add pet photo',
-                button: true,
-                child: InkWell(
-                  onTap: _pickImage,
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppTheme.backgroundColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.dividerColor,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: _photoFile != null
-                          ? _SelectedPetPhoto(photo: _photoFile!)
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.camera_alt,
-                                  size: 32,
-                                  color: AppTheme.textLight,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Add Photo',
-                                  style: TextStyle(
-                                    color: AppTheme.textLight,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ),
-              ),
+            PetCoverPhotoPicker(
+              selectedPhoto: _coverPhotoFile,
+              existingPhotoUrl: null,
+              onTap: () => _pickImage(cover: true),
+            ),
+            const SizedBox(height: 18),
+            PetAvatarPhotoPicker(
+              selectedPhoto: _photoFile,
+              existingPhotoUrl: null,
+              onTap: () => _pickImage(cover: false),
             ),
             const SizedBox(height: 24),
 
@@ -334,26 +309,6 @@ class _AddPetScreenState extends State<AddPetScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SelectedPetPhoto extends StatelessWidget {
-  final XFile photo;
-
-  const _SelectedPetPhoto({required this.photo});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List>(
-      future: photo.readAsBytes(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Icon(Icons.pets, size: 40, color: AppTheme.textLight);
-        }
-
-        return Image.memory(snapshot.data!, fit: BoxFit.cover);
-      },
     );
   }
 }

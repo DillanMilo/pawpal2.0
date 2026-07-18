@@ -132,61 +132,67 @@ class _PetListItem extends StatelessWidget {
       label:
           'Select ${pet.name}, ${pet.species}${pet.breed != null ? ', ${pet.breed}' : ''}',
       button: true,
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: InkWell(
-          onTap: onOpen,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Hero(
-                  tag: 'pet-photo-${pet.id}',
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: categoryColor.withValues(alpha: 0.3),
-                        width: 3,
+      child: ReorderableDelayedDragStartListener(
+        index: index,
+        child: Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          child: InkWell(
+            onTap: onOpen,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Hero(
+                    tag: 'pet-photo-${pet.id}',
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: categoryColor.withValues(alpha: 0.3),
+                          width: 3,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: pet.photoUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: pet.photoUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    _PetPhotoFallback(color: categoryColor),
+                                errorWidget: (context, url, error) =>
+                                    _PetPhotoFallback(color: categoryColor),
+                              )
+                            : _PetPhotoFallback(color: categoryColor),
                       ),
                     ),
-                    child: ClipOval(
-                      child: pet.photoUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: pet.photoUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) =>
-                                  _PetPhotoFallback(color: categoryColor),
-                              errorWidget: (context, url, error) =>
-                                  _PetPhotoFallback(color: categoryColor),
-                            )
-                          : _PetPhotoFallback(color: categoryColor),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _PetListCopy(pet: pet, color: categoryColor),
+                  ),
+                  Tooltip(
+                    message: 'Reorder pet',
+                    child: ReorderableDragStartListener(
+                      index: index,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          Icons.drag_handle_rounded,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _PetListCopy(pet: pet, color: categoryColor),
-                ),
-                ReorderableDragStartListener(
-                  index: index,
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.drag_handle_rounded,
-                      color: AppTheme.textLight,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

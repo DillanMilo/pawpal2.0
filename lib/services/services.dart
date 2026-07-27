@@ -6,3 +6,6 @@ export 'activity_service.dart';
 export 'appointment_service.dart';
 export 'reminder_service.dart';
 export 'notification_service.dart';
+export 'entitlement_service.dart';
+export 'purchase_service.dart';
+export 'account_data_export_service.dart';

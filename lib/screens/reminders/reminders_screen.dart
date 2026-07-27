@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../models/reminder.dart';
+import '../../models/subscription_feature.dart';
+import '../../providers/subscription_provider.dart';
 import '../../services/reminder_service.dart';
 import '../../services/notification_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/premium_feature_gate.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -174,12 +179,41 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
-  void _showAddReminderDialog() {
+  Future<void> _showAddReminderDialog() async {
+    if (!context.read<SubscriptionProvider>().canAddReminder(
+      _reminders.length,
+    )) {
+      final viewPlans = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Keep every reminder with Plus'),
+          content: const Text(
+            'PawPal Base includes up to 5 active reminders. Complete or delete one to add another, or upgrade for unlimited reminders.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Not now'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('View plans'),
+            ),
+          ],
+        ),
+      );
+      if (viewPlans == true && mounted) context.push('/pricing');
+      return;
+    }
+
     final titleController = TextEditingController();
     String selectedType = 'Custom';
     DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
     bool isRecurring = false;
     String? recurringPattern;
+    final canUseRecurring = context.read<SubscriptionProvider>().canUse(
+      SubscriptionFeature.recurringReminders,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -280,8 +314,23 @@ class _RemindersScreenState extends State<RemindersScreen> {
               const SizedBox(height: 16),
               SwitchListTile(
                 title: const Text('Recurring'),
+                subtitle: canUseRecurring
+                    ? null
+                    : const Text('Included with PawPal Plus'),
                 value: isRecurring,
-                onChanged: (value) {
+                onChanged: (value) async {
+                  if (value && !canUseRecurring) {
+                    final viewPlans = await showPremiumUpgradeDialog(
+                      modalContext,
+                      SubscriptionFeature.recurringReminders,
+                    );
+                    if (!mounted || !modalContext.mounted) return;
+                    if (viewPlans) {
+                      Navigator.pop(modalContext);
+                      context.push('/pricing');
+                    }
+                    return;
+                  }
                   setModalState(() {
                     isRecurring = value;
                     if (!value) recurringPattern = null;

@@ -27,7 +27,10 @@ import '../screens/quick_actions/add_vet_visit_screen.dart';
 import '../screens/quick_actions/add_grooming_screen.dart';
 import '../screens/services/services_screen.dart';
 import '../screens/services/business_listing_screen.dart';
+import '../screens/subscription/pricing_screen.dart';
 import '../services/places_service.dart';
+import '../models/subscription_feature.dart';
+import '../widgets/premium_feature_gate.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -59,6 +62,7 @@ class AppRouter {
             state.matchedLocation == '/forgot-password';
         final isSplash = state.matchedLocation == '/splash';
         final isAuthCallback = state.matchedLocation == '/auth/callback';
+        final isPricingOnboarding = state.matchedLocation == '/welcome';
 
         // Keep OAuth callbacks stable while Supabase recovers the session.
         if (isAuthCallback) {
@@ -69,6 +73,20 @@ class AppRouter {
         // Redirect to login if not authenticated.
         if (!isAuthenticated && !isAuthRoute && !isSplash && !isResolvingAuth) {
           return '/login';
+        }
+
+        // New accounts see transparent pricing and their no-card trial end date
+        // before entering the main app. The flag is persisted in Supabase.
+        if (isAuthenticated &&
+            authProvider.userProfile?.hasSeenPricing == false &&
+            !isPricingOnboarding) {
+          return '/welcome';
+        }
+
+        if (isAuthenticated &&
+            authProvider.userProfile?.hasSeenPricing == true &&
+            isPricingOnboarding) {
+          return '/home';
         }
 
         // Redirect to home if authenticated and on auth route
@@ -134,6 +152,14 @@ class AppRouter {
         GoRoute(
           path: '/auth/callback',
           builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/welcome',
+          builder: (context, state) => const PricingScreen(isOnboarding: true),
+        ),
+        GoRoute(
+          path: '/pricing',
+          builder: (context, state) => const PricingScreen(),
         ),
 
         // Main app shell with bottom navigation
@@ -237,13 +263,19 @@ class AppRouter {
         // Activity history
         GoRoute(
           path: '/activity-history',
-          builder: (context, state) => const ActivityHistoryScreen(),
+          builder: (context, state) => const PremiumFeatureGate(
+            feature: SubscriptionFeature.activityInsights,
+            child: ActivityHistoryScreen(),
+          ),
         ),
         GoRoute(
           path: '/pet/:id/activity-history',
           builder: (context, state) {
             final petId = state.pathParameters['id']!;
-            return ActivityHistoryScreen(petId: petId);
+            return PremiumFeatureGate(
+              feature: SubscriptionFeature.activityInsights,
+              child: ActivityHistoryScreen(petId: petId),
+            );
           },
         ),
 
@@ -274,12 +306,18 @@ class AppRouter {
           path: '/pet/:id/passport',
           builder: (context, state) {
             final petId = state.pathParameters['id']!;
-            return PetPassportScreen(petId: petId);
+            return PremiumFeatureGate(
+              feature: SubscriptionFeature.passportSharing,
+              child: PetPassportScreen(petId: petId),
+            );
           },
         ),
         GoRoute(
           path: '/scan-passport',
-          builder: (context, state) => const PetPassportScannerScreen(),
+          builder: (context, state) => const PremiumFeatureGate(
+            feature: SubscriptionFeature.passportSharing,
+            child: PetPassportScannerScreen(),
+          ),
         ),
       ],
     );

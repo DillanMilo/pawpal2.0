@@ -5,8 +5,9 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('RegisterScreen', () {
-    testWidgets('renders all form fields and create account button',
-        (WidgetTester tester) async {
+    testWidgets('renders all form fields and free signup button', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const RegisterScreen()));
       await tester.pumpAndSettle();
 
@@ -14,12 +15,10 @@ void main() {
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Confirm Password'), findsOneWidget);
-      expect(find.text('Create Account'), findsWidgets);
-      expect(find.text('Create Account'), findsAtLeastNWidgets(1));
+      expect(find.text('Sign Up Free'), findsOneWidget);
     });
 
-    testWidgets('password mismatch shows error',
-        (WidgetTester tester) async {
+    testWidgets('password mismatch shows error', (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(const RegisterScreen()));
       await tester.pumpAndSettle();
 
@@ -49,8 +48,9 @@ void main() {
       expect(find.text('Passwords do not match'), findsOneWidget);
     });
 
-    testWidgets('short password shows validation error',
-        (WidgetTester tester) async {
+    testWidgets('short password shows validation error', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const RegisterScreen()));
       await tester.pumpAndSettle();
 
@@ -81,8 +81,9 @@ void main() {
       );
     });
 
-    testWidgets('empty fields show validation errors',
-        (WidgetTester tester) async {
+    testWidgets('empty fields show validation errors', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(const RegisterScreen()));
       await tester.pumpAndSettle();
 

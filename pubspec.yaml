@@ -58,6 +58,7 @@ dependencies:
   shared_preferences: ^2.2.2
   flutter_secure_storage: ^9.0.0
   path_provider: ^2.1.2
+  archive: ^3.6.1
 
   # Notifications
   flutter_local_notifications: ^19.0.0
@@ -80,6 +81,9 @@ dependencies:
 
   # HTTP requests
   http: ^1.2.0
+
+  # Cross-platform subscription entitlements (App Store, Play, Stripe web)
+  purchases_flutter: ^10.4.2
 
   # JSON serialization
   json_annotation: ^4.8.1

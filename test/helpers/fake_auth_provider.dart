@@ -69,6 +69,9 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
   Future<bool> updateNotificationPreference(bool enabled) async => false;
 
   @override
+  Future<bool> completePricingOnboarding() async => false;
+
+  @override
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,

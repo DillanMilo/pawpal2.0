@@ -6,6 +6,7 @@ class UserProfile {
   final String? phoneNumber;
   final String? zipCode;
   final bool notificationsEnabled;
+  final bool hasSeenPricing;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,6 +18,7 @@ class UserProfile {
     this.phoneNumber,
     this.zipCode,
     this.notificationsEnabled = true,
+    this.hasSeenPricing = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -30,6 +32,9 @@ class UserProfile {
       phoneNumber: json['phone_number'] as String?,
       zipCode: json['zip_code'] as String?,
       notificationsEnabled: json['notifications_enabled'] as bool? ?? true,
+      // Default true keeps older databases from trapping users in onboarding
+      // before migration 011 has been applied.
+      hasSeenPricing: json['has_seen_pricing'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
@@ -44,6 +49,7 @@ class UserProfile {
       'phone_number': phoneNumber,
       'zip_code': zipCode,
       'notifications_enabled': notificationsEnabled,
+      'has_seen_pricing': hasSeenPricing,
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };
@@ -57,6 +63,7 @@ class UserProfile {
     String? phoneNumber,
     String? zipCode,
     bool? notificationsEnabled,
+    bool? hasSeenPricing,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -68,6 +75,7 @@ class UserProfile {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       zipCode: zipCode ?? this.zipCode,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      hasSeenPricing: hasSeenPricing ?? this.hasSeenPricing,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

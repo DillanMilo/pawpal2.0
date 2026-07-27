@@ -9,6 +9,7 @@ import 'providers/auth_provider.dart';
 import 'providers/pet_provider.dart';
 import 'providers/activity_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'utils/theme.dart';
 import 'utils/router.dart';
 
@@ -75,6 +76,16 @@ class PawPalApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PetProvider()),
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, SubscriptionProvider>(
+          create: (_) => SubscriptionProvider(),
+          update: (_, auth, subscription) {
+            final value = subscription ?? SubscriptionProvider();
+            value.updateUser(
+              auth.isAuthenticated ? auth.userProfile?.id : null,
+            );
+            return value;
+          },
+        ),
       ],
       child: Consumer2<AuthProvider, ThemeProvider>(
         builder: (context, authProvider, themeProvider, _) {

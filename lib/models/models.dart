@@ -6,3 +6,5 @@ export 'appointment.dart';
 export 'reminder.dart';
 export 'achievement.dart';
 export 'provider.dart';
+export 'account_entitlement.dart';
+export 'subscription_feature.dart';

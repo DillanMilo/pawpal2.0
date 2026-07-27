@@ -52,9 +52,9 @@ class _MainShellState extends State<MainShell> {
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final bottomInset = bottomPadding > 0 ? bottomPadding : 12.0;
-    const navBarHeight = 78.0;
-    const pawButtonSize = 72.0;
-    const pawButtonOverlap = 32.0;
+    const navBarHeight = 72.0;
+    const pawButtonSize = 66.0;
+    const pawButtonOverlap = 29.0;
     const navShellHeight = navBarHeight + pawButtonOverlap;
 
     return Scaffold(
@@ -89,7 +89,7 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(24, 0, 24, bottomInset),
+        padding: EdgeInsets.fromLTRB(18, 0, 18, bottomInset),
         child: SizedBox(
           height: navShellHeight,
           child: Stack(
@@ -122,10 +122,10 @@ class _MainShellState extends State<MainShell> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         boxShadow: isDark
             ? AppTheme.coloredShadow(Colors.black)
             : AppTheme.mediumShadow,
@@ -155,7 +155,7 @@ class _MainShellState extends State<MainShell> {
               selectedIndex == 1,
             ),
           ),
-          const SizedBox(width: 72),
+          const SizedBox(width: 66),
           Expanded(
             child: _buildNavItem(
               context,
@@ -185,43 +185,41 @@ class _MainShellState extends State<MainShell> {
       button: true,
       child:
           Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _showQuickActions(context),
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.actionBlueGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.actionBlue.withValues(alpha: 0.38),
-                          blurRadius: 24,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: AppTheme.surfaceBackground(context),
-                        width: 5,
-                      ),
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _showQuickActions(context),
+              customBorder: const CircleBorder(),
+              child: Container(
+                width: 66,
+                height: 66,
+                decoration: BoxDecoration(
+                  gradient: AppTheme.actionBlueGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.34),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
                     ),
-                    child: const Icon(
-                      Icons.pets_rounded,
-                      color: Colors.white,
-                      size: 36,
-                    ),
+                  ],
+                  border: Border.all(
+                    color: AppTheme.surfaceBackground(context),
+                    width: 4,
                   ),
                 ),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(
-                begin: const Offset(1, 1),
-                end: const Offset(1.08, 1.08),
-                duration: 1500.ms,
-                curve: Curves.easeInOut,
+                child: const Icon(
+                  Icons.pets_rounded,
+                  color: Colors.white,
+                  size: 31,
+                ),
               ),
+            ),
+          ).animate().scale(
+            begin: const Offset(0.92, 0.92),
+            end: const Offset(1, 1),
+            duration: 380.ms,
+            curve: Curves.easeOutBack,
+          ),
     );
   }
 
@@ -243,28 +241,44 @@ class _MainShellState extends State<MainShell> {
           child: AnimatedContainer(
             duration: 300.ms,
             curve: Curves.easeInOut,
-            height: 50,
+            height: 54,
             constraints: const BoxConstraints(maxWidth: 68),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppTheme.primaryColor.withValues(alpha: 0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
             ),
-            child:
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Icon(
                       icon,
                       color: isSelected
                           ? AppTheme.primaryColor
                           : AppTheme.textLight,
-                      size: 26,
+                      size: 23,
                     )
                     .animate(target: isSelected ? 1 : 0)
                     .scale(
                       begin: const Offset(1, 1),
-                      end: const Offset(1.14, 1.14),
+                      end: const Offset(1.08, 1.08),
                     ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: isSelected
+                        ? AppTheme.primaryColor
+                        : AppTheme.textLight,
+                    fontSize: 9.5,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

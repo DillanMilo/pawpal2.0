@@ -99,7 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Join PawPal and keep every pet detail in one calm place.',
+                      'Sign up free and enjoy 14 days of PawPal Plus. No payment required.',
                       style: TextStyle(
                         fontSize: 16,
                         color: AppTheme.textSecondary,
@@ -233,7 +233,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                             )
-                          : const Text('Create Account'),
+                          : const Text('Sign Up Free'),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Then return to PawPal Base, or choose \$4.99/month or \$29.99/year for Plus. You will not be charged automatically.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: AppTheme.textLight,
+                      ),
                     ),
                     if (AppConstants.enableGoogleAuth ||
                         AppConstants.enableAppleAuth) ...[

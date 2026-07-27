@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_provider.dart';
+import '../../providers/subscription_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
 import '../../widgets/pet_image_pickers.dart';
@@ -85,6 +86,31 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
   Future<void> _savePet() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final currentPetCount = context.read<PetProvider>().pets.length;
+    if (!context.read<SubscriptionProvider>().canAddPet(currentPetCount)) {
+      final viewPlans = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Add unlimited pets with Plus'),
+          content: const Text(
+            'PawPal Base includes one pet. Your existing information stays available, and Plus unlocks every additional pet.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Not now'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('View plans'),
+            ),
+          ],
+        ),
+      );
+      if (viewPlans == true && mounted) context.push('/pricing');
+      return;
+    }
 
     setState(() => _isLoading = true);
 

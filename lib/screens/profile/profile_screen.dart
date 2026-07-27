@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/medical_record.dart';
@@ -12,8 +15,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../providers/activity_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/subscription_provider.dart';
 import '../../services/medical_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/account_data_export_service.dart';
 import '../../utils/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -33,14 +38,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _dailyActivityReminder = false;
   Map<MedicalRecordType, int> _medicalRecordCountsByType = {};
   bool _isLoadingAchievementData = false;
+  bool _isExportingData = false;
+  Timer? _trialTicker;
 
   @override
   void initState() {
     super.initState();
+    _trialTicker = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
     _loadNotificationPreferences();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfileData();
     });
+  }
+
+  @override
+  void dispose() {
+    _trialTicker?.cancel();
+    super.dispose();
+  }
+
+  String? _planSubtitle(SubscriptionProvider subscription) {
+    if (!subscription.isTrialing) {
+      return subscription.hasPlusAccess
+          ? 'Premium features are active'
+          : 'Base features are active';
+    }
+
+    final end = subscription.trialEndsAt;
+    if (end == null) return '14-day Plus trial is active';
+    final remaining = end.difference(DateTime.now());
+    if (remaining.isNegative) return 'Trial ended · Base features are active';
+    final days = remaining.inDays;
+    final hours = remaining.inHours.remainder(24);
+    return days == 0
+        ? '$hours hours left in your Plus trial'
+        : '$days days, $hours hours left in your Plus trial';
   }
 
   Future<void> _loadNotificationPreferences() async {
@@ -153,6 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final petProvider = context.watch<PetProvider>();
     final activityProvider = context.watch<ActivityProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final subscriptionProvider = context.watch<SubscriptionProvider>();
     final user = authProvider.userProfile;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
@@ -283,6 +318,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => _showEditProfileDialog(context),
               ),
               _MenuItem(
+                icon: Icons.workspace_premium_outlined,
+                title: 'PawPal plan',
+                subtitle: _planSubtitle(subscriptionProvider),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      subscriptionProvider.isTrialing
+                          ? 'Plus trial'
+                          : subscriptionProvider.hasPlusAccess
+                          ? 'Plus'
+                          : 'Base',
+                      style: const TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
+                onTap: () => context.push('/pricing'),
+              ),
+              _MenuItem(
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
                 trailing: Switch(
@@ -324,6 +383,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.lock_outline,
                 title: 'Change Password',
                 onTap: () => _showChangePasswordDialog(context),
+              ),
+              _MenuItem(
+                icon: Icons.download_outlined,
+                title: 'Export my data',
+                subtitle: 'Download your records and original uploads',
+                trailing: _isExportingData
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.chevron_right),
+                onTap: _isExportingData
+                    ? () {}
+                    : () => _confirmAndExportData(context),
               ),
             ],
           ),
@@ -422,6 +496,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
           content: Text('Email us at creativecurrentsx@gmail.com'),
         ),
       );
+    }
+  }
+
+  Future<void> _confirmAndExportData(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Export your PawPal data?'),
+        content: const Text(
+          'This creates a ZIP file containing your profile, pet-care records, '
+          'and original uploaded documents. It may contain sensitive health '
+          'information, so save or share it only somewhere you trust.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.download_outlined),
+            label: const Text('Create export'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    setState(() => _isExportingData = true);
+    try {
+      final export = await AccountDataExportService().createExport();
+      if (!context.mounted) return;
+
+      await Share.shareXFiles(
+        [XFile.fromData(export.bytes, mimeType: 'application/zip')],
+        subject: 'PawPal account data export',
+        text:
+            'Your PawPal export contains ${export.recordCount} records and '
+            '${export.attachmentCount} original uploads.',
+        fileNameOverrides: [export.fileName],
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not create your data export: $error'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isExportingData = false);
     }
   }
 
@@ -1221,6 +1346,7 @@ class _MenuSection extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final Widget? trailing;
   final VoidCallback onTap;
   final Color? iconColor;
@@ -1229,6 +1355,7 @@ class _MenuItem extends StatelessWidget {
   const _MenuItem({
     required this.icon,
     required this.title,
+    this.subtitle,
     this.trailing,
     required this.onTap,
     this.iconColor,
@@ -1240,6 +1367,7 @@ class _MenuItem extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: iconColor ?? AppTheme.textSecondary),
       title: Text(title, style: TextStyle(color: titleColor)),
+      subtitle: subtitle == null ? null : Text(subtitle!),
       trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: onTap,
     );

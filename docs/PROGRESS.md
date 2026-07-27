@@ -82,6 +82,13 @@
   - [x] Migration 009: composite indexes for pet-scoped appointment/reminder/medical queries
   - [x] 143 tests passing
 
+- [x] Phase 10: Recovery Foundation & Portability (2026-07-20)
+  - [x] Audited hosted Supabase backup status and documented the Free-plan gap
+  - [x] Added encrypted database plus four-bucket backup and verification scripts
+  - [x] Added a gated nightly GitHub Actions backup workflow
+  - [x] Added full account ZIP export with core records and original documents
+  - [x] 154 tests passing
+
 ## Iteration Log
 | Iteration | Task Completed | Files Changed |
 |-----------|---------------|---------------|

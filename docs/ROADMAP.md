@@ -57,7 +57,7 @@
 - [x] Comprehensive `docs/BACKEND.md` documentation
 
 ### Phase 7: Testing & CI/CD (2026-04-04)
-- [x] 127 tests passing across models, providers, widgets, services, and constants
+- [x] 154 tests passing across models, providers, widgets, services, and constants
 - [x] Test helpers: `FakeAuthProvider`, `createTestWidget`, `supabase_test_setup`
 - [x] GitHub Actions CI/CD pipeline (analyze + test, build Android APK, build iOS)
 - [x] Pull request template (`.github/PULL_REQUEST_TEMPLATE.md`)
@@ -78,7 +78,8 @@ Small items deferred from completed phases:
 
 - [ ] Network connectivity checks before write operations (reads handled, writes fail naturally)
 - [ ] Error logging service (Sentry or Firebase Crashlytics)
-- [ ] Expand test coverage toward 70%+ (foundation of 127 tests in place)
+- [ ] Expand test coverage toward 70%+ (foundation of 154 tests in place)
+- [x] Full account data export with original uploaded documents
 
 ---
 
@@ -108,6 +109,12 @@ Ideas for post-v2 development. Not yet scheduled or prioritized.
 - [ ] Telehealth/virtual vet consultation booking
 
 ### Monetization
+- [x] Subscription/trial architecture and server-owned entitlements
+- [ ] Complete provider setup and production billing checklist in `MONETIZATION.md`
+- [ ] Complete database and Storage recovery gate in `BACKUP_RECOVERY.md`
 - [ ] Premium tier with advanced analytics
 - [ ] In-app pet supply marketplace
 - [ ] Sponsored provider listings
+
+See `PRODUCT_ROADMAP.md` for the reliability, household, AI, and integration
+sequence that should follow the initial Plus launch.

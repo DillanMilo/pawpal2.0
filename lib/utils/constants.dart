@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppConstants {
@@ -8,6 +9,19 @@ class AppConstants {
   // Optional auth providers. Keep disabled until configured in Supabase.
   static bool get enableGoogleAuth => _envBool('APP_ENABLE_GOOGLE_AUTH');
   static bool get enableAppleAuth => _envBool('APP_ENABLE_APPLE_AUTH');
+
+  // Billing remains behind a release flag until all store products and the
+  // RevenueCat webhook have been verified in sandbox environments.
+  static bool get enableBilling => _envBool('APP_ENABLE_BILLING');
+  static String get revenueCatApiKey {
+    if (kIsWeb) return _env('REVENUECAT_WEB_API_KEY');
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.iOS ||
+      TargetPlatform.macOS => _env('REVENUECAT_IOS_API_KEY'),
+      TargetPlatform.android => _env('REVENUECAT_ANDROID_API_KEY'),
+      _ => '',
+    };
+  }
 
   static String _env(String key, [String fallback = '']) {
     try {
@@ -23,6 +37,20 @@ class AppConstants {
   // App Info
   static const String appName = 'PawPal';
   static const String appVersion = '1.0.0';
+
+  // Subscription catalog. Store/RevenueCat prices are authoritative once
+  // billing is enabled; these values are the marketing fallback shown before
+  // the remote offering has loaded.
+  static const String plusEntitlementId = 'pawpal_plus';
+  static const String plusOfferingId = 'default';
+  static const String monthlyProductId = 'pawpal_plus_monthly';
+  static const String annualProductId = 'pawpal_plus_annual';
+  static const String monthlyDisplayPrice = r'$4.99';
+  static const String annualDisplayPrice = r'$29.99';
+  static const int trialDays = 14;
+  static const int freePetLimit = 1;
+  static const int freeActiveReminderLimit = 5;
+  static const int freeMedicalRecordLimit = 20;
 
   // Storage Buckets
   static const String profilePhotosBucket = 'profile-photos';

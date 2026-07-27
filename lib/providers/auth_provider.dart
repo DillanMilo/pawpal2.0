@@ -218,6 +218,7 @@ class AuthProvider with ChangeNotifier {
             : phoneNumber?.trim(),
         zipCode: zipCode?.trim().isEmpty == true ? null : zipCode?.trim(),
         notificationsEnabled: currentProfile.notificationsEnabled,
+        hasSeenPricing: currentProfile.hasSeenPricing,
         createdAt: currentProfile.createdAt,
         updatedAt: DateTime.now(),
       );
@@ -240,6 +241,24 @@ class AuthProvider with ChangeNotifier {
     try {
       _userProfile = await _authService.updateUserProfile(
         currentProfile.copyWith(notificationsEnabled: enabled),
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completePricingOnboarding() async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+
+    try {
+      _userProfile = await _authService.updateUserProfile(
+        currentProfile.copyWith(hasSeenPricing: true),
       );
       _error = null;
       notifyListeners();

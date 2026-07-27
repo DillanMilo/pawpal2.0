@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../models/medical_record.dart';
 import '../../models/pet.dart';
+import '../../providers/subscription_provider.dart';
 import '../../services/medical_service.dart';
 import '../../services/pet_service.dart';
 import '../../utils/theme.dart';
@@ -113,11 +116,41 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddRecordDialog(),
+        onPressed: _openAddRecordDialog,
         tooltip: 'Add medical record',
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _openAddRecordDialog() async {
+    if (!context.read<SubscriptionProvider>().canAddMedicalRecord(
+      _records.length,
+    )) {
+      final viewPlans = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Keep a complete health history with Plus'),
+          content: const Text(
+            'PawPal Base includes up to 20 medical records. Existing records remain available; Plus unlocks unlimited records and document uploads.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Not now'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('View plans'),
+            ),
+          ],
+        ),
+      );
+      if (viewPlans == true && mounted) context.push('/pricing');
+      return;
+    }
+
+    _showAddRecordDialog();
   }
 
   Widget _buildRecordsList(MedicalRecordType? type) {

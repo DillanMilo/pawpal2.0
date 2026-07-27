@@ -1,6 +1,8 @@
 # Environment secrets
 .env
 .env.local
+scripts/backup/.env
+backups/
 supabase/.temp/
 .claude/
 

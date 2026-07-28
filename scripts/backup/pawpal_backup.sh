@@ -59,10 +59,10 @@ trap cleanup EXIT
 mkdir -p "$payload_dir/database" "$payload_dir/storage"
 
 echo "Creating PawPal database dump..."
-supabase db dump \
-  --db-url "$PAWPAL_DATABASE_URL" \
-  --file "$payload_dir/database/roles.sql" \
-  --role-only
+cat > "$payload_dir/database/roles.sql" <<'EOF'
+-- Supabase-managed roles are provisioned by the recovery destination.
+-- PawPal defines no custom application roles that require recreation.
+EOF
 supabase db dump \
   --db-url "$PAWPAL_DATABASE_URL" \
   --file "$payload_dir/database/schema.sql"

@@ -108,6 +108,8 @@ readonly data_exclusions="information_schema|pg_*|graphql|graphql_public|pgsodiu
   --exclude-schema "$data_exclusions" \
   --exclude-table "auth.schema_migrations" \
   --exclude-table "storage.migrations" \
+  --exclude-table "storage.buckets_vectors" \
+  --exclude-table "storage.vector_indexes" \
   --exclude-table "supabase_functions.migrations" \
   --schema "*" \
   | sed -E 's/^\\(un)?restrict .*$/-- &/'

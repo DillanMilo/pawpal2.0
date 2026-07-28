@@ -16,28 +16,21 @@ Updated July 28, 2026.
 - Billing stays disabled until the store products, RevenueCat offering,
   webhook, and sandbox purchases are confirmed.
 - Cloudflare R2 is private and bucket-scoped, with a 90-day lock and deletion
-  after 180 days. Scheduled backups remain disabled pending source secrets and
-  a verified recovery run.
+  after 180 days. The encrypted database-and-Storage recovery path passed its
+  isolated restore drill, and nightly backups are enabled.
 
 ## Required owner actions
 
-### Supabase backup source
+### Backup operations
 
-Sign in to the Supabase account that owns project
-`esrxaniydzgzxxxwzqca`, then:
+The Supabase source credential, dedicated database role, independent
+encryption passphrase, R2 destination, and GitHub secrets are configured.
+Manual run `30404333546` verified backup `20260728T222318Z` through a complete
+isolated database-and-Storage restore. Nightly backups are enabled.
 
-1. Storage > Settings > S3 Access Keys: create a server-only access key.
-2. Add its two values as GitHub Actions repository secrets:
-   `PAWPAL_SOURCE_S3_ACCESS_KEY_ID` and
-   `PAWPAL_SOURCE_S3_SECRET_ACCESS_KEY`.
-3. Add the direct or session-pooler PostgreSQL connection string as
-   `PAWPAL_DATABASE_URL`. Do not place the database password in the repository.
-4. Generate a long random encryption passphrase, save it in an independent
-   password manager, and add it as
-   `PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE`.
-5. Run **PawPal Backup** manually, verify the uploaded encrypted archive with
-   `scripts/backup/verify_backup.sh`, and perform an isolated restore drill.
-6. Only then create `PAWPAL_BACKUPS_ENABLED=true` in GitHub Actions variables.
+The remaining operational action is to configure GitHub Actions failure
+notifications for the recovery owner and repeat the hands-on recovery drill
+quarterly.
 
 ### Apple Developer and TestFlight
 

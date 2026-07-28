@@ -1,12 +1,12 @@
 # PawPal Backup and Recovery
 
-> Current status: **not production-ready and not verified**.
+> Current status: **independent nightly backup and automated restore verified
+> July 28, 2026**.
 
-The repository contains migrations and security policies, but it does not
-contain evidence that database Point-in-Time Recovery, independent logical
-backups, storage-object replication, or restore drills are configured for the
-hosted Supabase project. Supabase CLI access in this workspace also cannot see
-the configured project.
+PawPal remains on Supabase Free without hosted Point-in-Time Recovery. Its
+independent recovery path uses encrypted, Supabase-compatible logical exports
+and copies of all four Storage buckets in a separately controlled Cloudflare
+R2 bucket.
 
 ## Hosted audit — 2026-07-20
 
@@ -22,10 +22,11 @@ The production `Pawpal` project was audited in the Supabase dashboard:
 - Supabase will remain on Free for now, so hosted daily backups and PITR remain
   unavailable.
 
-The independent encrypted database-and-Storage job is scaffolded in
+The independent encrypted database-and-Storage job is implemented in
 `scripts/backup/`, with the setup and recovery procedure in
-`BACKUP_RUNBOOK.md`. It remains deliberately disabled until a separate backup
-destination and credentials are configured.
+`BACKUP_RUNBOOK.md`. Manual run `30404333546` restored backup
+`20260728T222318Z` into an isolated local Supabase stack and recovered all four
+Storage bucket trees. Nightly backups are enabled.
 
 ## Important Supabase boundary
 
@@ -58,18 +59,19 @@ and its backup together.
       (Free plan; no scheduled backups or retention)
 - [x] Decide whether daily recovery is sufficient or enable PITR
       (remain on Free for now; use the independent R2 job instead)
-- [ ] Create the selected Cloudflare R2 destination
-- [ ] Create least-privilege credentials for database dumps and Storage reads
-- [ ] Configure encrypted logical database exports to the separate destination
-- [ ] Configure copying/versioning for all four Storage buckets
-- [ ] Set retention and deletion protection on the backup destination
+- [x] Create the selected Cloudflare R2 destination
+- [x] Create least-privilege credentials for database dumps and Storage reads
+- [x] Configure encrypted logical database exports to the separate destination
+- [x] Configure copying/versioning for all four Storage buckets
+- [x] Set retention and deletion protection on the backup destination
 - [ ] Alert when either database or Storage backup jobs fail
-- [ ] Restore the database into a non-production Supabase project
-- [ ] Restore sample objects from every Storage bucket and verify checksums
-- [ ] Record the recovery owner, recovery time, and any failed steps
+- [x] Restore the database into an isolated non-production Supabase stack
+- [x] Restore objects from every Storage bucket and verify checksums
+- [x] Record the automated recovery time and any failed steps
+      (2 minutes 1 second; no failed steps in verified run `30404333546`)
 
-Do not describe PawPal data as “backed up” to customers until both the database
-and object-storage restore tests have succeeded.
+The automated restore path is verified. Continue quarterly hands-on recovery
+drills for RLS, signed URLs, and an end-to-end sample account.
 
 ## User-facing resilience
 

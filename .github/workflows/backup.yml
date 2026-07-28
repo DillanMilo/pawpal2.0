@@ -18,6 +18,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || vars.PAWPAL_BACKUPS_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      backup_id: ${{ steps.create_backup.outputs.backup_id }}
+      archive_name: ${{ steps.create_backup.outputs.archive_name }}
     env:
       PAWPAL_DATABASE_URL: ${{ secrets.PAWPAL_DATABASE_URL }}
       PAWPAL_SOURCE_S3_ENDPOINT: ${{ secrets.PAWPAL_SOURCE_S3_ENDPOINT }}
@@ -61,6 +64,12 @@ jobs:
             exit 1
           fi
 
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.110.0
+          github-token: ${{ github.token }}
+
       - name: Install PostgreSQL 17 client and AWS CLI
         run: |
           sudo apt-get update
@@ -84,4 +93,132 @@ jobs:
           aws --version
 
       - name: Create encrypted independent backup
+        id: create_backup
         run: bash scripts/backup/pawpal_backup.sh
+
+  restore-drill:
+    name: Isolated restore drill
+    if: github.event_name == 'workflow_dispatch'
+    needs: backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PAWPAL_BACKUP_S3_URI: ${{ secrets.PAWPAL_BACKUP_S3_URI }}
+      PAWPAL_BACKUP_S3_REGION: ${{ secrets.PAWPAL_BACKUP_S3_REGION }}
+      PAWPAL_BACKUP_S3_ENDPOINT: ${{ secrets.PAWPAL_BACKUP_S3_ENDPOINT }}
+      PAWPAL_BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.PAWPAL_BACKUP_S3_ACCESS_KEY_ID }}
+      PAWPAL_BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.PAWPAL_BACKUP_S3_SECRET_ACCESS_KEY }}
+      PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE }}
+      BACKUP_ID: ${{ needs.backup.outputs.backup_id }}
+      ARCHIVE_NAME: ${{ needs.backup.outputs.archive_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.110.0
+          github-token: ${{ github.token }}
+
+      - name: Install PostgreSQL 17 client and AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg unzip
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl --fail --silent --show-error \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor --yes --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          source /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          curl --fail --silent --show-error \
+            https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+            --output "$RUNNER_TEMP/awscliv2.zip"
+          unzip -q "$RUNNER_TEMP/awscliv2.zip" -d "$RUNNER_TEMP"
+          sudo "$RUNNER_TEMP/aws/install" --update
+
+      - name: Download and verify encrypted backup
+        id: verify
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          restore_dir="$RUNNER_TEMP/pawpal-restore"
+          mkdir -p "$restore_dir"
+          archive="$restore_dir/$ARCHIVE_NAME"
+          destination="${PAWPAL_BACKUP_S3_URI%/}/$BACKUP_ID"
+          endpoint_args=()
+          if [[ -n "${PAWPAL_BACKUP_S3_ENDPOINT:-}" ]]; then
+            endpoint_args+=(--endpoint-url "$PAWPAL_BACKUP_S3_ENDPOINT")
+          fi
+          export AWS_ACCESS_KEY_ID="$PAWPAL_BACKUP_S3_ACCESS_KEY_ID"
+          export AWS_SECRET_ACCESS_KEY="$PAWPAL_BACKUP_S3_SECRET_ACCESS_KEY"
+          export AWS_DEFAULT_REGION="$PAWPAL_BACKUP_S3_REGION"
+          aws s3 cp "$destination/$ARCHIVE_NAME" "$archive" \
+            "${endpoint_args[@]}" --only-show-errors
+          aws s3 cp "$destination/$ARCHIVE_NAME.sha256" \
+            "$archive.sha256" "${endpoint_args[@]}" --only-show-errors
+          (
+            cd "$restore_dir"
+            sha256sum --check "$ARCHIVE_NAME.sha256"
+          )
+          bash scripts/backup/verify_backup.sh "$archive"
+          payload_dir="$restore_dir/payload"
+          mkdir -p "$payload_dir"
+          openssl enc -d \
+            -aes-256-cbc \
+            -pbkdf2 \
+            -iter 200000 \
+            -pass env:PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE \
+            -in "$archive" | tar -C "$payload_dir" -xzf -
+          echo "payload_dir=$payload_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Restore into isolated local Supabase
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          payload_dir="${{ steps.verify.outputs.payload_dir }}"
+          mv supabase/migrations "$RUNNER_TEMP/pawpal-migrations"
+          mkdir -p supabase/migrations
+          supabase db start
+          restore_url="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          psql \
+            --single-transaction \
+            --variable ON_ERROR_STOP=1 \
+            --file "$payload_dir/database/roles.sql" \
+            --file "$payload_dir/database/schema.sql" \
+            --command "SET session_replication_role = replica" \
+            --file "$payload_dir/database/data.sql" \
+            --dbname "$restore_url"
+          public_tables="$(psql "$restore_url" --no-psqlrc --tuples-only \
+            --command "select count(*) from pg_tables where schemaname = 'public'")"
+          auth_users="$(psql "$restore_url" --no-psqlrc --tuples-only \
+            --command "select count(*) from auth.users")"
+          if (( public_tables < 1 )); then
+            echo "Restore drill found no public tables." >&2
+            exit 1
+          fi
+          echo "Restore drill succeeded with $public_tables public tables and $auth_users auth users."
+
+      - name: Verify isolated Storage object recovery
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          payload_dir="${{ steps.verify.outputs.payload_dir }}"
+          recovery_dir="$RUNNER_TEMP/pawpal-storage-recovery"
+          mkdir -p "$recovery_dir"
+          for bucket in profile-photos pet-photos medical-documents activity-photos; do
+            cp -R "$payload_dir/storage/$bucket" "$recovery_dir/$bucket"
+          done
+          (
+            cd "$recovery_dir"
+            find . -type f -print0 | sort -z | xargs -0 shasum -a 256 \
+              > "$RUNNER_TEMP/restored-storage-sha256.txt"
+          )
+          echo "Restored all four Storage bucket trees into an isolated recovery directory."
+
+      - name: Stop isolated Supabase
+        if: always()
+        run: supabase stop --no-backup || true

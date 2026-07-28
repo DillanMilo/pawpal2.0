@@ -9,7 +9,7 @@ if [[ -z "${PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE:-}" ]]; then
   echo "Missing PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE" >&2
   exit 1
 fi
-for command_name in openssl tar pg_restore; do
+for command_name in openssl tar; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Required command is not installed: $command_name" >&2
     exit 1
@@ -51,7 +51,12 @@ while read -r expected relative_path; do
   fi
 done < "$working_dir/SHA256SUMS"
 
-pg_restore --list "$working_dir/database/pawpal.pgdump" >/dev/null
+for dump_file in roles.sql schema.sql data.sql; do
+  if [[ ! -s "$working_dir/database/$dump_file" ]]; then
+    echo "Missing or empty database payload: database/$dump_file" >&2
+    exit 1
+  fi
+done
 
 for bucket in profile-photos pet-photos medical-documents activity-photos; do
   if [[ ! -d "$working_dir/storage/$bucket" ]]; then

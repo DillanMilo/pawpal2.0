@@ -30,7 +30,7 @@ for name in \
   require_var "$name"
 done
 
-for command_name in pg_dump aws openssl tar; do
+for command_name in supabase docker aws openssl tar; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Required command is not installed: $command_name" >&2
     exit 1
@@ -59,12 +59,18 @@ trap cleanup EXIT
 mkdir -p "$payload_dir/database" "$payload_dir/storage"
 
 echo "Creating PawPal database dump..."
-pg_dump \
-  --dbname="$PAWPAL_DATABASE_URL" \
-  --format=custom \
-  --no-owner \
-  --no-acl \
-  --file="$payload_dir/database/pawpal.pgdump"
+supabase db dump \
+  --db-url "$PAWPAL_DATABASE_URL" \
+  --file "$payload_dir/database/roles.sql" \
+  --role-only
+supabase db dump \
+  --db-url "$PAWPAL_DATABASE_URL" \
+  --file "$payload_dir/database/schema.sql"
+supabase db dump \
+  --db-url "$PAWPAL_DATABASE_URL" \
+  --file "$payload_dir/database/data.sql" \
+  --data-only \
+  --use-copy
 
 echo "Copying PawPal Storage buckets..."
 for bucket in "${PAWPAL_BUCKETS[@]}"; do
@@ -83,7 +89,7 @@ done
   echo "backup_id=$backup_id"
   echo "started_at=$backup_started_at"
   echo "completed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  echo "database_format=postgres_custom"
+  echo "database_format=supabase_roles_schema_data_sql"
   echo "storage_buckets=${PAWPAL_BUCKETS[*]}"
 } > "$payload_dir/backup-metadata.txt"
 
@@ -127,3 +133,10 @@ AWS_DEFAULT_REGION="$PAWPAL_BACKUP_S3_REGION" \
     "${destination_args[@]}" --only-show-errors
 
 echo "Backup uploaded successfully: $destination"
+
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  {
+    echo "backup_id=$backup_id"
+    echo "archive_name=$(basename "$encrypted_archive")"
+  } >> "$GITHUB_OUTPUT"
+fi

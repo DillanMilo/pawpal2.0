@@ -64,7 +64,7 @@ jobs:
       - name: Install PostgreSQL 17 client and AWS CLI
         run: |
           sudo apt-get update
-          sudo apt-get install -y ca-certificates curl gnupg
+          sudo apt-get install -y ca-certificates curl gnupg unzip
           sudo install -d /usr/share/postgresql-common/pgdg
           curl --fail --silent --show-error \
             https://www.postgresql.org/media/keys/ACCC4CF8.asc \
@@ -73,7 +73,13 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
           sudo apt-get update
-          sudo apt-get install -y postgresql-client-17 awscli
+          sudo apt-get install -y postgresql-client-17
+          curl --fail --silent --show-error \
+            https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+            --output "$RUNNER_TEMP/awscliv2.zip"
+          unzip -q "$RUNNER_TEMP/awscliv2.zip" -d "$RUNNER_TEMP"
+          sudo "$RUNNER_TEMP/aws/install" --update
+          aws --version
 
       - name: Create encrypted independent backup
         run: bash scripts/backup/pawpal_backup.sh

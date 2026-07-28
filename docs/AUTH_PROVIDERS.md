@@ -60,6 +60,11 @@ APP_ENABLE_GOOGLE_AUTH=true
 APP_ENABLE_APPLE_AUTH=true
 ```
 
+On iOS and macOS, PawPal fails closed: Google is hidden unless Apple is also
+enabled. This prevents an accidental App Store Guideline 4.8 violation while
+the Apple Developer and Supabase provider setup is incomplete. Email/password
+continues to work.
+
 For Vercel or other hosted environments, set the same flags in the deployment environment.
 
 ## Code-side deep links

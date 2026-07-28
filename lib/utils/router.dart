@@ -28,6 +28,7 @@ import '../screens/quick_actions/add_grooming_screen.dart';
 import '../screens/services/services_screen.dart';
 import '../screens/services/business_listing_screen.dart';
 import '../screens/subscription/pricing_screen.dart';
+import '../screens/legal/legal_screens.dart';
 import '../services/places_service.dart';
 import '../models/subscription_feature.dart';
 import '../widgets/premium_feature_gate.dart';
@@ -63,6 +64,10 @@ class AppRouter {
         final isSplash = state.matchedLocation == '/splash';
         final isAuthCallback = state.matchedLocation == '/auth/callback';
         final isPricingOnboarding = state.matchedLocation == '/welcome';
+        final isLegalRoute =
+            state.matchedLocation == '/privacy' ||
+            state.matchedLocation == '/terms' ||
+            state.matchedLocation == '/support';
 
         // Keep OAuth callbacks stable while Supabase recovers the session.
         if (isAuthCallback) {
@@ -71,7 +76,11 @@ class AppRouter {
         }
 
         // Redirect to login if not authenticated.
-        if (!isAuthenticated && !isAuthRoute && !isSplash && !isResolvingAuth) {
+        if (!isAuthenticated &&
+            !isAuthRoute &&
+            !isLegalRoute &&
+            !isSplash &&
+            !isResolvingAuth) {
           return '/login';
         }
 
@@ -79,7 +88,8 @@ class AppRouter {
         // before entering the main app. The flag is persisted in Supabase.
         if (isAuthenticated &&
             authProvider.userProfile?.hasSeenPricing == false &&
-            !isPricingOnboarding) {
+            !isPricingOnboarding &&
+            !isLegalRoute) {
           return '/welcome';
         }
 
@@ -152,6 +162,18 @@ class AppRouter {
         GoRoute(
           path: '/auth/callback',
           builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/privacy',
+          builder: (context, state) => const PrivacyPolicyScreen(),
+        ),
+        GoRoute(
+          path: '/terms',
+          builder: (context, state) => const TermsOfServiceScreen(),
+        ),
+        GoRoute(
+          path: '/support',
+          builder: (context, state) => const SupportScreen(),
         ),
         GoRoute(
           path: '/welcome',

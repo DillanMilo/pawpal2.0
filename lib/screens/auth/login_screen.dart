@@ -180,8 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             )
                           : const Text('Log In'),
                     ),
-                    if (AppConstants.enableGoogleAuth ||
-                        AppConstants.enableAppleAuth) ...[
+                    if (AppConstants.enableGoogleAuthForCurrentPlatform ||
+                        AppConstants.enableAppleAuthForCurrentPlatform) ...[
                       const SizedBox(height: 24),
                       Row(
                         children: [
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      if (AppConstants.enableGoogleAuth) ...[
+                      if (AppConstants.enableGoogleAuthForCurrentPlatform) ...[
                         OutlinedButton.icon(
                           onPressed: authProvider.isLoading
                               ? null
@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 12),
                       ],
-                      if (AppConstants.enableAppleAuth)
+                      if (AppConstants.enableAppleAuthForCurrentPlatform)
                         OutlinedButton.icon(
                           onPressed: authProvider.isLoading
                               ? null
@@ -234,6 +234,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextButton(
                           onPressed: () => context.push('/register'),
                           child: const Text('Sign Up'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 4,
+                      children: [
+                        TextButton(
+                          onPressed: () => context.push('/privacy'),
+                          child: const Text('Privacy'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/terms'),
+                          child: const Text('Terms'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/support'),
+                          child: const Text('Support'),
                         ),
                       ],
                     ),

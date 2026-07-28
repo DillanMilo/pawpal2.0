@@ -56,13 +56,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build unsigned release APK for verification
+        env:
+          # This artifact verifies the release configuration but is not suitable
+          # for Play Console upload. Store releases must use key.properties.
+          PAWPAL_ALLOW_UNSIGNED_RELEASE: "true"
         run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pawpal-apk
+          name: pawpal-ci-unsigned-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
   # ── Build iOS (no codesign) ───────────────────────────────────

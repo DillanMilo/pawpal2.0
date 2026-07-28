@@ -245,8 +245,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: AppTheme.textLight,
                       ),
                     ),
-                    if (AppConstants.enableGoogleAuth ||
-                        AppConstants.enableAppleAuth) ...[
+                    if (AppConstants.enableGoogleAuthForCurrentPlatform ||
+                        AppConstants.enableAppleAuthForCurrentPlatform) ...[
                       const SizedBox(height: 24),
                       Row(
                         children: [
@@ -265,7 +265,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      if (AppConstants.enableGoogleAuth) ...[
+                      if (AppConstants.enableGoogleAuthForCurrentPlatform) ...[
                         OutlinedButton.icon(
                           onPressed: authProvider.isLoading
                               ? null
@@ -277,7 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 12),
                       ],
-                      if (AppConstants.enableAppleAuth)
+                      if (AppConstants.enableAppleAuthForCurrentPlatform)
                         OutlinedButton.icon(
                           onPressed: authProvider.isLoading
                               ? null
@@ -289,11 +289,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                     ],
                     const SizedBox(height: 16),
-                    // Terms text
-                    Text(
-                      'By creating an account, you agree to our Terms of Service and Privacy Policy',
-                      style: TextStyle(fontSize: 12, color: AppTheme.textLight),
-                      textAlign: TextAlign.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          'By creating an account, you agree to our ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/terms'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            minimumSize: const Size(0, 36),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('Terms of Service'),
+                        ),
+                        Text(
+                          ' and ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/privacy'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            minimumSize: const Size(0, 36),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('Privacy Policy'),
+                        ),
+                        const Text('.'),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     // Sign in link

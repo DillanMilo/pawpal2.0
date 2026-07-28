@@ -33,6 +33,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate backup configuration
+        shell: bash
+        run: |
+          required=(
+            PAWPAL_DATABASE_URL
+            PAWPAL_SOURCE_S3_ENDPOINT
+            PAWPAL_SOURCE_S3_REGION
+            PAWPAL_SOURCE_S3_ACCESS_KEY_ID
+            PAWPAL_SOURCE_S3_SECRET_ACCESS_KEY
+            PAWPAL_BACKUP_S3_URI
+            PAWPAL_BACKUP_S3_REGION
+            PAWPAL_BACKUP_S3_ENDPOINT
+            PAWPAL_BACKUP_S3_ACCESS_KEY_ID
+            PAWPAL_BACKUP_S3_SECRET_ACCESS_KEY
+            PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE
+          )
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            printf '::error::Missing required Actions secrets: %s\n' \
+              "$(IFS=', '; echo "${missing[*]}")"
+            exit 1
+          fi
+
       - name: Install PostgreSQL 17 client and AWS CLI
         run: |
           sudo apt-get update

@@ -8,7 +8,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../models/medical_record.dart';
 import '../../models/user_profile.dart';
 import '../../providers/auth_provider.dart';
@@ -438,7 +437,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _MenuItem(
                 icon: Icons.help_outline,
                 title: 'Help & Support',
-                onTap: () => _contactSupport(context),
+                onTap: () => context.push('/support'),
+              ),
+              _MenuItem(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                onTap: () => context.push('/privacy'),
+              ),
+              _MenuItem(
+                icon: Icons.description_outlined,
+                title: 'Terms of Service',
+                onTap: () => context.push('/terms'),
               ),
               _MenuItem(
                 icon: Icons.info_outline,
@@ -481,22 +490,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _contactSupport(BuildContext context) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'creativecurrentsx@gmail.com',
-      query: 'subject=PawPal Support',
-    );
-    final launched = await canLaunchUrl(uri) && await launchUrl(uri);
-    if (!launched && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email us at creativecurrentsx@gmail.com'),
-        ),
-      );
-    }
   }
 
   Future<void> _confirmAndExportData(BuildContext context) async {

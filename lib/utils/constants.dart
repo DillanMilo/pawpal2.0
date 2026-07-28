@@ -10,6 +10,16 @@ class AppConstants {
   static bool get enableGoogleAuth => _envBool('APP_ENABLE_GOOGLE_AUTH');
   static bool get enableAppleAuth => _envBool('APP_ENABLE_APPLE_AUTH');
 
+  /// Apple review requires Sign in with Apple when another third-party login
+  /// is offered. Fail closed on Apple platforms if Apple auth is not ready.
+  static bool get enableGoogleAuthForCurrentPlatform =>
+      enableGoogleAuth && (!_isApplePlatform || enableAppleAuth);
+  static bool get enableAppleAuthForCurrentPlatform => enableAppleAuth;
+  static bool get _isApplePlatform =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS);
+
   // Billing remains behind a release flag until all store products and the
   // RevenueCat webhook have been verified in sandbox environments.
   static bool get enableBilling => _envBool('APP_ENABLE_BILLING');

@@ -74,12 +74,20 @@ GitHub handoff and was never written to the repository or app.
    it can read all required schemas, including `auth` and `storage` metadata.
 5. The five R2 destination values are in GitHub Actions secrets. Add the five
    Supabase source values plus `PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE`; keep the
-   passphrase in an independent password manager.
+   passphrase in an independent password manager. The source endpoint and
+   region are already stored. The remaining secrets are:
+   `PAWPAL_DATABASE_URL`, `PAWPAL_SOURCE_S3_ACCESS_KEY_ID`,
+   `PAWPAL_SOURCE_S3_SECRET_ACCESS_KEY`, and
+   `PAWPAL_BACKUP_ENCRYPTION_PASSPHRASE`.
 6. Run the workflow manually. Download the encrypted object from the backup
    account and run `verify_backup.sh` locally.
 7. Set the repository variable `PAWPAL_BACKUPS_ENABLED=true` only after the
    manual run succeeds. Configure GitHub Actions failure notifications for the
    recovery owner.
+
+The workflow performs a names-only preflight before installing tools. Missing
+secret values are never printed. Leave `PAWPAL_BACKUPS_ENABLED` absent or
+`false` until the manual backup and restore verification succeed.
 
 ## Recovery drill still required
 

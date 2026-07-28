@@ -19,10 +19,12 @@ if (hasReleaseKeystore) {
 val releaseTaskRequested = gradle.startParameter.taskNames.any {
     it.contains("Release", ignoreCase = true)
 }
+val allowUnsignedRelease =
+    providers.environmentVariable("PAWPAL_ALLOW_UNSIGNED_RELEASE").orNull == "true"
 
-if (releaseTaskRequested && !hasReleaseKeystore) {
+if (releaseTaskRequested && !hasReleaseKeystore && !allowUnsignedRelease) {
     throw GradleException(
-        "Missing android/key.properties. Copy android/key.properties.example, fill it in, and point storeFile at the Android upload keystore.",
+        "Missing android/key.properties. Copy android/key.properties.example, fill it in, and point storeFile at the Android upload keystore. CI may set PAWPAL_ALLOW_UNSIGNED_RELEASE=true for a non-publishable verification build.",
     )
 }
 

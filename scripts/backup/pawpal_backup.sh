@@ -30,7 +30,7 @@ for name in \
   require_var "$name"
 done
 
-for command_name in supabase docker aws openssl tar; do
+for command_name in pg_dump aws openssl tar; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Required command is not installed: $command_name" >&2
     exit 1
@@ -63,14 +63,56 @@ cat > "$payload_dir/database/roles.sql" <<'EOF'
 -- Supabase-managed roles are provisioned by the recovery destination.
 -- PawPal defines no custom application roles that require recreation.
 EOF
-supabase db dump \
-  --db-url "$PAWPAL_DATABASE_URL" \
-  --file "$payload_dir/database/schema.sql"
-supabase db dump \
-  --db-url "$PAWPAL_DATABASE_URL" \
-  --file "$payload_dir/database/data.sql" \
+
+readonly schema_exclusions="information_schema|pg_*|_analytics|_realtime|_supavisor|auth|extensions|pgbouncer|realtime|storage|supabase_functions|supabase_migrations|cron|dbdev|graphql|graphql_public|net|pgmq|pgsodium|pgsodium_masks|pgtle|repack|tiger|tiger_data|timescaledb_*|_timescaledb_*|topology|vault"
+pg_dump \
+  --dbname="$PAWPAL_DATABASE_URL" \
+  --schema-only \
+  --quote-all-identifiers \
+  --exclude-schema "$schema_exclusions" \
+| sed -E 's/^\\(un)?restrict .*$/-- &/' \
+| sed -E 's/^CREATE SCHEMA "/CREATE SCHEMA IF NOT EXISTS "/' \
+| sed -E 's/^CREATE TABLE "/CREATE TABLE IF NOT EXISTS "/' \
+| sed -E 's/^CREATE SEQUENCE "/CREATE SEQUENCE IF NOT EXISTS "/' \
+| sed -E 's/^CREATE VIEW "/CREATE OR REPLACE VIEW "/' \
+| sed -E 's/^CREATE FUNCTION "/CREATE OR REPLACE FUNCTION "/' \
+| sed -E 's/^CREATE TRIGGER "/CREATE OR REPLACE TRIGGER "/' \
+| sed -E 's/^CREATE PUBLICATION "supabase_realtime/-- &/' \
+| sed -E 's/^CREATE EVENT TRIGGER /-- &/' \
+| sed -E 's/^         WHEN TAG IN /-- &/' \
+| sed -E 's/^   EXECUTE FUNCTION /-- &/' \
+| sed -E 's/^ALTER EVENT TRIGGER /-- &/' \
+| sed -E 's/^ALTER PUBLICATION "supabase_realtime_/-- &/' \
+| sed -E 's/^ALTER FOREIGN DATA WRAPPER (.+) OWNER TO /-- &/' \
+| sed -E 's/^ALTER DEFAULT PRIVILEGES FOR ROLE "supabase_admin"/-- &/' \
+| sed -E 's/^GRANT ALL ON FOREIGN DATA WRAPPER (.+) TO "postgres" WITH GRANT OPTION/-- &/' \
+| sed -E "s/^GRANT (.+) ON (.+) \"($schema_exclusions)\"/-- &/" \
+| sed -E "s/^REVOKE (.+) ON (.+) \"($schema_exclusions)\"/-- &/" \
+| sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pg_tle").+/\1;/' \
+| sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgsodium").+/\1;/' \
+| sed -E 's/^(CREATE EXTENSION IF NOT EXISTS "pgmq").+/\1;/' \
+| sed -E 's/^COMMENT ON EXTENSION (.+)/-- &/' \
+| sed -E 's/^CREATE POLICY "cron_job_/-- &/' \
+| sed -E 's/^ALTER TABLE "cron"/-- &/' \
+| sed -E 's/^SET transaction_timeout = 0;/-- &/' \
+| sed -E '/^--/d' \
+> "$payload_dir/database/schema.sql"
+
+readonly data_exclusions="information_schema|pg_*|graphql|graphql_public|pgsodium|pgsodium_masks|pgtle|repack|tiger|tiger_data|timescaledb_*|_timescaledb_*|topology|vault|extensions|pgbouncer|realtime|supabase_migrations|_analytics|_realtime|_supavisor"
+{
+  printf 'SET session_replication_role = replica;\n\n'
+  pg_dump \
+  --dbname="$PAWPAL_DATABASE_URL" \
   --data-only \
-  --use-copy
+  --quote-all-identifiers \
+  --exclude-schema "$data_exclusions" \
+  --exclude-table "auth.schema_migrations" \
+  --exclude-table "storage.migrations" \
+  --exclude-table "supabase_functions.migrations" \
+  --schema "*" \
+  | sed -E 's/^\\(un)?restrict .*$/-- &/'
+  printf '\nRESET ALL;\n'
+} > "$payload_dir/database/data.sql"
 
 echo "Copying PawPal Storage buckets..."
 for bucket in "${PAWPAL_BUCKETS[@]}"; do

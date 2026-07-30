@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
+import '../../widgets/social_auth_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -265,27 +266,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      if (AppConstants.enableGoogleAuthForCurrentPlatform) ...[
-                        OutlinedButton.icon(
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthRegister(
-                                  authProvider.signInWithGoogle,
-                                ),
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Continue with Google'),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (AppConstants.enableAppleAuthForCurrentPlatform)
-                        OutlinedButton.icon(
+                      if (AppConstants.enableAppleAuthForCurrentPlatform) ...[
+                        SocialAuthButton(
+                          provider: SocialAuthProvider.apple,
                           onPressed: authProvider.isLoading
                               ? null
                               : () => _handleOAuthRegister(
                                   authProvider.signInWithApple,
                                 ),
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Continue with Apple'),
+                        ),
+                        if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                          const SizedBox(height: 12),
+                      ],
+                      if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                        SocialAuthButton(
+                          provider: SocialAuthProvider.google,
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () => _handleOAuthRegister(
+                                  authProvider.signInWithGoogle,
+                                ),
                         ),
                     ],
                     const SizedBox(height: 16),

@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme.dart';
 import '../../widgets/brand_mark.dart';
+import '../../widgets/social_auth_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -200,27 +201,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      if (AppConstants.enableGoogleAuthForCurrentPlatform) ...[
-                        OutlinedButton.icon(
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthLogin(
-                                  authProvider.signInWithGoogle,
-                                ),
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Continue with Google'),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (AppConstants.enableAppleAuthForCurrentPlatform)
-                        OutlinedButton.icon(
+                      if (AppConstants.enableAppleAuthForCurrentPlatform) ...[
+                        SocialAuthButton(
+                          provider: SocialAuthProvider.apple,
                           onPressed: authProvider.isLoading
                               ? null
                               : () => _handleOAuthLogin(
                                   authProvider.signInWithApple,
                                 ),
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Continue with Apple'),
+                        ),
+                        if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                          const SizedBox(height: 12),
+                      ],
+                      if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                        SocialAuthButton(
+                          provider: SocialAuthProvider.google,
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () => _handleOAuthLogin(
+                                  authProvider.signInWithGoogle,
+                                ),
                         ),
                     ],
                     const SizedBox(height: 32),

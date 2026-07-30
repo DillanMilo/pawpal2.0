@@ -42,6 +42,7 @@ class AuthService {
     final response = await _client.auth.signInWithOAuth(
       OAuthProvider.google,
       redirectTo: _oauthRedirectUrl,
+      queryParams: const {'prompt': 'select_account'},
       authScreenLaunchMode: kIsWeb
           ? LaunchMode.platformDefault
           : LaunchMode.externalApplication,

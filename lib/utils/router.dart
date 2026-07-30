@@ -112,7 +112,11 @@ class AppRouter {
         return null;
       },
       onException: (context, state, router) {
-        router.go('/not-found');
+        // A cached provider tab can still return a legacy fragment callback.
+        // Supabase should recover that session instead of showing a false 404.
+        router.go(
+          isOAuthCallbackUri(state.uri) ? '/auth/callback' : '/not-found',
+        );
       },
       routes: [
         // Error / not found route
@@ -343,5 +347,20 @@ class AppRouter {
         ),
       ],
     );
+  }
+
+  static bool isOAuthCallbackUri(Uri uri) {
+    if (uri.path == '/auth/callback') return true;
+
+    final callbackValues = <String>[
+      uri.toString(),
+      uri.fragment,
+      uri.path,
+    ].join('&');
+
+    return callbackValues.contains('code=') ||
+        callbackValues.contains('access_token=') ||
+        callbackValues.contains('refresh_token=') ||
+        callbackValues.contains('error_description=');
   }
 }

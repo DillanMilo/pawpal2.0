@@ -21,6 +21,8 @@ void main() {
     'spayed_neutered': true,
     'adoption_date': DateTime(2022, 5, 1).toIso8601String(),
     'display_order': 3,
+    'profile_frame_id': 'sunset',
+    'profile_accessory_id': 'play_ball',
     'created_at': now.toIso8601String(),
     'updated_at': now.toIso8601String(),
   };
@@ -54,6 +56,8 @@ void main() {
       expect(pet.spayedNeutered, true);
       expect(pet.adoptionDate, DateTime(2022, 5, 1));
       expect(pet.displayOrder, 3);
+      expect(pet.profileFrameId, 'sunset');
+      expect(pet.profileAccessoryId, 'play_ball');
       expect(pet.createdAt, now);
       expect(pet.updatedAt, now);
     });
@@ -73,6 +77,8 @@ void main() {
       expect(pet.spayedNeutered, false);
       expect(pet.adoptionDate, isNull);
       expect(pet.displayOrder, 0);
+      expect(pet.profileFrameId, 'classic');
+      expect(pet.profileAccessoryId, 'none');
     });
 
     test('defaults spayedNeutered to false when missing', () {
@@ -97,6 +103,8 @@ void main() {
       expect(json['spayed_neutered'], true);
       expect(json['cover_photo_url'], 'https://example.com/cover.jpg');
       expect(json['display_order'], 3);
+      expect(json['profile_frame_id'], 'sunset');
+      expect(json['profile_accessory_id'], 'play_ball');
       expect(json['date_of_birth'], isA<String>());
       expect(json['created_at'], isA<String>());
     });
@@ -127,17 +135,27 @@ void main() {
       expect(roundTripped.dateOfBirth, original.dateOfBirth);
       expect(roundTripped.coverPhotoUrl, original.coverPhotoUrl);
       expect(roundTripped.displayOrder, original.displayOrder);
+      expect(roundTripped.profileFrameId, original.profileFrameId);
+      expect(roundTripped.profileAccessoryId, original.profileAccessoryId);
     });
   });
 
   group('Pet.copyWith', () {
     test('overrides specified fields and keeps others', () {
       final pet = Pet.fromJson(fullJson());
-      final updated = pet.copyWith(name: 'Max', weight: 35.0, displayOrder: 1);
+      final updated = pet.copyWith(
+        name: 'Max',
+        weight: 35.0,
+        displayOrder: 1,
+        profileFrameId: 'starlight',
+        profileAccessoryId: 'crown',
+      );
 
       expect(updated.name, 'Max');
       expect(updated.weight, 35.0);
       expect(updated.displayOrder, 1);
+      expect(updated.profileFrameId, 'starlight');
+      expect(updated.profileAccessoryId, 'crown');
       // unchanged fields
       expect(updated.id, pet.id);
       expect(updated.species, pet.species);

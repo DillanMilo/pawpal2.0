@@ -189,9 +189,7 @@ export default {
         ? new Date(accessEndMs).toISOString()
         : null;
 
-      const { error: entitlementError } = await supabase
-        .from('account_entitlements')
-        .upsert({
+      const entitlement = {
           user_id: userId,
           tier: 'plus',
           status,
@@ -203,7 +201,12 @@ export default {
           original_transaction_id:
             event.original_transaction_id ?? event.transaction_id ?? null,
           will_renew: willRenewForEvent(eventType),
-        }, { onConflict: 'user_id' });
+        };
+
+      const { error: entitlementError } = await supabase.rpc(
+        'apply_billing_entitlement_update',
+        { p_user_id: userId, p_entitlement: entitlement },
+      );
 
       if (entitlementError) throw entitlementError;
     }

@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
@@ -78,31 +78,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 20),
                     const _PetMosaicHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 10),
                     const Text(
                       'Track your pet\'s care,\nhealth, and daily routine',
                       style: TextStyle(
-                        fontSize: 27,
+                        fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.textPrimary,
                         height: 1.05,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     const Text(
                       'Sign in to continue to PawPal',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppTheme.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 10),
                     const _AuthBrandSignature(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -110,6 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         prefixIcon: Icon(Icons.email_outlined),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -123,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     // Password field
                     TextFormField(
                       controller: _passwordController,
@@ -133,6 +141,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outlined),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -156,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 2),
                     // Forgot password
                     Align(
                       alignment: Alignment.centerRight,
@@ -165,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text('Forgot Password?'),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: authProvider.isLoading ? null : _handleLogin,
                       child: authProvider.isLoading
@@ -183,49 +204,43 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     if (AppConstants.enableGoogleAuthForCurrentPlatform ||
                         AppConstants.enableAppleAuthForCurrentPlatform) ...[
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'or continue with',
-                              style: TextStyle(
-                                color: AppTheme.textLight,
-                                fontWeight: FontWeight.w500,
+                          if (AppConstants.enableAppleAuthForCurrentPlatform)
+                            Expanded(
+                              child: SocialAuthButton(
+                                compact: true,
+                                provider: SocialAuthProvider.apple,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : () => _handleOAuthLogin(
+                                        authProvider.signInWithApple,
+                                      ),
                               ),
                             ),
-                          ),
-                          const Expanded(child: Divider()),
+                          if (AppConstants.enableAppleAuthForCurrentPlatform &&
+                              AppConstants.enableGoogleAuthForCurrentPlatform)
+                            const SizedBox(width: 8),
+                          if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                            Expanded(
+                              child: SocialAuthButton(
+                                compact: true,
+                                provider: SocialAuthProvider.google,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : () => _handleOAuthLogin(
+                                        authProvider.signInWithGoogle,
+                                      ),
+                              ),
+                            ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      if (AppConstants.enableAppleAuthForCurrentPlatform) ...[
-                        SocialAuthButton(
-                          provider: SocialAuthProvider.apple,
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthLogin(
-                                  authProvider.signInWithApple,
-                                ),
-                        ),
-                        if (AppConstants.enableGoogleAuthForCurrentPlatform)
-                          const SizedBox(height: 12),
-                      ],
-                      if (AppConstants.enableGoogleAuthForCurrentPlatform)
-                        SocialAuthButton(
-                          provider: SocialAuthProvider.google,
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthLogin(
-                                  authProvider.signInWithGoogle,
-                                ),
-                        ),
                     ],
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 8),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Text(
                           "Don't have an account? ",
@@ -233,11 +248,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         TextButton(
                           onPressed: () => context.push('/register'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: const Size(0, 36),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: const Text('Sign Up'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 0),
                     Wrap(
                       alignment: WrapAlignment.center,
                       spacing: 4,
@@ -293,12 +313,12 @@ class _PetMosaicHeaderState extends State<_PetMosaicHeader> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 210,
+      height: 102,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Positioned.fill(
-            top: 28,
+            top: 14,
             child: Container(
               decoration: BoxDecoration(
                 color: AppTheme.softMint,
@@ -308,21 +328,20 @@ class _PetMosaicHeaderState extends State<_PetMosaicHeader> {
           ),
           GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.82,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.08,
             ),
-            itemCount: _tiles.length,
+            itemCount: 3,
             itemBuilder: (context, index) {
               final tile = _tiles[index];
               return Container(
                 decoration: BoxDecoration(
                   color: AppTheme.softLavender,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white, width: 3),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white, width: 2),
                   boxShadow: AppTheme.softShadow,
                   image: DecorationImage(
                     image: AssetImage(tile.assetPath),
@@ -348,8 +367,8 @@ class _AuthBrandSignature extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const BrandMark(size: 44, withShadow: false),
-          const SizedBox(width: 10),
+          const BrandMark(size: 34, withShadow: false),
+          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
@@ -357,17 +376,17 @@ class _AuthBrandSignature extends StatelessWidget {
                 'PawPal',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
-                  fontSize: 19,
+                  fontSize: 17,
                   fontWeight: FontWeight.w800,
                   height: 1,
                 ),
               ),
-              SizedBox(height: 3),
+              SizedBox(height: 1),
               Text(
                 'Pet care tracker',
                 style: TextStyle(
                   color: AppTheme.textSecondary,
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -70,16 +70,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Go back',
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
@@ -88,25 +81,93 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Title
-                    const Text(
-                      'Create account',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.textPrimary,
-                        height: 1.05,
-                      ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          tooltip: 'Go back',
+                          constraints: const BoxConstraints.tightFor(
+                            width: 36,
+                            height: 36,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onPressed: () => context.pop(),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Create account',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary,
+                              height: 1.05,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     const Text(
-                      'Sign up free and enjoy 14 days of PawPal Plus. No payment required.',
+                      'Start free with 14 days of PawPal Plus—no payment required.',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
+                        height: 1.2,
                         color: AppTheme.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.14),
+                        ),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: 1),
+                            child: Icon(
+                              Icons.auto_awesome_rounded,
+                              color: AppTheme.primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Care earns PawPoints • ',
+                                    style: TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text:
+                                        'Level up your pet and unlock badges, frames, and cute accessories.',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: TextStyle(fontSize: 11.5, height: 1.2),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     // Name field
                     TextFormField(
                       controller: _nameController,
@@ -115,6 +176,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Full Name',
                         prefixIcon: Icon(Icons.person_outlined),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 11,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -123,7 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 6),
                     // Email field
                     TextFormField(
                       controller: _emailController,
@@ -132,6 +202,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         prefixIcon: Icon(Icons.email_outlined),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 11,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -145,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 6),
                     // Password field
                     TextFormField(
                       controller: _passwordController,
@@ -154,6 +233,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outlined),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 11,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -180,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 6),
                     // Confirm password field
                     TextFormField(
                       controller: _confirmPasswordController,
@@ -190,6 +282,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock_outlined),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 11,
+                        ),
+                        isDense: true,
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
@@ -217,7 +322,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
                     // Register button
                     ElevatedButton(
                       onPressed: authProvider.isLoading
@@ -236,67 +341,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             )
                           : const Text('Sign Up Free'),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     const Text(
-                      'Then return to PawPal Base, or choose \$4.99/month or \$29.99/year for Plus. You will not be charged automatically.',
+                      'After 14 days, use PawPal Base or choose Plus (\$4.99/month or \$29.99/year). No automatic charge.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12,
-                        height: 1.35,
+                        fontSize: 10.5,
+                        height: 1.2,
                         color: AppTheme.textLight,
                       ),
                     ),
                     if (AppConstants.enableGoogleAuthForCurrentPlatform ||
                         AppConstants.enableAppleAuthForCurrentPlatform) ...[
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'or continue with',
-                              style: TextStyle(
-                                color: AppTheme.textLight,
-                                fontWeight: FontWeight.w500,
+                          if (AppConstants.enableAppleAuthForCurrentPlatform)
+                            Expanded(
+                              child: SocialAuthButton(
+                                compact: true,
+                                provider: SocialAuthProvider.apple,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : () => _handleOAuthRegister(
+                                        authProvider.signInWithApple,
+                                      ),
                               ),
                             ),
-                          ),
-                          const Expanded(child: Divider()),
+                          if (AppConstants.enableAppleAuthForCurrentPlatform &&
+                              AppConstants.enableGoogleAuthForCurrentPlatform)
+                            const SizedBox(width: 8),
+                          if (AppConstants.enableGoogleAuthForCurrentPlatform)
+                            Expanded(
+                              child: SocialAuthButton(
+                                compact: true,
+                                provider: SocialAuthProvider.google,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : () => _handleOAuthRegister(
+                                        authProvider.signInWithGoogle,
+                                      ),
+                              ),
+                            ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      if (AppConstants.enableAppleAuthForCurrentPlatform) ...[
-                        SocialAuthButton(
-                          provider: SocialAuthProvider.apple,
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthRegister(
-                                  authProvider.signInWithApple,
-                                ),
-                        ),
-                        if (AppConstants.enableGoogleAuthForCurrentPlatform)
-                          const SizedBox(height: 12),
-                      ],
-                      if (AppConstants.enableGoogleAuthForCurrentPlatform)
-                        SocialAuthButton(
-                          provider: SocialAuthProvider.google,
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () => _handleOAuthRegister(
-                                  authProvider.signInWithGoogle,
-                                ),
-                        ),
                     ],
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 6),
                     Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          'By creating an account, you agree to our ',
+                          'By signing up, you agree to PawPal\'s ',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10.5,
                             color: AppTheme.textLight,
                           ),
                         ),
@@ -304,15 +402,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () => context.push('/terms'),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
-                            minimumSize: const Size(0, 36),
+                            minimumSize: const Size(0, 30),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text('Terms of Service'),
+                          child: const Text(
+                            'Terms',
+                            style: TextStyle(fontSize: 11),
+                          ),
                         ),
                         Text(
                           ' and ',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10.5,
                             color: AppTheme.textLight,
                           ),
                         ),
@@ -320,26 +421,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () => context.push('/privacy'),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
-                            minimumSize: const Size(0, 36),
+                            minimumSize: const Size(0, 30),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text('Privacy Policy'),
+                          child: const Text(
+                            'Privacy Policy',
+                            style: TextStyle(fontSize: 11),
+                          ),
                         ),
                         const Text('.'),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 4),
                     // Sign in link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Text(
                           'Already have an account? ',
-                          style: TextStyle(color: AppTheme.textSecondary),
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                         TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text('Sign In'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: const Size(0, 32),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ],
                     ),

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/activity.dart';
 import '../../models/pet.dart';
+import '../../models/pet_progression.dart';
 import '../../providers/activity_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/activity_scoring.dart';
 import '../../utils/theme.dart';
+import '../../widgets/level_up_celebration.dart';
 
 class LogActivityScreen extends StatefulWidget {
   final String? initialType;
@@ -93,6 +95,8 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
     setState(() => _isLoading = true);
 
     final activityProvider = context.read<ActivityProvider>();
+    final pet = _selectedPet!;
+    final previousPoints = activityProvider.pointsForPet(pet.id);
     final now = DateTime.now();
     final startTime = _startTime ?? now;
     final duration = _useTimer
@@ -106,7 +110,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
 
     final activity = Activity(
       id: '',
-      petId: _selectedPet!.id,
+      petId: pet.id,
       userId: '',
       type: _selectedType,
       startTime: startTime,
@@ -121,17 +125,30 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
 
     final success = await activityProvider.logActivity(activity);
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
+      final levelUp = PetProgression.levelUpBetween(
+        previousPoints,
+        previousPoints + earnedPoints,
+      );
+      if (levelUp != null) {
+        await showLevelUpCelebration(
+          context,
+          petName: pet.name,
+          transition: levelUp,
+        );
+        if (!mounted) return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('+$earnedPoints points earned!'),
+          content: Text('+$earnedPoints PawPoints for ${pet.name}!'),
           backgroundColor: AppTheme.successColor,
         ),
       );
       Navigator.pop(context);
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(activityProvider.error ?? 'Failed to log activity'),
@@ -360,11 +377,11 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Points you\'ll earn',
+                          'PawPoints you\'ll earn',
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
                         Text(
-                          '+$_previewPoints points',
+                          '+$_previewPoints PawPoints',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

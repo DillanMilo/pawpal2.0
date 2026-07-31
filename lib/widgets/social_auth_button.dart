@@ -9,11 +9,13 @@ class SocialAuthButton extends StatelessWidget {
   const SocialAuthButton({
     required this.provider,
     required this.onPressed,
+    this.compact = false,
     super.key,
   });
 
   final SocialAuthProvider provider;
   final VoidCallback? onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,7 @@ class SocialAuthButton extends StatelessWidget {
               ],
       ),
       child: SizedBox(
-        height: 58,
+        height: compact ? 44 : 58,
         child: OutlinedButton(
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
@@ -54,7 +56,7 @@ class SocialAuthButton extends StatelessWidget {
             foregroundColor: foregroundColor,
             disabledForegroundColor: foregroundColor.withValues(alpha: 0.55),
             side: BorderSide(color: borderColor, width: 1.2),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -65,9 +67,13 @@ class SocialAuthButton extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: SizedBox.square(
-                  dimension: 24,
+                  dimension: compact ? 20 : 24,
                   child: isApple
-                      ? Icon(Icons.apple, color: foregroundColor, size: 26)
+                      ? Icon(
+                          Icons.apple,
+                          color: foregroundColor,
+                          size: compact ? 22 : 26,
+                        )
                       : SvgPicture.asset(
                           'assets/icons/google_g.svg',
                           semanticsLabel: 'Google',
@@ -75,9 +81,13 @@ class SocialAuthButton extends StatelessWidget {
                 ),
               ),
               Text(
-                isApple ? 'Continue with Apple' : 'Continue with Google',
-                style: const TextStyle(
-                  fontSize: 16,
+                compact
+                    ? (isApple ? 'Apple' : 'Google')
+                    : (isApple
+                          ? 'Continue with Apple'
+                          : 'Continue with Google'),
+                style: TextStyle(
+                  fontSize: compact ? 14 : 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.1,
                 ),

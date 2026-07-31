@@ -1,5 +1,7 @@
 export 'user_profile.dart';
 export 'pet.dart';
+export 'pet_progression.dart';
+export 'care_momentum.dart';
 export 'medical_record.dart';
 export 'activity.dart';
 export 'appointment.dart';

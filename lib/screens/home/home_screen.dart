@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/pet.dart';
+import '../../models/care_momentum.dart';
+import '../../models/pet_progression.dart';
 import '../../models/reminder.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -17,6 +19,7 @@ import '../../services/reminder_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/placeholder_data.dart';
 import '../../widgets/activity_icon.dart';
+import '../../widgets/pet_progression_avatar.dart';
 import 'home_backdrop.dart';
 import 'home_header.dart';
 import 'daily_tip_card.dart';
@@ -423,9 +426,11 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final pet = petProvider.pets[index];
         final isSelected = petProvider.selectedPet?.id == pet.id;
+        final points = activityProvider.pointsForPet(pet.id);
+        final momentum = activityProvider.momentumForPet(pet.id);
         return Padding(
           padding: const EdgeInsets.only(right: 12),
-          child: _buildPetCard(pet, isSelected, () {
+          child: _buildPetCard(pet, points, momentum, isSelected, () {
             _activatePetCard(index, petProvider, activityProvider);
           }),
         );
@@ -433,12 +438,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPetCard(Pet pet, bool isSelected, VoidCallback onTap) {
+  Widget _buildPetCard(
+    Pet pet,
+    int points,
+    CareMomentum momentum,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     final color =
         AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
     final isDark = AppTheme.isDark(context);
     final isTablet = MediaQuery.sizeOf(context).width >= 700;
     final hasCover = pet.coverPhotoUrl != null && pet.coverPhotoUrl!.isNotEmpty;
+    final progression = PetProgression(points);
 
     return Semantics(
       button: true,
@@ -505,37 +517,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 Row(
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: isSelected || hasCover
-                            ? Colors.white.withValues(alpha: 0.14)
-                            : color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: isSelected || hasCover
-                            ? Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                              )
-                            : null,
-                        image: pet.photoUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(pet.photoUrl!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: pet.photoUrl == null
-                          ? Center(
-                              child: Icon(
-                                Icons.pets_rounded,
-                                color: isSelected || hasCover
-                                    ? Colors.white
-                                    : color,
-                                size: 32,
-                              ),
-                            )
-                          : null,
+                    PetProgressionAvatar(
+                      pet: pet,
+                      points: points,
+                      size: 72,
+                      fallbackColor: isSelected || hasCover
+                          ? Colors.white.withValues(alpha: 0.18)
+                          : color.withValues(alpha: 0.46),
                     ),
                     const SizedBox(width: 20),
                     Expanded(
@@ -569,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: Text(
-                                  pet.species,
+                                  'Level ${progression.level}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -595,6 +583,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '$points PawPoints • ${pet.species}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected || hasCover
+                                  ? Colors.white.withValues(alpha: 0.76)
+                                  : AppTheme.secondaryText(context),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Care Momentum: ${momentum.label} • ${momentum.activeDays}/7 days',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected || hasCover
+                                  ? Colors.white.withValues(alpha: 0.72)
+                                  : AppTheme.secondaryText(context),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

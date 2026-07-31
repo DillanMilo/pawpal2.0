@@ -6,8 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../models/pet.dart';
+import '../../models/pet_progression.dart';
+import '../../providers/activity_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/theme.dart';
+import '../../widgets/pet_progression_avatar.dart';
 import '../medical/medical_records_screen.dart';
 import 'pet_passport_screen.dart';
 
@@ -41,7 +44,13 @@ class _PetDetailScreenState extends State<PetDetailScreen>
 
   Future<void> _loadPet() async {
     final petProvider = context.read<PetProvider>();
-    final pet = await petProvider.getPet(widget.petId);
+    final activityProvider = context.read<ActivityProvider>();
+    final results = await Future.wait([
+      petProvider.getPet(widget.petId),
+      activityProvider.loadStats(),
+    ]);
+    final pet = results.first as Pet?;
+    if (!mounted) return;
     setState(() {
       _pet = pet;
       _isLoading = false;
@@ -222,6 +231,8 @@ class _PetDetailScreenState extends State<PetDetailScreen>
 
   Widget _buildHeader(Color categoryColor) {
     final coverPhotoUrl = _pet!.coverPhotoUrl;
+    final points = context.watch<ActivityProvider>().pointsForPet(_pet!.id);
+    final progression = PetProgression(points);
 
     return Container(
       decoration: BoxDecoration(
@@ -272,38 +283,12 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              Hero(
-                tag: 'pet-photo-${_pet!.id}',
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: _pet!.photoUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: _pet!.photoUrl!,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            child: const Icon(
-                              Icons.pets_rounded,
-                              color: Colors.white,
-                              size: 60,
-                            ),
-                          ),
-                  ),
-                ),
+              PetProgressionAvatar(
+                pet: _pet!,
+                points: points,
+                size: 140,
+                heroTag: 'pet-photo-${_pet!.id}',
+                fallbackColor: categoryColor.withValues(alpha: 0.75),
               ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
               const SizedBox(height: 20),
               Text(
@@ -316,23 +301,16 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                 ),
               ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _pet!.breed ?? _pet!.species,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _headerChip(_pet!.breed ?? _pet!.species),
+                  _headerChip(
+                    'Level ${progression.level} • ${progression.title}',
                   ),
-                ),
+                ],
               ).animate().fadeIn(delay: 400.ms).scale(),
             ],
           ),
@@ -341,11 +319,328 @@ class _PetDetailScreenState extends State<PetDetailScreen>
     );
   }
 
+  Widget _headerChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressionCard() {
+    final activityProvider = context.watch<ActivityProvider>();
+    final points = activityProvider.pointsForPet(_pet!.id);
+    final momentum = activityProvider.momentumForPet(_pet!.id);
+    final progression = PetProgression(points);
+    final unlockedBadges = progression.unlockedBadges;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppTheme.playfulGradient,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: 0.16),
+        ),
+        boxShadow: AppTheme.shadowFor(context),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.78),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_pet!.name}\'s PawPoints',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.primaryText(context),
+                      ),
+                    ),
+                    Text(
+                      'Level ${progression.level} • ${progression.title}',
+                      style: const TextStyle(
+                        color: AppTheme.primaryDark,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$points',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppTheme.primaryDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: progression.progress,
+              minHeight: 10,
+              backgroundColor: Colors.white.withValues(alpha: 0.72),
+              valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            progression.isMaxLevel
+                ? 'Maximum pet level reached!'
+                : '${progression.pointsToNextLevel} PawPoints to the next level',
+            style: TextStyle(
+              color: AppTheme.secondaryText(context),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Icon(
+                Icons.local_fire_department_rounded,
+                color: AppTheme.accentPeach,
+                size: 20,
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  'Care Momentum: ${momentum.label}',
+                  style: TextStyle(
+                    color: AppTheme.primaryText(context),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              Text(
+                '${momentum.activeDays}/${momentum.windowDays} active days',
+                style: TextStyle(
+                  color: AppTheme.secondaryText(context),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: momentum.progress,
+              minHeight: 6,
+              backgroundColor: Colors.white.withValues(alpha: 0.72),
+              valueColor: const AlwaysStoppedAnimation(AppTheme.accentPeach),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Badges earned',
+            style: TextStyle(
+              color: AppTheme.primaryText(context),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final badge in unlockedBadges)
+                Chip(
+                  avatar: Text(badge.emoji ?? '🐾'),
+                  label: Text(badge.name),
+                  backgroundColor: Colors.white.withValues(alpha: 0.78),
+                  side: BorderSide.none,
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _showRewardPicker,
+              icon: const Icon(Icons.checkroom_rounded),
+              label: const Text('Choose profile rewards'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Walks, play, meals, training, grooming, and wellness care all help ${_pet!.name} grow.',
+            style: TextStyle(
+              color: AppTheme.secondaryText(context),
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.08, end: 0);
+  }
+
+  Future<void> _showRewardPicker() async {
+    final points = context.read<ActivityProvider>().pointsForPet(_pet!.id);
+    final progression = PetProgression(points);
+    var selectedFrame = progression.selectedFrame(_pet!.profileFrameId);
+    var selectedAccessory = progression.selectedAccessory(
+      _pet!.profileAccessoryId,
+    );
+
+    final selection = await showModalBottomSheet<(String, String)>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Style ${_pet!.name}\'s profile',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Keep earning PawPoints to unlock more. Cosmetics celebrate care and never affect health tracking.',
+                  style: TextStyle(color: AppTheme.secondaryText(context)),
+                ),
+                const SizedBox(height: 24),
+                _rewardSection(
+                  context: context,
+                  title: 'Profile frames',
+                  rewards: PetProgression.frames,
+                  progression: progression,
+                  selectedId: selectedFrame,
+                  onSelected: (id) => setSheetState(() => selectedFrame = id),
+                ),
+                const SizedBox(height: 24),
+                _rewardSection(
+                  context: context,
+                  title: 'Accessories & emojis',
+                  rewards: PetProgression.accessories,
+                  progression: progression,
+                  selectedId: selectedAccessory,
+                  onSelected: (id) =>
+                      setSheetState(() => selectedAccessory = id),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.pop(sheetContext, (
+                      selectedFrame,
+                      selectedAccessory,
+                    )),
+                    icon: const Icon(Icons.check_rounded),
+                    label: const Text('Equip rewards'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (selection == null || !mounted) return;
+    final updatedPet = _pet!.copyWith(
+      profileFrameId: selection.$1,
+      profileAccessoryId: selection.$2,
+    );
+    final saved = await context.read<PetProvider>().updatePet(updatedPet);
+    if (!mounted) return;
+    if (saved) {
+      setState(() => _pet = updatedPet);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_pet!.name}\'s profile rewards are equipped!'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.read<PetProvider>().error ?? 'Could not save rewards',
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _rewardSection({
+    required BuildContext context,
+    required String title,
+    required List<PetReward> rewards,
+    required PetProgression progression,
+    required String selectedId,
+    required ValueChanged<String> onSelected,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 12),
+        for (final reward in rewards)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _RewardChoice(
+              reward: reward,
+              unlocked: progression.isUnlocked(reward),
+              selected: selectedId == reward.id,
+              onTap: () => onSelected(reward.id),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildInfoTab() {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
       physics: const BouncingScrollPhysics(),
       children: [
+        _buildProgressionCard(),
+        const SizedBox(height: 24),
         _buildInfoCard('About ${_pet!.name}', [
           _buildInfoRow('Species', _pet!.species, Icons.category_rounded),
           _buildInfoRow('Gender', _pet!.gender, Icons.transgender_rounded),
@@ -612,6 +907,107 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             child: const Text('Generate'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RewardChoice extends StatelessWidget {
+  const _RewardChoice({
+    required this.reward,
+    required this.unlocked,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final PetReward reward;
+  final bool unlocked;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFrame = reward.type == PetRewardType.frame;
+    return Semantics(
+      button: unlocked,
+      selected: selected,
+      label:
+          '${reward.name}, ${unlocked ? 'unlocked' : 'unlocks at level ${reward.requiredLevel}'}',
+      child: Material(
+        color: selected
+            ? AppTheme.primaryColor.withValues(alpha: 0.1)
+            : AppTheme.cardBackground(context),
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: unlocked ? onTap : null,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: selected
+                    ? AppTheme.primaryColor
+                    : Theme.of(context).dividerColor,
+                width: selected ? 1.8 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: isFrame
+                        ? LinearGradient(
+                            colors: PetProgressionAvatar.frameColors(reward.id),
+                          )
+                        : null,
+                    color: isFrame ? null : AppTheme.primaryLight,
+                  ),
+                  child: Text(
+                    reward.emoji ?? (isFrame ? '🐾' : ''),
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reward.name,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        unlocked
+                            ? reward.description
+                            : 'Unlocks at level ${reward.requiredLevel}',
+                        style: TextStyle(
+                          color: AppTheme.secondaryText(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  unlocked
+                      ? selected
+                            ? Icons.check_circle_rounded
+                            : Icons.radio_button_unchecked_rounded
+                      : Icons.lock_outline_rounded,
+                  color: unlocked
+                      ? AppTheme.primaryColor
+                      : AppTheme.mutedText(context),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

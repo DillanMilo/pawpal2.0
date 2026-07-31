@@ -16,6 +16,13 @@ void main() {
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Confirm Password'), findsOneWidget);
       expect(find.text('Sign Up Free'), findsOneWidget);
+      expect(find.textContaining('Care earns PawPoints'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'Level up your pet and unlock badges, frames, and cute accessories.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('password mismatch shows error', (WidgetTester tester) async {
@@ -42,6 +49,7 @@ void main() {
 
       // Tap Create Account
       // Use the ElevatedButton finder to be precise
+      await tester.ensureVisible(find.byType(ElevatedButton));
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();
 
@@ -72,6 +80,7 @@ void main() {
         'short',
       );
 
+      await tester.ensureVisible(find.byType(ElevatedButton));
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();
 
@@ -88,6 +97,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap Create Account without filling anything
+      await tester.ensureVisible(find.byType(ElevatedButton));
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();
 

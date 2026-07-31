@@ -16,6 +16,8 @@ class Pet {
   final bool spayedNeutered;
   final DateTime? adoptionDate;
   final int displayOrder;
+  final String profileFrameId;
+  final String profileAccessoryId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -35,6 +37,8 @@ class Pet {
     this.spayedNeutered = false,
     this.adoptionDate,
     this.displayOrder = 0,
+    this.profileFrameId = 'classic',
+    this.profileAccessoryId = 'none',
     required this.createdAt,
     required this.updatedAt,
   });
@@ -81,6 +85,8 @@ class Pet {
           ? DateTime.parse(json['adoption_date'] as String)
           : null,
       displayOrder: json['display_order'] as int? ?? 0,
+      profileFrameId: json['profile_frame_id'] as String? ?? 'classic',
+      profileAccessoryId: json['profile_accessory_id'] as String? ?? 'none',
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
@@ -108,6 +114,8 @@ class Pet {
       'spayed_neutered': spayedNeutered,
       'adoption_date': _dateOnly(adoptionDate),
       'display_order': displayOrder,
+      'profile_frame_id': profileFrameId,
+      'profile_accessory_id': profileAccessoryId,
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };
@@ -129,6 +137,8 @@ class Pet {
     bool? spayedNeutered,
     Object? adoptionDate = _unset,
     int? displayOrder,
+    String? profileFrameId,
+    String? profileAccessoryId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -160,6 +170,8 @@ class Pet {
           ? this.adoptionDate
           : adoptionDate as DateTime?,
       displayOrder: displayOrder ?? this.displayOrder,
+      profileFrameId: profileFrameId ?? this.profileFrameId,
+      profileAccessoryId: profileAccessoryId ?? this.profileAccessoryId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

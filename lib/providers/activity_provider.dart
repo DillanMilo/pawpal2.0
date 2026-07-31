@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/activity.dart';
+import '../models/care_momentum.dart';
 import '../services/activity_service.dart';
 import '../utils/connectivity.dart';
 
@@ -15,6 +16,8 @@ class ActivityProvider with ChangeNotifier {
   List<Activity> _activities = [];
   Map<String, int> _weeklySummary = {};
   Map<String, int> _activityCountsByType = {};
+  Map<String, int> _pointsByPet = {};
+  Map<String, CareMomentum> _careMomentumByPet = {};
   int _totalPoints = 0;
   int _currentStreak = 0;
   bool _isLoading = false;
@@ -30,6 +33,10 @@ class ActivityProvider with ChangeNotifier {
   List<Activity> get activities => _activities;
   Map<String, int> get weeklySummary => _weeklySummary;
   Map<String, int> get activityCountsByType => _activityCountsByType;
+  Map<String, int> get pointsByPet => Map.unmodifiable(_pointsByPet);
+  int pointsForPet(String petId) => _pointsByPet[petId] ?? 0;
+  CareMomentum momentumForPet(String petId) =>
+      _careMomentumByPet[petId] ?? const CareMomentum.empty();
   int get totalActivities =>
       _activityCountsByType.values.fold<int>(0, (sum, count) => sum + count);
   int get totalPoints => _totalPoints;
@@ -99,10 +106,24 @@ class ActivityProvider with ChangeNotifier {
     }
 
     try {
-      _totalPoints = await _activityService.getTotalPoints();
-      _currentStreak = await _activityService.getCurrentStreak();
-      _activityCountsByType = await _activityService
-          .getUserActivityCountsByType();
+      final results = await Future.wait([
+        _activityService.getPointsByPet(),
+        _activityService.getRecentActivityTimestampsByPet(),
+        _activityService.getCurrentStreak(),
+        _activityService.getUserActivityCountsByType(),
+      ]);
+      _pointsByPet = results[0] as Map<String, int>;
+      final now = DateTime.now();
+      _careMomentumByPet = {
+        for (final entry in (results[1] as Map<String, List<DateTime>>).entries)
+          entry.key: CareMomentum.fromTimestamps(entry.value, now: now),
+      };
+      _totalPoints = _pointsByPet.values.fold<int>(
+        0,
+        (sum, points) => sum + points,
+      );
+      _currentStreak = results[2] as int;
+      _activityCountsByType = results[3] as Map<String, int>;
       _lastStatsFetched = DateTime.now();
       notifyListeners();
     } catch (e) {
@@ -247,6 +268,8 @@ class ActivityProvider with ChangeNotifier {
     _activities = [];
     _weeklySummary = {};
     _activityCountsByType = {};
+    _pointsByPet = {};
+    _careMomentumByPet = {};
     _totalPoints = 0;
     _currentStreak = 0;
     _isLoading = false;

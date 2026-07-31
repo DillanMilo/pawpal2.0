@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../models/user_profile.dart';
 import '../screens/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -28,6 +29,7 @@ import '../screens/quick_actions/add_grooming_screen.dart';
 import '../screens/services/services_screen.dart';
 import '../screens/services/business_listing_screen.dart';
 import '../screens/subscription/pricing_screen.dart';
+import '../screens/onboarding/first_run_onboarding_screen.dart';
 import '../screens/legal/legal_screens.dart';
 import '../services/places_service.dart';
 import '../models/subscription_feature.dart';
@@ -64,6 +66,7 @@ class AppRouter {
         final isSplash = state.matchedLocation == '/splash';
         final isAuthCallback = state.matchedLocation == '/auth/callback';
         final isPricingOnboarding = state.matchedLocation == '/welcome';
+        final isFirstRunOnboarding = state.matchedLocation == '/onboarding';
         final isLegalRoute =
             state.matchedLocation == '/privacy' ||
             state.matchedLocation == '/terms' ||
@@ -72,7 +75,9 @@ class AppRouter {
         // Keep OAuth callbacks stable while Supabase recovers the session.
         if (isAuthCallback) {
           if (isResolvingAuth) return null;
-          return isAuthenticated ? '/home' : '/login';
+          return isAuthenticated
+              ? _authenticatedLandingPath(authProvider)
+              : '/login';
         }
 
         // Redirect to login if not authenticated.
@@ -84,9 +89,25 @@ class AppRouter {
           return '/login';
         }
 
-        // New accounts see transparent pricing and their no-card trial end date
-        // before entering the main app. The flag is persisted in Supabase.
+        // A resumable profile and first pet setup comes before pricing. Older
+        // accounts are backfilled as complete by migration 012.
         if (isAuthenticated &&
+            authProvider.userProfile?.needsOnboarding == true &&
+            !isFirstRunOnboarding &&
+            !isLegalRoute) {
+          return '/onboarding';
+        }
+
+        if (isAuthenticated &&
+            authProvider.userProfile?.needsOnboarding == false &&
+            isFirstRunOnboarding) {
+          return _authenticatedLandingPath(authProvider);
+        }
+
+        // New accounts see transparent pricing and their no-card trial end date
+        // after the useful profile setup. The flag is persisted in Supabase.
+        if (isAuthenticated &&
+            authProvider.userProfile?.needsOnboarding == false &&
             authProvider.userProfile?.hasSeenPricing == false &&
             !isPricingOnboarding &&
             !isLegalRoute) {
@@ -101,12 +122,14 @@ class AppRouter {
 
         // Redirect to home if authenticated and on auth route
         if (isAuthenticated && isAuthRoute) {
-          return '/home';
+          return _authenticatedLandingPath(authProvider);
         }
 
         // Redirect from splash once loaded
         if (isSplash && !isResolvingAuth) {
-          return isAuthenticated ? '/home' : '/login';
+          return isAuthenticated
+              ? _authenticatedLandingPath(authProvider)
+              : '/login';
         }
 
         return null;
@@ -180,6 +203,10 @@ class AppRouter {
           builder: (context, state) => const SupportScreen(),
         ),
         GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const FirstRunOnboardingScreen(),
+        ),
+        GoRoute(
           path: '/welcome',
           builder: (context, state) => const PricingScreen(isOnboarding: true),
         ),
@@ -191,7 +218,10 @@ class AppRouter {
         // Main app shell with bottom navigation
         ShellRoute(
           navigatorKey: _shellNavigatorKey,
-          builder: (context, state, child) => MainShell(child: child),
+          builder: (context, state, child) => MainShell(
+            replayTour: state.uri.queryParameters['tour'] == 'replay',
+            child: child,
+          ),
           routes: [
             GoRoute(
               path: '/home',
@@ -347,6 +377,16 @@ class AppRouter {
         ),
       ],
     );
+  }
+
+  static String _authenticatedLandingPath(AuthProvider authProvider) {
+    return authenticatedLandingPath(authProvider.userProfile);
+  }
+
+  static String authenticatedLandingPath(UserProfile? profile) {
+    if (profile?.needsOnboarding == true) return '/onboarding';
+    if (profile?.hasSeenPricing == false) return '/welcome';
+    return '/home';
   }
 
   static bool isOAuthCallbackUri(Uri uri) {

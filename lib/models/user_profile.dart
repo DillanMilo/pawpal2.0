@@ -7,6 +7,12 @@ class UserProfile {
   final String? zipCode;
   final bool notificationsEnabled;
   final bool hasSeenPricing;
+  final int onboardingStep;
+  final Map<String, dynamic> onboardingDraft;
+  final DateTime? onboardingCompletedAt;
+  final int appTourStep;
+  final DateTime? appTourCompletedAt;
+  final bool supportsFirstRun;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -19,11 +25,25 @@ class UserProfile {
     this.zipCode,
     this.notificationsEnabled = true,
     this.hasSeenPricing = true,
+    this.onboardingStep = 0,
+    this.onboardingDraft = const {},
+    this.onboardingCompletedAt,
+    this.appTourStep = 0,
+    this.appTourCompletedAt,
+    this.supportsFirstRun = true,
     required this.createdAt,
     required this.updatedAt,
   });
 
+  bool get needsOnboarding => supportsFirstRun && onboardingCompletedAt == null;
+
+  bool get needsAppTour =>
+      supportsFirstRun &&
+      onboardingCompletedAt != null &&
+      appTourCompletedAt == null;
+
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final supportsFirstRun = json.containsKey('onboarding_completed_at');
     return UserProfile(
       id: json['id'] as String,
       email: json['email'] as String,
@@ -35,13 +55,25 @@ class UserProfile {
       // Default true keeps older databases from trapping users in onboarding
       // before migration 011 has been applied.
       hasSeenPricing: json['has_seen_pricing'] as bool? ?? true,
+      onboardingStep: json['onboarding_step'] as int? ?? 0,
+      onboardingDraft: Map<String, dynamic>.from(
+        json['onboarding_draft'] as Map? ?? const {},
+      ),
+      onboardingCompletedAt: json['onboarding_completed_at'] != null
+          ? DateTime.parse(json['onboarding_completed_at'] as String).toLocal()
+          : null,
+      appTourStep: json['app_tour_step'] as int? ?? 0,
+      appTourCompletedAt: json['app_tour_completed_at'] != null
+          ? DateTime.parse(json['app_tour_completed_at'] as String).toLocal()
+          : null,
+      supportsFirstRun: supportsFirstRun,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'id': id,
       'email': email,
       'name': name,
@@ -53,6 +85,18 @@ class UserProfile {
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };
+    if (supportsFirstRun) {
+      json.addAll({
+        'onboarding_step': onboardingStep,
+        'onboarding_draft': onboardingDraft,
+        'onboarding_completed_at': onboardingCompletedAt
+            ?.toUtc()
+            .toIso8601String(),
+        'app_tour_step': appTourStep,
+        'app_tour_completed_at': appTourCompletedAt?.toUtc().toIso8601String(),
+      });
+    }
+    return json;
   }
 
   UserProfile copyWith({
@@ -64,6 +108,12 @@ class UserProfile {
     String? zipCode,
     bool? notificationsEnabled,
     bool? hasSeenPricing,
+    int? onboardingStep,
+    Map<String, dynamic>? onboardingDraft,
+    DateTime? onboardingCompletedAt,
+    int? appTourStep,
+    DateTime? appTourCompletedAt,
+    bool? supportsFirstRun,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -76,6 +126,13 @@ class UserProfile {
       zipCode: zipCode ?? this.zipCode,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       hasSeenPricing: hasSeenPricing ?? this.hasSeenPricing,
+      onboardingStep: onboardingStep ?? this.onboardingStep,
+      onboardingDraft: onboardingDraft ?? this.onboardingDraft,
+      onboardingCompletedAt:
+          onboardingCompletedAt ?? this.onboardingCompletedAt,
+      appTourStep: appTourStep ?? this.appTourStep,
+      appTourCompletedAt: appTourCompletedAt ?? this.appTourCompletedAt,
+      supportsFirstRun: supportsFirstRun ?? this.supportsFirstRun,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

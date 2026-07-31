@@ -69,16 +69,25 @@ class BrandTipIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(size * 0.28),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.32),
-          width: 1.5,
+          color: _accent.withValues(alpha: isDark ? 0.5 : 0.34),
+          width: 1.75,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: _accent.withValues(alpha: isDark ? 0.28 : 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -92,7 +101,7 @@ class BrandTipIcon extends StatelessWidget {
               decoration: BoxDecoration(color: _accent, shape: BoxShape.circle),
             ),
           ),
-          Icon(_icon, color: Colors.white, size: size * 0.52),
+          Icon(_icon, color: _accent, size: size * 0.52),
         ],
       ),
     );

@@ -150,6 +150,72 @@ class AuthService {
     return UserProfile.fromJson(response);
   }
 
+  Future<UserProfile> saveOnboardingProgress({
+    required String userId,
+    required int step,
+    required Map<String, dynamic> draft,
+    String? preferredName,
+  }) async {
+    final data = <String, dynamic>{
+      'onboarding_step': step,
+      'onboarding_draft': draft,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+    if (preferredName != null) data['name'] = preferredName;
+    final response = await _client
+        .from('users')
+        .update(data)
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
+  Future<UserProfile> completeOnboarding({
+    required String userId,
+    required String preferredName,
+  }) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final response = await _client
+        .from('users')
+        .update({
+          'name': preferredName,
+          'onboarding_step': 2,
+          'onboarding_draft': <String, dynamic>{},
+          'onboarding_completed_at': now,
+          'app_tour_step': 0,
+          'updated_at': now,
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
+  Future<UserProfile> saveAppTourStep(String userId, int step) async {
+    final response = await _client
+        .from('users')
+        .update({
+          'app_tour_step': step,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
+  Future<UserProfile> completeAppTour(String userId) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final response = await _client
+        .from('users')
+        .update({'app_tour_completed_at': now, 'updated_at': now})
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
   // Upload a profile photo and return the public URL.
   Future<String> uploadProfilePhoto(XFile photo, {String? previousUrl}) async {
     final userId = SupabaseService.currentUserId;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../utils/theme.dart';
+import 'home_backdrop.dart';
 
 class HomeHeader extends StatelessWidget {
   final String greeting;
@@ -28,6 +29,7 @@ class HomeHeader extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            const Positioned.fill(child: HomeHeroPattern()),
             Positioned(
               right: -34,
               top: -46,

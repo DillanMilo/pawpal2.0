@@ -12,70 +12,94 @@ class ServicesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.pageBackground(context),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              Text(
-                'Services',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primaryText(context),
-                ),
-              ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
-              const SizedBox(height: 8),
-              Text(
-                    'Find nearby services for your pet',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.secondaryText(context),
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(duration: 600.ms, delay: 100.ms)
-                  .slideX(begin: -0.2, end: 0),
-              const SizedBox(height: 40),
-              Expanded(
-                child: Column(
+        child: LayoutBuilder(
+          builder: (context, viewport) {
+            return Center(
+              child: SizedBox(
+                width: viewport.maxWidth > 900 ? 900 : viewport.maxWidth,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 140),
                   children: [
-                    _buildServiceCard(
-                      context,
-                      title: 'Pet Stores',
-                      subtitle: 'Food, toys, supplies & more',
-                      icon: Icons.store_rounded,
-                      tint: AppTheme.softMint,
-                      accent: AppTheme.secondaryColor,
-                      serviceType: ServiceType.petStore,
-                      delay: 0,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildServiceCard(
-                      context,
-                      title: 'Veterinarians',
-                      subtitle: 'Clinics & animal hospitals',
-                      icon: Icons.local_hospital_rounded,
-                      tint: AppTheme.softBlush,
-                      accent: AppTheme.accentRose,
-                      serviceType: ServiceType.veterinarian,
-                      delay: 100,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildServiceCard(
-                      context,
-                      title: 'Grooming',
-                      subtitle: 'Salons & grooming parlors',
-                      icon: Icons.content_cut_rounded,
-                      tint: AppTheme.softLavender,
-                      accent: AppTheme.accentLavender,
-                      serviceType: ServiceType.grooming,
-                      delay: 200,
+                    Text(
+                      'Services',
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.primaryText(context),
+                          ),
+                    ).animate().fadeIn(duration: 220.ms),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Find nearby services for your pet',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppTheme.secondaryText(context),
+                      ),
+                    ).animate().fadeIn(duration: 220.ms, delay: 40.ms),
+                    const SizedBox(height: 32),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final useTabletGrid = constraints.maxWidth >= 680;
+                        final cards = [
+                          _buildServiceCard(
+                            context,
+                            title: 'Pet Stores',
+                            subtitle: 'Food, toys, supplies & more',
+                            icon: Icons.store_rounded,
+                            tint: AppTheme.softMint,
+                            accent: AppTheme.secondaryColor,
+                            serviceType: ServiceType.petStore,
+                            delay: 0,
+                          ),
+                          _buildServiceCard(
+                            context,
+                            title: 'Veterinarians',
+                            subtitle: 'Clinics & animal hospitals',
+                            icon: Icons.local_hospital_rounded,
+                            tint: AppTheme.softBlush,
+                            accent: AppTheme.accentRose,
+                            serviceType: ServiceType.veterinarian,
+                            delay: 40,
+                          ),
+                          _buildServiceCard(
+                            context,
+                            title: 'Grooming',
+                            subtitle: 'Salons & grooming parlors',
+                            icon: Icons.content_cut_rounded,
+                            tint: AppTheme.softLavender,
+                            accent: AppTheme.primaryColor,
+                            serviceType: ServiceType.grooming,
+                            delay: 80,
+                          ),
+                        ];
+
+                        if (!useTabletGrid) {
+                          return Column(
+                            children: [
+                              cards[0],
+                              const SizedBox(height: 16),
+                              cards[1],
+                              const SizedBox(height: 16),
+                              cards[2],
+                            ],
+                          );
+                        }
+
+                        final cardWidth = (constraints.maxWidth - 16) / 2;
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            for (final card in cards)
+                              SizedBox(width: cardWidth, child: card),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -166,9 +190,9 @@ class ServicesScreen extends StatelessWidget {
         )
         .animate()
         .fadeIn(
-          duration: 600.ms,
+          duration: 220.ms,
           delay: Duration(milliseconds: delay),
         )
-        .slideY(begin: 0.3, end: 0);
+        .slideY(begin: 0.04, end: 0, curve: Curves.easeOutCubic);
   }
 }

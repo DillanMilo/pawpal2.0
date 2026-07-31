@@ -270,6 +270,81 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> saveOnboardingProgress({
+    required int step,
+    required Map<String, dynamic> draft,
+    String? preferredName,
+  }) async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.saveOnboardingProgress(
+        userId: currentProfile.id,
+        step: step,
+        draft: draft,
+        preferredName: preferredName,
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completeFirstRunOnboarding(String preferredName) async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.completeOnboarding(
+        userId: currentProfile.id,
+        preferredName: preferredName,
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> saveAppTourStep(int step) async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.saveAppTourStep(
+        currentProfile.id,
+        step,
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completeAppTour() async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.completeAppTour(currentProfile.id);
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,

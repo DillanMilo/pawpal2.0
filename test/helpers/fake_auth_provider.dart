@@ -10,7 +10,14 @@ import 'package:pawpal/providers/auth_provider.dart';
 /// that the Provider widget tree accepts via `ChangeNotifierProvider<AuthProvider>`
 /// without ever initializing Supabase.
 class FakeAuthProvider with ChangeNotifier implements AuthProvider {
-  final AuthStatus _status = AuthStatus.unauthenticated;
+  FakeAuthProvider({
+    AuthStatus status = AuthStatus.unauthenticated,
+    UserProfile? userProfile,
+  }) : _status = status,
+       _userProfile = userProfile;
+
+  final AuthStatus _status;
+  UserProfile? _userProfile;
   String? _error;
 
   @override
@@ -26,7 +33,7 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
   bool get isLoading => _status == AuthStatus.loading;
 
   @override
-  UserProfile? get userProfile => null;
+  UserProfile? get userProfile => _userProfile;
 
   @override
   Future<bool> signIn({required String email, required String password}) async {
@@ -70,6 +77,32 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
 
   @override
   Future<bool> completePricingOnboarding() async => false;
+
+  @override
+  Future<bool> saveOnboardingProgress({
+    required int step,
+    required Map<String, dynamic> draft,
+    String? preferredName,
+  }) async {
+    final profile = _userProfile;
+    if (profile == null) return false;
+    _userProfile = profile.copyWith(
+      name: preferredName,
+      onboardingStep: step,
+      onboardingDraft: draft,
+    );
+    notifyListeners();
+    return true;
+  }
+
+  @override
+  Future<bool> completeFirstRunOnboarding(String preferredName) async => true;
+
+  @override
+  Future<bool> saveAppTourStep(int step) async => true;
+
+  @override
+  Future<bool> completeAppTour() async => true;
 
   @override
   Future<bool> changePassword({

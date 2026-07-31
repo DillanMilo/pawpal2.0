@@ -163,37 +163,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadCalendarData,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 8, 16, 124 + bottomInset),
-          children: [
-            _buildCalendarCard(),
-            const SizedBox(height: 16),
-            _buildSelectedDayHeader(selectedAppointments.length),
-            const SizedBox(height: 12),
-            if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 48),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_error != null)
-              _buildMessageState(
-                icon: Icons.error_outline_rounded,
-                title: 'Calendar unavailable',
-                subtitle: _error!,
-                actionLabel: 'Retry',
-                onAction: _loadCalendarData,
-              )
-            else if (selectedAppointments.isEmpty)
-              _buildMessageState(
-                icon: Icons.event_available_rounded,
-                title: 'No appointments',
-                subtitle: 'Tap + to schedule something for this day.',
-                actionLabel: 'Add Appointment',
-                onAction: () => _showAppointmentSheet(),
-              )
-            else
-              ...selectedAppointments.map(_buildAppointmentCard),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 124 + bottomInset),
+              children: [
+                _buildCalendarCard(),
+                const SizedBox(height: 16),
+                _buildSelectedDayHeader(selectedAppointments.length),
+                const SizedBox(height: 12),
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 48),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_error != null)
+                  _buildMessageState(
+                    icon: Icons.error_outline_rounded,
+                    title: 'Calendar unavailable',
+                    subtitle: _error!,
+                    actionLabel: 'Retry',
+                    onAction: _loadCalendarData,
+                  )
+                else if (selectedAppointments.isEmpty)
+                  _buildMessageState(
+                    icon: Icons.event_available_rounded,
+                    title: 'No appointments',
+                    subtitle: 'Tap + to schedule something for this day.',
+                    actionLabel: 'Add Appointment',
+                    onAction: () => _showAppointmentSheet(),
+                  )
+                else
+                  ...selectedAppointments.map(_buildAppointmentCard),
+              ],
+            ),
+          ),
         ),
       ),
       floatingActionButton: Padding(

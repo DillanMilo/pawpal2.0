@@ -56,6 +56,36 @@ class PetService {
     return Pet.fromJson(response);
   }
 
+  /// Creates the first pet with a stable client-generated ID. If a retry runs
+  /// after the insert succeeded, the existing row is returned instead.
+  Future<Pet> createPetIfMissing(Pet pet) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final existing = await getPet(pet.id);
+    if (existing != null) return existing;
+
+    final now = DateTime.now().toUtc().toIso8601String();
+    final data = pet.toJson()
+      ..['id'] = pet.id
+      ..['user_id'] = userId
+      ..['created_at'] = now
+      ..['updated_at'] = now;
+    try {
+      final response = await _client
+          .from('pets')
+          .insert(data)
+          .select()
+          .single();
+      return Pet.fromJson(response);
+    } on PostgrestException catch (error) {
+      if (error.code != '23505') rethrow;
+      final retried = await getPet(pet.id);
+      if (retried == null) rethrow;
+      return retried;
+    }
+  }
+
   // Update a pet
   Future<Pet> updatePet(Pet pet) async {
     final data = pet.toJson();

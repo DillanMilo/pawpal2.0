@@ -17,6 +17,7 @@ import '../../services/reminder_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/placeholder_data.dart';
 import '../../widgets/activity_icon.dart';
+import 'home_backdrop.dart';
 import 'home_header.dart';
 import 'daily_tip_card.dart';
 import 'stats_overview.dart';
@@ -131,76 +132,30 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          color: AppTheme.primaryColor,
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: HomeHeader(greeting: greeting, userName: userName)
-                    .animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideY(begin: -0.2, end: 0, curve: Curves.easeOutQuad),
-              ),
-
-              // Content
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    const SizedBox(height: 4),
-
-                    // Pet Carousel Section
-                    _buildPetSection(petProvider, activityProvider)
-                        .animate()
-                        .fadeIn(delay: 200.ms)
-                        .slideX(begin: 0.1, end: 0),
-
-                    const SizedBox(height: 24),
-
-                    // Stats Cards
-                    StatsOverview(activityProvider: activityProvider)
-                        .animate()
-                        .fadeIn(delay: 400.ms)
-                        .scale(begin: const Offset(0.9, 0.9)),
-
-                    const SizedBox(height: 28),
-
-                    // Quick Actions
-                    _buildQuickActionsSection()
-                        .animate()
-                        .fadeIn(delay: 600.ms)
-                        .slideY(begin: 0.2, end: 0),
-
-                    const SizedBox(height: 28),
-
-                    // Upcoming Reminders
-                    _buildRemindersSection().animate().fadeIn(delay: 700.ms),
-
-                    const SizedBox(height: 28),
-
-                    // Activity Graph (moved below reminders)
-                    _buildActivityGraphSection(activityProvider)
-                        .animate()
-                        .fadeIn(delay: 800.ms)
-                        .scale(begin: const Offset(0.95, 0.95)),
-
-                    const SizedBox(height: 28),
-
-                    // Daily Tip
-                    DailyTipCard(tip: _dailyTip)
-                        .animate()
-                        .fadeIn(delay: 1000.ms)
-                        .shimmer(delay: 2000.ms, duration: 1500.ms),
-
-                    const SizedBox(height: 140),
-                  ]),
-                ),
-              ),
-            ],
+        child: HomeBackdrop(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final useWideTabletLayout = constraints.maxWidth >= 900;
+              final mobileContentWidth = math.min(constraints.maxWidth, 760.0);
+              return RefreshIndicator(
+                onRefresh: _loadData,
+                color: AppTheme.primaryColor,
+                child: useWideTabletLayout
+                    ? _buildWideTabletDashboard(
+                        greeting: greeting,
+                        userName: userName,
+                        petProvider: petProvider,
+                        activityProvider: activityProvider,
+                      )
+                    : _buildMobileDashboard(
+                        greeting: greeting,
+                        userName: userName,
+                        petProvider: petProvider,
+                        activityProvider: activityProvider,
+                        contentWidth: mobileContentWidth,
+                      ),
+              );
+            },
           ),
         ),
       ),
@@ -210,6 +165,152 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildActiveTimerFAB(activityProvider),
             )
           : null,
+    );
+  }
+
+  Widget _buildMobileDashboard({
+    required String greeting,
+    required String userName,
+    required PetProvider petProvider,
+    required ActivityProvider activityProvider,
+    required double contentWidth,
+  }) {
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Center(
+            child:
+                SizedBox(
+                      width: contentWidth,
+                      child: HomeHeader(greeting: greeting, userName: userName),
+                    )
+                    .animate()
+                    .fadeIn(duration: 280.ms)
+                    .slideY(
+                      begin: -0.06,
+                      end: 0,
+                      duration: 280.ms,
+                      curve: Curves.easeOutCubic,
+                    ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Center(
+            child: SizedBox(
+              width: contentWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 4),
+                    _buildPetSection(
+                      petProvider,
+                      activityProvider,
+                    ).animate().fadeIn(delay: 60.ms, duration: 240.ms),
+                    const SizedBox(height: 24),
+                    StatsOverview(
+                      activityProvider: activityProvider,
+                    ).animate().fadeIn(delay: 100.ms, duration: 240.ms),
+                    const SizedBox(height: 28),
+                    _buildQuickActionsSection().animate().fadeIn(
+                      delay: 140.ms,
+                      duration: 240.ms,
+                    ),
+                    const SizedBox(height: 28),
+                    _buildRemindersSection().animate().fadeIn(
+                      delay: 180.ms,
+                      duration: 240.ms,
+                    ),
+                    const SizedBox(height: 28),
+                    _buildActivityGraphSection(
+                      activityProvider,
+                    ).animate().fadeIn(delay: 220.ms, duration: 240.ms),
+                    const SizedBox(height: 28),
+                    DailyTipCard(
+                      tip: _dailyTip,
+                    ).animate().fadeIn(delay: 260.ms, duration: 240.ms),
+                    const SizedBox(height: 140),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWideTabletDashboard({
+    required String greeting,
+    required String userName,
+    required PetProvider petProvider,
+    required ActivityProvider activityProvider,
+  }) {
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1080),
+              child: HomeHeader(greeting: greeting, userName: userName)
+                  .animate()
+                  .fadeIn(duration: 260.ms)
+                  .slideY(
+                    begin: -0.04,
+                    end: 0,
+                    duration: 260.ms,
+                    curve: Curves.easeOutCubic,
+                  ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1080),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 140),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 7,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildPetSection(petProvider, activityProvider),
+                          const SizedBox(height: 28),
+                          _buildQuickActionsSection(),
+                          const SizedBox(height: 28),
+                          _buildActivityGraphSection(activityProvider),
+                          const SizedBox(height: 28),
+                          DailyTipCard(tip: _dailyTip),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          StatsOverview(activityProvider: activityProvider),
+                          const SizedBox(height: 28),
+                          _buildRemindersSection(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(delay: 70.ms, duration: 260.ms),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -336,6 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final color =
         AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
     final isDark = AppTheme.isDark(context);
+    final isTablet = MediaQuery.sizeOf(context).width >= 700;
     final hasCover = pet.coverPhotoUrl != null && pet.coverPhotoUrl!.isNotEmpty;
 
     return Semantics(
@@ -345,12 +447,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedScale(
-          duration: 320.ms,
+          duration: 180.ms,
           curve: Curves.easeOutCubic,
-          scale: isSelected ? 1 : 0.96,
+          scale: isSelected ? 1 : (isTablet ? 0.98 : 0.96),
           child: AnimatedContainer(
-            duration: 400.ms,
-            curve: Curves.easeOutBack,
+            duration: 220.ms,
+            curve: Curves.easeOutCubic,
             padding: const EdgeInsets.all(18),
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
@@ -372,9 +474,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fit: BoxFit.cover,
                     )
                   : null,
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(isTablet ? 24 : 26),
               boxShadow: isSelected && !AppTheme.isDark(context)
-                  ? AppTheme.mediumShadow
+                  ? (isTablet ? AppTheme.softShadow : AppTheme.mediumShadow)
                   : AppTheme.shadowFor(context),
               border: isSelected
                   ? Border.all(

@@ -2,15 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/notification_service.dart';
 import '../utils/theme.dart';
 import '../utils/connectivity.dart';
 import 'quick_actions/quick_actions_screen.dart';
+import '../widgets/app_tour_overlay.dart';
 
 class MainShell extends StatefulWidget {
   final Widget child;
+  final bool replayTour;
 
-  const MainShell({super.key, required this.child});
+  const MainShell({super.key, required this.child, this.replayTour = false});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -19,6 +23,48 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   bool _isOffline = false;
   late final StreamSubscription<bool> _connectivitySub;
+  final _homeTourKey = GlobalKey();
+  final _servicesTourKey = GlobalKey();
+  final _quickActionsTourKey = GlobalKey();
+  final _calendarTourKey = GlobalKey();
+  final _profileTourKey = GlobalKey();
+  bool _tourVisible = false;
+  bool _replayStarted = false;
+  bool _notificationPermissionRequested = false;
+  int _tourStep = 0;
+
+  static const _tourSteps = [
+    AppTourStep(
+      title: 'Your daily home base',
+      description:
+          'See today’s care, recent activity, reminders, and a useful daily tip at a glance.',
+      icon: Icons.home_rounded,
+    ),
+    AppTourStep(
+      title: 'Trusted services nearby',
+      description:
+          'Find vets, groomers, trainers, pet stores, and other helpful local care.',
+      icon: Icons.store_rounded,
+    ),
+    AppTourStep(
+      title: 'Log care in a tap',
+      description:
+          'Use the paw button for quick actions like activities, medication, vet visits, and grooming.',
+      icon: Icons.pets_rounded,
+    ),
+    AppTourStep(
+      title: 'Keep every date together',
+      description:
+          'Events brings appointments, reminders, and care dates into one calm calendar.',
+      icon: Icons.calendar_today_rounded,
+    ),
+    AppTourStep(
+      title: 'Profiles for you and your pet',
+      description:
+          'Manage your pet’s details and health records, adjust PawPal, or replay this tour anytime.',
+      icon: Icons.person_rounded,
+    ),
+  ];
 
   @override
   void initState() {
@@ -36,8 +82,17 @@ class _MainShellState extends State<MainShell> {
     // Ask for notification permission once the user is signed in and the
     // shell is visible (Android 13+ requires a runtime request).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      NotificationService().requestPermissions();
+      _syncTourState();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant MainShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.replayTour && !oldWidget.replayTour) {
+      _replayStarted = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _syncTourState());
+    }
   }
 
   @override
@@ -48,8 +103,13 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<AuthProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncTourState());
     final selectedIndex = _calculateSelectedIndex(context);
+    return _buildMobileFirstShell(context, selectedIndex);
+  }
 
+  Widget _buildMobileFirstShell(BuildContext context, int selectedIndex) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final bottomInset = bottomPadding > 0 ? bottomPadding : 12.0;
     const navBarHeight = 72.0;
@@ -57,63 +117,94 @@ class _MainShellState extends State<MainShell> {
     const pawButtonOverlap = 29.0;
     const navShellHeight = navBarHeight + pawButtonOverlap;
 
-    return Scaffold(
-      extendBody: true,
-      body: Column(
-        children: [
-          if (_isOffline)
-            MaterialBanner(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              content: Text(
-                "You're offline. Some features may be limited.",
-                style: TextStyle(
-                  color: AppTheme.isDark(context)
-                      ? AppTheme.darkTextPrimary
-                      : Colors.white,
-                  fontSize: 13,
-                ),
-              ),
-              leading: Icon(
-                Icons.wifi_off_rounded,
-                color: AppTheme.isDark(context)
-                    ? AppTheme.darkTextPrimary
-                    : Colors.white,
-                size: 20,
-              ),
-              backgroundColor: AppTheme.isDark(context)
-                  ? AppTheme.darkCard
-                  : Colors.grey.shade700,
-              actions: const [SizedBox.shrink()],
-            ),
-          Expanded(child: widget.child),
-        ],
-      ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(18, 0, 18, bottomInset),
-        child: SizedBox(
-          height: navShellHeight,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.topCenter,
+    return Stack(
+      children: [
+        Scaffold(
+          extendBody: true,
+          body: Column(
             children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: navBarHeight,
-                child: _buildNavBarBackground(context, selectedIndex),
-              ),
-              Positioned(
-                top: 0,
-                child: SizedBox.square(
-                  dimension: pawButtonSize,
-                  child: _buildCentralPawButton(context),
-                ),
-              ),
+              if (_isOffline) _buildOfflineBanner(context),
+              Expanded(child: widget.child),
             ],
           ),
+          bottomNavigationBar: Padding(
+            padding: EdgeInsets.fromLTRB(18, 0, 18, bottomInset),
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: SizedBox(
+                  height: navShellHeight,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.topCenter,
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: navBarHeight,
+                        child: _buildNavBarBackground(context, selectedIndex),
+                      ),
+                      Positioned(
+                        top: 0,
+                        child: SizedBox.square(
+                          dimension: pawButtonSize,
+                          child: KeyedSubtree(
+                            key: _quickActionsTourKey,
+                            child: _buildCentralPawButton(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_tourVisible)
+          AppTourOverlay(
+            steps: _tourSteps,
+            anchorKeys: [
+              _homeTourKey,
+              _servicesTourKey,
+              _quickActionsTourKey,
+              _calendarTourKey,
+              _profileTourKey,
+            ],
+            currentStep: _tourStep,
+            onNext: _nextTourStep,
+            onBack: _previousTourStep,
+            onSkip: _completeTour,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOfflineBanner(BuildContext context) {
+    return MaterialBanner(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      content: Text(
+        "You're offline. Some features may be limited.",
+        style: TextStyle(
+          color: AppTheme.isDark(context)
+              ? AppTheme.darkTextPrimary
+              : Colors.white,
+          fontSize: 13,
         ),
       ),
+      leading: Icon(
+        Icons.wifi_off_rounded,
+        color: AppTheme.isDark(context)
+            ? AppTheme.darkTextPrimary
+            : Colors.white,
+        size: 20,
+      ),
+      backgroundColor: AppTheme.isDark(context)
+          ? AppTheme.darkCard
+          : Colors.grey.shade700,
+      actions: const [SizedBox.shrink()],
     );
   }
 
@@ -144,6 +235,7 @@ class _MainShellState extends State<MainShell> {
               Icons.home_rounded,
               'Home',
               selectedIndex == 0,
+              anchorKey: _homeTourKey,
             ),
           ),
           Expanded(
@@ -153,6 +245,7 @@ class _MainShellState extends State<MainShell> {
               Icons.store_rounded,
               'Services',
               selectedIndex == 1,
+              anchorKey: _servicesTourKey,
             ),
           ),
           const SizedBox(width: 66),
@@ -163,6 +256,7 @@ class _MainShellState extends State<MainShell> {
               Icons.calendar_today_rounded,
               'Events',
               selectedIndex == 2,
+              anchorKey: _calendarTourKey,
             ),
           ),
           Expanded(
@@ -172,6 +266,7 @@ class _MainShellState extends State<MainShell> {
               Icons.person_rounded,
               'Profile',
               selectedIndex == 3,
+              anchorKey: _profileTourKey,
             ),
           ),
         ],
@@ -217,8 +312,8 @@ class _MainShellState extends State<MainShell> {
           ).animate().scale(
             begin: const Offset(0.92, 0.92),
             end: const Offset(1, 1),
-            duration: 380.ms,
-            curve: Curves.easeOutBack,
+            duration: 220.ms,
+            curve: Curves.easeOutCubic,
           ),
     );
   }
@@ -228,9 +323,11 @@ class _MainShellState extends State<MainShell> {
     int index,
     IconData icon,
     String label,
-    bool isSelected,
-  ) {
+    bool isSelected, {
+    GlobalKey? anchorKey,
+  }) {
     return Semantics(
+      key: anchorKey,
       label: '$label tab',
       button: true,
       selected: isSelected,
@@ -239,8 +336,8 @@ class _MainShellState extends State<MainShell> {
         borderRadius: BorderRadius.circular(20),
         child: Center(
           child: AnimatedContainer(
-            duration: 300.ms,
-            curve: Curves.easeInOut,
+            duration: 180.ms,
+            curve: Curves.easeOutCubic,
             height: 54,
             constraints: const BoxConstraints(maxWidth: 68),
             padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
@@ -263,7 +360,8 @@ class _MainShellState extends State<MainShell> {
                     .animate(target: isSelected ? 1 : 0)
                     .scale(
                       begin: const Offset(1, 1),
-                      end: const Offset(1.08, 1.08),
+                      end: const Offset(1.04, 1.04),
+                      duration: 180.ms,
                     ),
                 const SizedBox(height: 2),
                 Text(
@@ -281,6 +379,87 @@ class _MainShellState extends State<MainShell> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _syncTourState() {
+    if (!mounted) return;
+    final profile = context.read<AuthProvider>().userProfile;
+    if (widget.replayTour && !_replayStarted) {
+      _replayStarted = true;
+      setState(() {
+        _tourStep = 0;
+        _tourVisible = true;
+      });
+      return;
+    }
+    if (!_tourVisible && profile?.needsAppTour == true) {
+      setState(() {
+        _tourStep = profile!.appTourStep.clamp(0, _tourSteps.length - 1);
+        _tourVisible = true;
+      });
+      return;
+    }
+    _requestNotificationPermissionIfReady();
+  }
+
+  Future<void> _nextTourStep() async {
+    if (_tourStep == _tourSteps.length - 1) {
+      await _completeTour();
+      return;
+    }
+    final next = _tourStep + 1;
+    if (!widget.replayTour) {
+      final saved = await context.read<AuthProvider>().saveAppTourStep(next);
+      if (!saved) {
+        _showTourSaveError();
+        return;
+      }
+    }
+    if (mounted) setState(() => _tourStep = next);
+  }
+
+  Future<void> _previousTourStep() async {
+    if (_tourStep == 0) return;
+    final previous = _tourStep - 1;
+    if (!widget.replayTour) {
+      final saved = await context.read<AuthProvider>().saveAppTourStep(
+        previous,
+      );
+      if (!saved) {
+        _showTourSaveError();
+        return;
+      }
+    }
+    if (mounted) setState(() => _tourStep = previous);
+  }
+
+  Future<void> _completeTour() async {
+    final saved = widget.replayTour
+        ? true
+        : await context.read<AuthProvider>().completeAppTour();
+    if (!saved) {
+      _showTourSaveError();
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _tourVisible = false);
+    _requestNotificationPermissionIfReady();
+    if (widget.replayTour) context.go('/home');
+  }
+
+  void _requestNotificationPermissionIfReady() {
+    if (_notificationPermissionRequested || _tourVisible) return;
+    _notificationPermissionRequested = true;
+    NotificationService().requestPermissions();
+  }
+
+  void _showTourSaveError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('We couldn’t save your tour progress. Please try again.'),
       ),
     );
   }

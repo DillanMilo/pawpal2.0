@@ -137,6 +137,41 @@ class PetProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> createInitialPet(Pet pet, {XFile? photoFile}) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      Pet newPet = await _petService.createPetIfMissing(
+        pet.copyWith(displayOrder: 0),
+      );
+      if (photoFile != null && newPet.photoUrl == null) {
+        final photoUrl = await _petService.uploadPhoto(newPet.id, photoFile);
+        newPet = await _petService.updatePet(
+          newPet.copyWith(photoUrl: photoUrl),
+        );
+      }
+
+      final index = _pets.indexWhere((existing) => existing.id == newPet.id);
+      if (index == -1) {
+        _pets.add(newPet);
+      } else {
+        _pets[index] = newPet;
+      }
+      _pets.sort(_comparePetsByDisplayOrder);
+      _selectedPet = newPet;
+      _lastFetched = DateTime.now();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updatePet(
     Pet pet, {
     XFile? photoFile,

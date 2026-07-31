@@ -203,291 +203,306 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 128 + bottomInset),
-        children: [
-          // Profile header
-          Center(
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () => _showEditProfileDialog(context),
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                            width: 3,
-                          ),
-                        ),
-                        child: ClipOval(child: _ProfileAvatar(profile: user)),
-                      ),
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppTheme.actionBlue,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.cardBackground(context),
-                            width: 3,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  user?.name ?? 'Pet Parent',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  user?.email ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppTheme.secondaryText(context),
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Stats cards
-          Row(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 128 + bottomInset),
             children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.pets,
-                  value: '${petProvider.pets.length}',
-                  label: 'Pets',
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.local_fire_department,
-                  value: '${activityProvider.currentStreak}',
-                  label: 'Day Streak',
-                  color: AppTheme.accentRose,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.star,
-                  value: '${activityProvider.totalPoints}',
-                  label: 'Points',
-                  color: AppTheme.accentColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Menu items
-          _MenuSection(
-            title: 'Account',
-            children: [
-              _MenuItem(
-                icon: Icons.person_outline,
-                title: 'Edit Profile',
-                onTap: () => _showEditProfileDialog(context),
-              ),
-              _MenuItem(
-                icon: Icons.workspace_premium_outlined,
-                title: 'PawPal plan',
-                subtitle: _planSubtitle(subscriptionProvider),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+              // Profile header
+              Center(
+                child: Column(
                   children: [
-                    Text(
-                      subscriptionProvider.isTrialing
-                          ? 'Plus trial'
-                          : subscriptionProvider.hasPlusAccess
-                          ? 'Plus'
-                          : 'Base',
-                      style: const TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.w800,
+                    GestureDetector(
+                      onTap: () => _showEditProfileDialog(context),
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.3,
+                                ),
+                                width: 3,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: _ProfileAvatar(profile: user),
+                            ),
+                          ),
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: AppTheme.actionBlue,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.cardBackground(context),
+                                width: 3,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.chevron_right),
-                  ],
-                ),
-                onTap: () => context.push('/pricing'),
-              ),
-              _MenuItem(
-                icon: Icons.notifications_outlined,
-                title: 'Notifications',
-                trailing: Switch(
-                  value: _notificationsEnabled,
-                  onChanged: _onMasterToggle,
-                ),
-                onTap: () {},
-              ),
-              if (_notificationsEnabled) ...[
-                _MenuItem(
-                  icon: Icons.alarm_outlined,
-                  title: 'Reminder Alerts',
-                  trailing: Switch(
-                    value: _reminderNotifications,
-                    onChanged: _onReminderToggle,
-                  ),
-                  onTap: () {},
-                ),
-                _MenuItem(
-                  icon: Icons.local_fire_department_outlined,
-                  title: 'Streak Reminders',
-                  trailing: Switch(
-                    value: _streakNotifications,
-                    onChanged: _onStreakToggle,
-                  ),
-                  onTap: () {},
-                ),
-                _MenuItem(
-                  icon: Icons.wb_sunny_outlined,
-                  title: 'Daily Reminder (9 AM)',
-                  trailing: Switch(
-                    value: _dailyActivityReminder,
-                    onChanged: _onDailyReminderToggle,
-                  ),
-                  onTap: () {},
-                ),
-              ],
-              _MenuItem(
-                icon: Icons.lock_outline,
-                title: 'Change Password',
-                onTap: () => _showChangePasswordDialog(context),
-              ),
-              _MenuItem(
-                icon: Icons.download_outlined,
-                title: 'Export my data',
-                subtitle: 'Download your records and original uploads',
-                trailing: _isExportingData
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.chevron_right),
-                onTap: _isExportingData
-                    ? () {}
-                    : () => _confirmAndExportData(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          _MenuSection(
-            title: 'App',
-            children: [
-              _MenuItem(
-                icon: Icons.palette_outlined,
-                title: 'Appearance',
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                    const SizedBox(height: 16),
                     Text(
-                      themeProvider.label,
+                      user?.name ?? 'Pet Parent',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right),
+                    const SizedBox(height: 4),
+                    Text(
+                      user?.email ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppTheme.secondaryText(context),
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
-                onTap: () => _showSettingsDialog(context),
               ),
-              _MenuItem(
-                icon: Icons.emoji_events_outlined,
-                title: 'Achievements',
-                onTap: () async {
-                  await _loadProfileData(forceRefresh: true);
-                  if (context.mounted) {
-                    _showAchievementsDialog(context);
-                  }
-                },
+              const SizedBox(height: 24),
+
+              // Stats cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.pets,
+                      value: '${petProvider.pets.length}',
+                      label: 'Pets',
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.local_fire_department,
+                      value: '${activityProvider.currentStreak}',
+                      label: 'Day Streak',
+                      color: AppTheme.accentRose,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.star,
+                      value: '${activityProvider.totalPoints}',
+                      label: 'Points',
+                      color: AppTheme.accentColor,
+                    ),
+                  ),
+                ],
               ),
-              _MenuItem(
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                onTap: () => context.push('/support'),
+              const SizedBox(height: 24),
+
+              // Menu items
+              _MenuSection(
+                title: 'Account',
+                children: [
+                  _MenuItem(
+                    icon: Icons.person_outline,
+                    title: 'Edit Profile',
+                    onTap: () => _showEditProfileDialog(context),
+                  ),
+                  _MenuItem(
+                    icon: Icons.workspace_premium_outlined,
+                    title: 'PawPal plan',
+                    subtitle: _planSubtitle(subscriptionProvider),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          subscriptionProvider.isTrialing
+                              ? 'Plus trial'
+                              : subscriptionProvider.hasPlusAccess
+                              ? 'Plus'
+                              : 'Base',
+                          style: const TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                    onTap: () => context.push('/pricing'),
+                  ),
+                  _MenuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications',
+                    trailing: Switch(
+                      value: _notificationsEnabled,
+                      onChanged: _onMasterToggle,
+                    ),
+                    onTap: () {},
+                  ),
+                  if (_notificationsEnabled) ...[
+                    _MenuItem(
+                      icon: Icons.alarm_outlined,
+                      title: 'Reminder Alerts',
+                      trailing: Switch(
+                        value: _reminderNotifications,
+                        onChanged: _onReminderToggle,
+                      ),
+                      onTap: () {},
+                    ),
+                    _MenuItem(
+                      icon: Icons.local_fire_department_outlined,
+                      title: 'Streak Reminders',
+                      trailing: Switch(
+                        value: _streakNotifications,
+                        onChanged: _onStreakToggle,
+                      ),
+                      onTap: () {},
+                    ),
+                    _MenuItem(
+                      icon: Icons.wb_sunny_outlined,
+                      title: 'Daily Reminder (9 AM)',
+                      trailing: Switch(
+                        value: _dailyActivityReminder,
+                        onChanged: _onDailyReminderToggle,
+                      ),
+                      onTap: () {},
+                    ),
+                  ],
+                  _MenuItem(
+                    icon: Icons.lock_outline,
+                    title: 'Change Password',
+                    onTap: () => _showChangePasswordDialog(context),
+                  ),
+                  _MenuItem(
+                    icon: Icons.download_outlined,
+                    title: 'Export my data',
+                    subtitle: 'Download your records and original uploads',
+                    trailing: _isExportingData
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.chevron_right),
+                    onTap: _isExportingData
+                        ? () {}
+                        : () => _confirmAndExportData(context),
+                  ),
+                ],
               ),
-              _MenuItem(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                onTap: () => context.push('/privacy'),
+              const SizedBox(height: 16),
+
+              _MenuSection(
+                title: 'App',
+                children: [
+                  _MenuItem(
+                    icon: Icons.palette_outlined,
+                    title: 'Appearance',
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          themeProvider.label,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                    onTap: () => _showSettingsDialog(context),
+                  ),
+                  _MenuItem(
+                    icon: Icons.explore_outlined,
+                    title: 'Replay app tour',
+                    subtitle: 'A quick guide to PawPal’s main areas',
+                    onTap: () => context.go('/home?tour=replay'),
+                  ),
+                  _MenuItem(
+                    icon: Icons.emoji_events_outlined,
+                    title: 'Achievements',
+                    onTap: () async {
+                      await _loadProfileData(forceRefresh: true);
+                      if (context.mounted) {
+                        _showAchievementsDialog(context);
+                      }
+                    },
+                  ),
+                  _MenuItem(
+                    icon: Icons.help_outline,
+                    title: 'Help & Support',
+                    onTap: () => context.push('/support'),
+                  ),
+                  _MenuItem(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () => context.push('/privacy'),
+                  ),
+                  _MenuItem(
+                    icon: Icons.description_outlined,
+                    title: 'Terms of Service',
+                    onTap: () => context.push('/terms'),
+                  ),
+                  _MenuItem(
+                    icon: Icons.info_outline,
+                    title: 'About PawPal',
+                    onTap: () => _showAboutDialog(context),
+                  ),
+                ],
               ),
-              _MenuItem(
-                icon: Icons.description_outlined,
-                title: 'Terms of Service',
-                onTap: () => context.push('/terms'),
+              const SizedBox(height: 16),
+
+              _MenuSection(
+                title: 'Danger Zone',
+                children: [
+                  _MenuItem(
+                    icon: Icons.delete_forever_outlined,
+                    title: 'Delete Account',
+                    iconColor: AppTheme.errorColor,
+                    titleColor: AppTheme.errorColor,
+                    onTap: () => _showDeleteAccountDialog(context),
+                  ),
+                  _MenuItem(
+                    icon: Icons.logout,
+                    title: 'Sign Out',
+                    iconColor: AppTheme.errorColor,
+                    titleColor: AppTheme.errorColor,
+                    onTap: () => _showSignOutDialog(context),
+                  ),
+                ],
               ),
-              _MenuItem(
-                icon: Icons.info_outline,
-                title: 'About PawPal',
-                onTap: () => _showAboutDialog(context),
+              const SizedBox(height: 32),
+
+              // Version
+              Center(
+                child: Text(
+                  'PawPal v1.0.0',
+                  style: TextStyle(color: AppTheme.textLight, fontSize: 12),
+                ),
               ),
+              const SizedBox(height: 16),
             ],
           ),
-          const SizedBox(height: 16),
-
-          _MenuSection(
-            title: 'Danger Zone',
-            children: [
-              _MenuItem(
-                icon: Icons.delete_forever_outlined,
-                title: 'Delete Account',
-                iconColor: AppTheme.errorColor,
-                titleColor: AppTheme.errorColor,
-                onTap: () => _showDeleteAccountDialog(context),
-              ),
-              _MenuItem(
-                icon: Icons.logout,
-                title: 'Sign Out',
-                iconColor: AppTheme.errorColor,
-                titleColor: AppTheme.errorColor,
-                onTap: () => _showSignOutDialog(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // Version
-          Center(
-            child: Text(
-              'PawPal v1.0.0',
-              style: TextStyle(color: AppTheme.textLight, fontSize: 12),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }

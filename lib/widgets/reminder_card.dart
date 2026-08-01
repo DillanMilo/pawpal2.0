@@ -56,7 +56,7 @@ class ReminderCard extends StatelessWidget {
                           Icon(
                             Icons.access_time,
                             size: 14,
-                            color: AppTheme.textLight,
+                            color: AppTheme.mutedText(context),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -76,7 +76,7 @@ class ReminderCard extends StatelessWidget {
                         Text(
                           reminder.description!,
                           style: TextStyle(
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.secondaryText(context),
                             fontSize: 13,
                           ),
                           maxLines: 1,

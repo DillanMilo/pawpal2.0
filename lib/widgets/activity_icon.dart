@@ -69,7 +69,7 @@ class ActivityIcon extends StatelessWidget {
     }
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(BuildContext context) {
     if (color != null) return color!;
 
     switch (type.toLowerCase()) {
@@ -97,7 +97,7 @@ class ActivityIcon extends StatelessWidget {
       case 'social':
         return const Color(0xFF74B9FF); // Light blue
       case 'rest':
-        return AppTheme.textLight; // Gray
+        return AppTheme.mutedText(context); // Gray
       case 'train':
         return AppTheme.primaryColor; // Purple
       default:
@@ -107,7 +107,7 @@ class ActivityIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = _getIconColor();
+    final iconColor = _getIconColor(context);
     final iconData = _getIconData();
 
     return Semantics(
@@ -122,7 +122,7 @@ class ActivityIcon extends StatelessWidget {
               ? Border.all(
                   color: isActive
                       ? iconColor.withValues(alpha: 0.24)
-                      : AppTheme.dividerColor,
+                      : AppTheme.divider(context),
                   width: 1.5,
                 )
               : null,
@@ -131,7 +131,7 @@ class ActivityIcon extends StatelessWidget {
         child: Center(
           child: Icon(
             iconData,
-            color: isActive ? Colors.white : iconColor,
+            color: isActive ? AppTheme.foregroundOn(iconColor) : iconColor,
             size: size,
           ),
         ),

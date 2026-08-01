@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/pet.dart';
+import '../../models/care_momentum.dart';
+import '../../models/pet_progression.dart';
 import '../../models/reminder.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -17,6 +19,7 @@ import '../../services/reminder_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/placeholder_data.dart';
 import '../../widgets/activity_icon.dart';
+import '../../widgets/pet_progression_avatar.dart';
 import 'home_backdrop.dart';
 import 'home_header.dart';
 import 'daily_tip_card.dart';
@@ -356,12 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: AppTheme.softLavender,
+                color: AppTheme.softTint(context, AppTheme.primaryColor),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.pets_rounded,
-                color: AppTheme.primaryDark,
+                color: AppTheme.primaryAccentText(context),
                 size: 36,
               ),
             ),
@@ -393,12 +396,18 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppTheme.inkColor,
+                color: AppTheme.isDark(context)
+                    ? AppTheme.primaryColor
+                    : AppTheme.inkColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add_rounded,
-                color: Colors.white,
+                color: AppTheme.foregroundOn(
+                  AppTheme.isDark(context)
+                      ? AppTheme.primaryColor
+                      : AppTheme.inkColor,
+                ),
                 size: 28,
               ),
             ),
@@ -423,9 +432,11 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final pet = petProvider.pets[index];
         final isSelected = petProvider.selectedPet?.id == pet.id;
+        final points = activityProvider.pointsForPet(pet.id);
+        final momentum = activityProvider.momentumForPet(pet.id);
         return Padding(
           padding: const EdgeInsets.only(right: 12),
-          child: _buildPetCard(pet, isSelected, () {
+          child: _buildPetCard(pet, points, momentum, isSelected, () {
             _activatePetCard(index, petProvider, activityProvider);
           }),
         );
@@ -433,12 +444,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPetCard(Pet pet, bool isSelected, VoidCallback onTap) {
+  Widget _buildPetCard(
+    Pet pet,
+    int points,
+    CareMomentum momentum,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     final color =
         AppTheme.petCategoryColors[pet.species] ?? AppTheme.primaryColor;
     final isDark = AppTheme.isDark(context);
     final isTablet = MediaQuery.sizeOf(context).width >= 700;
     final hasCover = pet.coverPhotoUrl != null && pet.coverPhotoUrl!.isNotEmpty;
+    final progression = PetProgression(points);
 
     return Semantics(
       button: true,
@@ -505,37 +523,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 Row(
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: isSelected || hasCover
-                            ? Colors.white.withValues(alpha: 0.14)
-                            : color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: isSelected || hasCover
-                            ? Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                              )
-                            : null,
-                        image: pet.photoUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(pet.photoUrl!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: pet.photoUrl == null
-                          ? Center(
-                              child: Icon(
-                                Icons.pets_rounded,
-                                color: isSelected || hasCover
-                                    ? Colors.white
-                                    : color,
-                                size: 32,
-                              ),
-                            )
-                          : null,
+                    PetProgressionAvatar(
+                      pet: pet,
+                      points: points,
+                      size: 72,
+                      fallbackColor: isSelected || hasCover
+                          ? Colors.white.withValues(alpha: 0.18)
+                          : color.withValues(alpha: 0.46),
                     ),
                     const SizedBox(width: 20),
                     Expanded(
@@ -569,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: Text(
-                                  pet.species,
+                                  'Level ${progression.level}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -595,6 +589,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '$points PawPoints • ${pet.species}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected || hasCover
+                                  ? Colors.white.withValues(alpha: 0.76)
+                                  : AppTheme.secondaryText(context),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Care Momentum: ${momentum.label} • ${momentum.activeDays}/7 days',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected || hasCover
+                                  ? Colors.white.withValues(alpha: 0.72)
+                                  : AppTheme.secondaryText(context),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -789,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
             border: Border.all(
               color: isActive
                   ? color.withValues(alpha: 0.42)
-                  : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+                  : (isDark ? AppTheme.darkDivider : AppTheme.divider(context)),
             ),
           ),
           child: Column(
@@ -811,7 +829,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? color
                       : (isDark
                             ? AppTheme.darkTextPrimary
-                            : AppTheme.textPrimary),
+                            : AppTheme.primaryText(context)),
                 ),
               ),
             ],
@@ -886,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   (group, groupIndex, rod, rodIndex) {
                                     return BarTooltipItem(
                                       '${rod.toY.toInt()} pts',
-                                      const TextStyle(
+                                      TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -950,20 +968,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : 25,
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 strokeWidth: 1,
                               );
                             },
                           ),
                           borderData: FlBorderData(
                             show: true,
-                            border: const Border(
+                            border: Border(
                               bottom: BorderSide(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 width: 1,
                               ),
                               left: BorderSide(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 width: 1,
                               ),
                             ),
@@ -980,11 +998,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 BarChartRodData(
                                   toY: value.toDouble(),
                                   gradient: isToday
-                                      ? const LinearGradient(
+                                      ? LinearGradient(
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,
                                           colors: [
-                                            AppTheme.inkColor,
+                                            AppTheme.isDark(context)
+                                                ? AppTheme.primaryColor
+                                                : AppTheme.inkColor,
                                             AppTheme.primaryDark,
                                           ],
                                         )
@@ -992,11 +1012,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,
                                           colors: [
-                                            AppTheme.primaryLight.withValues(
-                                              alpha: 0.4,
+                                            AppTheme.primaryColor.withValues(
+                                              alpha: AppTheme.isDark(context)
+                                                  ? 0.35
+                                                  : 0.18,
                                             ),
-                                            AppTheme.primaryLight.withValues(
-                                              alpha: 0.7,
+                                            AppTheme.primaryColor.withValues(
+                                              alpha: AppTheme.isDark(context)
+                                                  ? 0.7
+                                                  : 0.42,
                                             ),
                                           ],
                                         ),
@@ -1184,7 +1208,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary;
+    final titleColor = isDark
+        ? AppTheme.darkTextPrimary
+        : AppTheme.primaryText(context);
     final actionColor = isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
 
     return Row(
@@ -1230,11 +1256,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return FloatingActionButton.extended(
       onPressed: () => context.push('/log-activity'),
       backgroundColor: AppTheme.actionBlueDark,
-      foregroundColor: Colors.white,
+      foregroundColor: AppTheme.foregroundOn(AppTheme.actionBlueDark),
       icon: const Icon(Icons.timer_rounded),
       label: Text(
         '${activityProvider.activeActivityType}: ${activityProvider.formattedTimer}',
-        style: const TextStyle(fontWeight: FontWeight.w700),
+        style: TextStyle(fontWeight: FontWeight.w700),
       ),
     ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds);
   }

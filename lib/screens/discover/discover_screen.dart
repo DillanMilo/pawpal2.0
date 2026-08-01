@@ -128,11 +128,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discover'),
+        title: Text('Discover'),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: AppTheme.secondaryText(context),
           indicatorColor: AppTheme.primaryColor,
           tabs: const [
             Tab(icon: Icon(Icons.local_hospital), text: 'Vets'),
@@ -155,7 +155,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   Widget _buildTab(ServiceType type) {
     // Still loading location
     if (_locationLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -163,7 +163,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             SizedBox(height: 16),
             Text(
               'Getting your location...',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
             ),
           ],
         ),
@@ -178,7 +178,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
     // Loading places
     if (_loading[type] == true) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -186,7 +186,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             SizedBox(height: 16),
             Text(
               'Finding places nearby...',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
             ),
           ],
         ),
@@ -210,19 +210,19 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               Text(
                 _errors[type]!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.secondaryText(context)),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () => _loadPlaces(type),
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text('Retry'),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () => _showZipCodeDialog(type),
                 icon: const Icon(Icons.search),
-                label: const Text('Search by Zip Code'),
+                label: Text('Search by Zip Code'),
               ),
             ],
           ),
@@ -245,21 +245,21 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 color: AppTheme.primaryColor.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'No places found nearby',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Try searching by zip code for a different area',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.secondaryText(context)),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: () => _showZipCodeDialog(type),
                 icon: const Icon(Icons.search),
-                label: const Text('Search by Zip Code'),
+                label: Text('Search by Zip Code'),
               ),
             ],
           ),
@@ -294,27 +294,27 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Location Access Needed',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Enable location services to discover pet care providers nearby, or search by zip code.',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => _initLocation(),
               icon: const Icon(Icons.my_location),
-              label: const Text('Try Location Again'),
+              label: Text('Try Location Again'),
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: () => _showZipCodeDialog(type),
               icon: const Icon(Icons.search),
-              label: const Text('Search by Zip Code'),
+              label: Text('Search by Zip Code'),
             ),
           ],
         ),
@@ -342,7 +342,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 placeholder: (context, url) => Container(
                   height: 120,
                   color: AppTheme.softTint(context, AppTheme.primaryColor),
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryColor,
                       strokeWidth: 2,
@@ -370,7 +370,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                       Expanded(
                         child: Text(
                           place.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -386,7 +386,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                             color: AppTheme.successColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Open',
                             style: TextStyle(
                               color: AppTheme.successColor,
@@ -410,9 +410,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                       Expanded(
                         child: Text(
                           place.address,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.secondaryText(context),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -433,7 +433,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         const SizedBox(width: 4),
                         Text(
                           '${place.rating}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -475,7 +475,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Search by Zip Code'),
+        title: Text('Search by Zip Code'),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
@@ -494,7 +494,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -504,7 +504,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 _searchByZipcode(type, zip);
               }
             },
-            child: const Text('Search'),
+            child: Text('Search'),
           ),
         ],
       ),

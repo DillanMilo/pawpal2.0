@@ -67,7 +67,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a pet'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -110,7 +110,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Medication added successfully!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppTheme.successSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -124,7 +124,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppTheme.errorSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -389,7 +389,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                             Icons.pets,
                             size: 16,
                             color: isSelected
-                                ? Colors.white
+                                ? AppTheme.foregroundOn(AppTheme.primaryColor)
                                 : AppTheme.primaryColor,
                           )
                         : null,
@@ -400,7 +400,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? Colors.white
+                          ? AppTheme.foregroundOn(AppTheme.primaryColor)
                           : AppTheme.primaryText(context),
                     ),
                   ),

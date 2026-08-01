@@ -495,7 +495,10 @@ class _ProgressHeader extends StatelessWidget {
             child: LinearProgressIndicator(
               value: (step + 1) / 3,
               minHeight: 7,
-              backgroundColor: AppTheme.primaryLight,
+              backgroundColor: AppTheme.softTint(
+                context,
+                AppTheme.primaryColor,
+              ),
             ),
           ),
         ),

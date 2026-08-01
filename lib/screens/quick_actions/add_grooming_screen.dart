@@ -74,7 +74,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a pet'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -88,7 +88,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select at least one service'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -133,7 +133,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Grooming session saved!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppTheme.successSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -147,7 +147,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppTheme.errorSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -393,7 +393,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                             Icons.pets,
                             size: 16,
                             color: isSelected
-                                ? Colors.white
+                                ? AppTheme.foregroundOn(AppTheme.primaryColor)
                                 : AppTheme.primaryColor,
                           )
                         : null,
@@ -404,7 +404,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? Colors.white
+                          ? AppTheme.foregroundOn(AppTheme.primaryColor)
                           : AppTheme.primaryText(context),
                     ),
                   ),
@@ -450,7 +450,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                 border: Border.all(
                   color: isSelected
                       ? AppTheme.accentPeach
-                      : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+                      : (isDark
+                            ? AppTheme.darkDivider
+                            : AppTheme.divider(context)),
                   width: 2,
                 ),
               ),
@@ -469,7 +471,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? Colors.white
+                          ? AppTheme.foregroundOn(AppTheme.accentPeach)
                           : AppTheme.primaryText(context),
                     ),
                   ),

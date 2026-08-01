@@ -47,9 +47,9 @@ class _MainShellState extends State<MainShell> {
       icon: Icons.store_rounded,
     ),
     AppTourStep(
-      title: 'Log care in a tap',
+      title: 'Care that levels them up',
       description:
-          'Use the paw button for quick actions like activities, medication, vet visits, and grooming.',
+          'Use the paw button to log walks, meals, play, grooming, training, and wellness care. Each entry earns PawPoints for that pet, raising their level and unlocking badges, profile frames, and cute accessories.',
       icon: Icons.pets_rounded,
     ),
     AppTourStep(
@@ -127,39 +127,59 @@ class _MainShellState extends State<MainShell> {
               Expanded(child: widget.child),
             ],
           ),
-          bottomNavigationBar: Padding(
-            padding: EdgeInsets.fromLTRB(18, 0, 18, bottomInset),
-            child: Center(
-              heightFactor: 1,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: SizedBox(
-                  height: navShellHeight,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: navBarHeight,
-                        child: _buildNavBarBackground(context, selectedIndex),
-                      ),
-                      Positioned(
-                        top: 0,
-                        child: SizedBox.square(
-                          dimension: pawButtonSize,
-                          child: KeyedSubtree(
-                            key: _quickActionsTourKey,
-                            child: _buildCentralPawButton(context),
-                          ),
+          bottomNavigationBar: SizedBox(
+            height: navShellHeight + bottomInset,
+            child: Stack(
+              children: [
+                Positioned(
+                  key: const Key('bottom-navigation-safe-background'),
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: bottomInset + (navBarHeight / 2),
+                  child: ColoredBox(color: AppTheme.surfaceBackground(context)),
+                ),
+                Positioned(
+                  left: 18,
+                  right: 18,
+                  bottom: bottomInset,
+                  child: Center(
+                    heightFactor: 1,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: SizedBox(
+                        height: navShellHeight,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.topCenter,
+                          children: [
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              height: navBarHeight,
+                              child: _buildNavBarBackground(
+                                context,
+                                selectedIndex,
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              child: SizedBox.square(
+                                dimension: pawButtonSize,
+                                child: KeyedSubtree(
+                                  key: _quickActionsTourKey,
+                                  child: _buildCentralPawButton(context),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -221,7 +241,7 @@ class _MainShellState extends State<MainShell> {
             ? AppTheme.coloredShadow(Colors.black)
             : AppTheme.mediumShadow,
         border: Border.all(
-          color: isDark ? AppTheme.darkDivider : AppTheme.dividerColor,
+          color: isDark ? AppTheme.darkDivider : AppTheme.divider(context),
           width: 1.2,
         ),
       ),
@@ -302,9 +322,9 @@ class _MainShellState extends State<MainShell> {
                     width: 4,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.pets_rounded,
-                  color: Colors.white,
+                  color: AppTheme.foregroundOn(AppTheme.actionBlue),
                   size: 31,
                 ),
               ),
@@ -354,7 +374,7 @@ class _MainShellState extends State<MainShell> {
                       icon,
                       color: isSelected
                           ? AppTheme.primaryColor
-                          : AppTheme.textLight,
+                          : AppTheme.mutedText(context),
                       size: 23,
                     )
                     .animate(target: isSelected ? 1 : 0)
@@ -370,7 +390,7 @@ class _MainShellState extends State<MainShell> {
                   style: TextStyle(
                     color: isSelected
                         ? AppTheme.primaryColor
-                        : AppTheme.textLight,
+                        : AppTheme.mutedText(context),
                     fontSize: 9.5,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   ),

@@ -100,7 +100,7 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
                     decoration: BoxDecoration(
                       color: isDark
                           ? AppTheme.darkDivider
-                          : AppTheme.dividerColor,
+                          : AppTheme.divider(context),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),

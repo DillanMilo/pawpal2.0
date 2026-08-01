@@ -85,16 +85,16 @@ class _ActionButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isEnabled
                       ? color.withValues(alpha: 0.1)
-                      : AppTheme.backgroundColor,
+                      : AppTheme.pageBackground(context),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isEnabled ? color : AppTheme.dividerColor,
+                    color: isEnabled ? color : AppTheme.divider(context),
                     width: 1.5,
                   ),
                 ),
                 child: Icon(
                   _icon,
-                  color: isEnabled ? color : AppTheme.textLight,
+                  color: isEnabled ? color : AppTheme.mutedText(context),
                   size: 28,
                 ),
               ),
@@ -104,7 +104,9 @@ class _ActionButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isEnabled ? AppTheme.textPrimary : AppTheme.textLight,
+                  color: isEnabled
+                      ? AppTheme.primaryText(context)
+                      : AppTheme.mutedText(context),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,

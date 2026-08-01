@@ -26,7 +26,7 @@ class _PetListScreenState extends State<PetListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Pets'),
+        title: Text('My Pets'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -38,7 +38,7 @@ class _PetListScreenState extends State<PetListScreen> {
       body: RefreshIndicator(
         onRefresh: () => petProvider.loadPets(),
         child: petProvider.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : petProvider.pets.isEmpty
             ? _buildEmptyState()
             : _buildPetList(petProvider),
@@ -59,21 +59,24 @@ class _PetListScreenState extends State<PetListScreen> {
               color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No pets yet',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Add your first pet to get started with PawPal',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () => context.push('/add-pet'),
               icon: const Icon(Icons.add),
-              label: const Text('Add Your First Pet'),
+              label: Text('Add Your First Pet'),
             ),
           ],
         ),
@@ -93,7 +96,7 @@ class _PetListScreenState extends State<PetListScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(petProvider.error ?? 'Failed to reorder pets'),
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: AppTheme.errorSnackBackground,
             ),
           );
         }
@@ -186,7 +189,7 @@ class _PetListItem extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.drag_handle_rounded,
-                          color: AppTheme.textLight,
+                          color: AppTheme.mutedText(context),
                         ),
                       ),
                     ),
@@ -214,7 +217,7 @@ class _PetListCopy extends StatelessWidget {
       children: [
         Text(
           pet.name,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Row(
@@ -239,7 +242,10 @@ class _PetListCopy extends StatelessWidget {
               Flexible(
                 child: Text(
                   pet.breed!,
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  style: TextStyle(
+                    color: AppTheme.secondaryText(context),
+                    fontSize: 14,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -249,11 +255,18 @@ class _PetListCopy extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            Icon(Icons.cake_outlined, size: 14, color: AppTheme.textLight),
+            Icon(
+              Icons.cake_outlined,
+              size: 14,
+              color: AppTheme.mutedText(context),
+            ),
             const SizedBox(width: 4),
             Text(
               pet.ageDisplay,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontSize: 13,
+              ),
             ),
             const SizedBox(width: 16),
             Icon(
@@ -263,12 +276,15 @@ class _PetListCopy extends StatelessWidget {
                   ? Icons.female
                   : Icons.transgender,
               size: 14,
-              color: AppTheme.textLight,
+              color: AppTheme.mutedText(context),
             ),
             const SizedBox(width: 4),
             Text(
               pet.gender,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontSize: 13,
+              ),
             ),
           ],
         ),

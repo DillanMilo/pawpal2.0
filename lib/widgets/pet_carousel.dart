@@ -71,10 +71,10 @@ class _PetCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? categoryColor.withValues(alpha: 0.1)
-                : Colors.white,
+                : AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? categoryColor : AppTheme.dividerColor,
+              color: isSelected ? categoryColor : AppTheme.divider(context),
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
@@ -140,7 +140,9 @@ class _PetCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? categoryColor : AppTheme.textPrimary,
+                  color: isSelected
+                      ? categoryColor
+                      : AppTheme.primaryText(context),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -149,7 +151,10 @@ class _PetCard extends StatelessWidget {
               // Pet species
               Text(
                 pet.species,
-                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.secondaryText(context),
+                ),
               ),
             ],
           ),
@@ -175,10 +180,10 @@ class _AddPetCard extends StatelessWidget {
         child: Container(
           width: 120,
           decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
+            color: AppTheme.pageBackground(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppTheme.dividerColor,
+              color: AppTheme.divider(context),
               style: BorderStyle.solid,
             ),
           ),

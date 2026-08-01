@@ -42,7 +42,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.error ?? 'Failed to send reset email'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -96,19 +96,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
           // Title
-          const Text(
+          Text(
             'Reset Password',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: AppTheme.primaryText(context),
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Enter your email address and we\'ll send you a link to reset your password',
-            style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+            style: TextStyle(
+              fontSize: 16,
+              color: AppTheme.secondaryText(context),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -145,7 +148,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : const Text('Send Reset Link'),
+                : Text('Send Reset Link'),
           ),
         ],
       ),
@@ -174,32 +177,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Check Your Email',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
+            color: AppTheme.primaryText(context),
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
           'We\'ve sent a password reset link to\n${_emailController.text}',
-          style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+          style: TextStyle(
+            fontSize: 16,
+            color: AppTheme.secondaryText(context),
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
         ElevatedButton(
           onPressed: () => context.pop(),
-          child: const Text('Back to Sign In'),
+          child: Text('Back to Sign In'),
         ),
         const SizedBox(height: 16),
         TextButton(
           onPressed: () {
             setState(() => _emailSent = false);
           },
-          child: const Text('Try a different email'),
+          child: Text('Try a different email'),
         ),
       ],
     );

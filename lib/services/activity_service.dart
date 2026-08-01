@@ -139,6 +139,54 @@ class ActivityService {
     return total;
   }
 
+  // PawPoints belong to the pet whose care was logged. Keeping this derived
+  // from activity rows makes edits and deletions immediately authoritative.
+  Future<Map<String, int>> getPointsByPet() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return {};
+
+    final response = await _client
+        .from('activities')
+        .select('pet_id, points')
+        .eq('user_id', userId);
+
+    final totals = <String, int>{};
+    for (final row in response as List) {
+      final petId = row['pet_id'] as String?;
+      if (petId == null) continue;
+      totals[petId] = (totals[petId] ?? 0) + ((row['points'] as int?) ?? 0);
+    }
+    return totals;
+  }
+
+  // Recent timestamps are enough to derive per-pet momentum. Nothing is
+  // stored separately, so the indicator naturally softens as days pass.
+  Future<Map<String, List<DateTime>>> getRecentActivityTimestampsByPet({
+    int windowDays = 7,
+    DateTime? now,
+  }) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return {};
+
+    final reference = now ?? DateTime.now();
+    final today = DateTime(reference.year, reference.month, reference.day);
+    final cutoff = today.subtract(Duration(days: windowDays - 1));
+    final response = await _client
+        .from('activities')
+        .select('pet_id, start_time')
+        .eq('user_id', userId)
+        .gte('start_time', cutoff.toUtc().toIso8601String());
+
+    final timestamps = <String, List<DateTime>>{};
+    for (final row in response as List) {
+      final petId = row['pet_id'] as String?;
+      final rawStartTime = row['start_time'] as String?;
+      if (petId == null || rawStartTime == null) continue;
+      (timestamps[petId] ??= []).add(DateTime.parse(rawStartTime).toLocal());
+    }
+    return timestamps;
+  }
+
   // Get activity count by type
   Future<Map<String, int>> getActivityCountsByType(String petId) async {
     final response = await _client

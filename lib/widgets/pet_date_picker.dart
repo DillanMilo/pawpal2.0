@@ -53,7 +53,9 @@ class PetDateField extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: hasDate ? AppTheme.textPrimary : AppTheme.textLight,
+              color: hasDate
+                  ? AppTheme.primaryText(context)
+                  : AppTheme.mutedText(context),
             ),
           ),
         ),
@@ -372,7 +374,7 @@ class _SheetHandle extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.isDark(context)
               ? AppTheme.darkDivider
-              : AppTheme.dividerColor,
+              : AppTheme.divider(context),
           borderRadius: BorderRadius.circular(999),
         ),
       ),

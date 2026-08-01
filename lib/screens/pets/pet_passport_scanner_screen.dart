@@ -64,7 +64,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Paste Passport QR Data'),
+          title: Text('Paste Passport QR Data'),
           content: TextField(
             controller: controller,
             minLines: 5,
@@ -76,11 +76,11 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Preview'),
+              child: Text('Preview'),
             ),
           ],
         );
@@ -126,7 +126,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Pet Passport'),
+        title: Text('Scan Pet Passport'),
         actions: [
           IconButton(
             tooltip: 'Paste passport data',
@@ -149,8 +149,8 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(28),
-            border: AppTheme.thickBorder,
-            boxShadow: AppTheme.softShadow,
+            border: AppTheme.borderFor(context),
+            boxShadow: AppTheme.shadowFor(context),
           ),
           child: Stack(
             fit: StackFit.expand,
@@ -170,11 +170,11 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Point your camera at a PawPal pet passport QR code.',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: AppTheme.textSecondary,
+            color: AppTheme.secondaryText(context),
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -183,7 +183,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
         OutlinedButton.icon(
           onPressed: _pastePassportText,
           icon: const Icon(Icons.content_paste_rounded),
-          label: const Text('Paste QR Data'),
+          label: Text('Paste QR Data'),
         ),
       ],
     );
@@ -200,10 +200,10 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(28),
-            border: AppTheme.thickBorder,
-            boxShadow: AppTheme.softShadow,
+            border: AppTheme.borderFor(context),
+            boxShadow: AppTheme.shadowFor(context),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,8 +236,8 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
                       children: [
                         Text(
                           petName ?? 'Scanned QR Code',
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.primaryText(context),
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
@@ -245,8 +245,8 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
                         if (species != null)
                           Text(
                             species,
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
+                            style: TextStyle(
+                              color: AppTheme.secondaryText(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -259,7 +259,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Updated $updated',
-                  style: const TextStyle(color: AppTheme.textLight),
+                  style: TextStyle(color: AppTheme.mutedText(context)),
                 ),
               ],
             ],
@@ -269,13 +269,13 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardBackground(context),
             borderRadius: BorderRadius.circular(20),
-            border: AppTheme.thickBorder,
+            border: AppTheme.borderFor(context),
           ),
           child: SelectableText(
             scannedData,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            style: TextStyle(fontFamily: 'monospace', fontSize: 13),
           ),
         ),
         const SizedBox(height: 20),
@@ -285,7 +285,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
               child: OutlinedButton.icon(
                 onPressed: _scanAgain,
                 icon: const Icon(Icons.qr_code_scanner_rounded),
-                label: const Text('Scan Again'),
+                label: Text('Scan Again'),
               ),
             ),
             const SizedBox(width: 12),
@@ -293,7 +293,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
               child: FilledButton.icon(
                 onPressed: () => Share.share(scannedData),
                 icon: const Icon(Icons.share_rounded),
-                label: const Text('Share'),
+                label: Text('Share'),
               ),
             ),
           ],
@@ -307,7 +307,7 @@ class _PetPassportScannerScreenState extends State<PetPassportScannerScreen> {
             );
           },
           icon: const Icon(Icons.copy_rounded),
-          label: const Text('Copy Data'),
+          label: Text('Copy Data'),
         ),
       ],
     );

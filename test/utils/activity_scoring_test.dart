@@ -45,30 +45,38 @@ void main() {
       );
     });
 
-    test('calculates level progress', () {
-      expect(ActivityScoring.levelForPoints(0), 1);
-      expect(ActivityScoring.levelForPoints(249), 1);
-      expect(ActivityScoring.levelForPoints(250), 2);
-      expect(ActivityScoring.levelForPoints(4750), 20);
-      expect(ActivityScoring.levelForPoints(5000), 20);
-      expect(ActivityScoring.levelForPoints(99999), 20);
-      expect(ActivityScoring.pointsIntoCurrentLevel(375), 125);
-      expect(ActivityScoring.pointsToNextLevel(375), 125);
-      expect(ActivityScoring.levelProgress(125), 0.5);
-      expect(ActivityScoring.pointsToNextLevel(5000), 0);
-      expect(ActivityScoring.levelProgress(5000), 1.0);
-    });
+    test(
+      'uses a fast-early, progressively slower level curve capped at 50',
+      () {
+        expect(ActivityScoring.levelForPoints(0), 1);
+        expect(ActivityScoring.pointsRequiredForLevel(2), 80);
+        expect(ActivityScoring.pointsRequiredForLevel(3), 170);
+        expect(ActivityScoring.levelForPoints(79), 1);
+        expect(ActivityScoring.levelForPoints(80), 2);
+        expect(ActivityScoring.pointsRequiredForNextLevel(2), 90);
+        expect(ActivityScoring.pointsRequiredForNextLevel(49), 560);
+        expect(ActivityScoring.pointsRequiredForLevel(50), 15680);
+        expect(ActivityScoring.levelForPoints(15679), 49);
+        expect(ActivityScoring.levelForPoints(15680), 50);
+        expect(ActivityScoring.levelForPoints(99999), 50);
+        expect(ActivityScoring.pointsIntoCurrentLevel(125), 45);
+        expect(ActivityScoring.pointsToNextLevel(125), 45);
+        expect(ActivityScoring.levelProgress(125), 0.5);
+        expect(ActivityScoring.pointsToNextLevel(15680), 0);
+        expect(ActivityScoring.levelProgress(15680), 1.0);
+      },
+    );
 
     test('returns rank names from level progression', () {
       expect(ActivityScoring.rankName(0), 'New Pal');
-      expect(ActivityScoring.rankName(250), 'Care Cadet');
-      expect(ActivityScoring.rankName(750), 'Walk Wrangler');
-      expect(ActivityScoring.rankName(1500), 'Wellness Watcher');
-      expect(ActivityScoring.rankName(4750), 'PawPal Elite');
+      expect(ActivityScoring.rankName(80), 'Care Cadet');
+      expect(ActivityScoring.rankName(270), 'Walk Wrangler');
+      expect(ActivityScoring.rankName(630), 'Wellness Watcher');
+      expect(ActivityScoring.rankName(15680), 'Forever Guardian');
       expect(ActivityScoring.nextRankName(79), 'Care Cadet');
-      expect(ActivityScoring.nextRankName(5000), isNull);
-      expect(ActivityScoring.levelProgressLabel(79), '171 to Care Cadet');
-      expect(ActivityScoring.levelProgressLabel(5000), 'Max rank reached');
+      expect(ActivityScoring.nextRankName(15680), isNull);
+      expect(ActivityScoring.levelProgressLabel(79), '1 to Care Cadet');
+      expect(ActivityScoring.levelProgressLabel(15680), 'Max rank reached');
     });
   });
 }

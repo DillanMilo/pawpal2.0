@@ -82,8 +82,8 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
 
     if (_pet == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Health Records')),
-        body: const Center(child: Text('Pet not found')),
+        appBar: AppBar(title: Text('Health Records')),
+        body: Center(child: Text('Pet not found')),
       );
     }
 
@@ -94,7 +94,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
           controller: _tabController,
           isScrollable: true,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: AppTheme.secondaryText(context),
           indicatorColor: AppTheme.primaryColor,
           tabs: const [
             Tab(text: 'All'),
@@ -130,18 +130,18 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
       final viewPlans = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Keep a complete health history with Plus'),
-          content: const Text(
+          title: Text('Keep a complete health history with Plus'),
+          content: Text(
             'PawPal Base includes up to 20 medical records. Existing records remain available; Plus unlocks unlimited records and document uploads.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Not now'),
+              child: Text('Not now'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('View plans'),
+              child: Text('View plans'),
             ),
           ],
         ),
@@ -247,12 +247,12 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tap + to add a record',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
             ),
           ],
         ),
@@ -302,7 +302,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.dividerColor,
+                    color: AppTheme.divider(context),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -331,7 +331,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                       children: [
                         Text(
                           record.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -382,7 +382,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                               _deleteRecord(record);
                             },
                             icon: const Icon(Icons.delete),
-                            label: const Text('Delete'),
+                            label: Text('Delete'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.errorColor,
                             ),
@@ -396,7 +396,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
                               _editRecord(record);
                             },
                             icon: const Icon(Icons.edit),
-                            label: const Text('Edit'),
+                            label: Text('Edit'),
                           ),
                         ),
                       ],
@@ -415,17 +415,17 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Record?'),
+        title: Text('Delete Record?'),
         content: Text('Are you sure you want to delete "${record.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -561,7 +561,7 @@ class _MedicalRecordCard extends StatelessWidget {
                     children: [
                       Text(
                         record.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -681,10 +681,13 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(
+              color: AppTheme.secondaryText(context),
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 16)),
+          Text(value, style: TextStyle(fontSize: 16)),
         ],
       ),
     );

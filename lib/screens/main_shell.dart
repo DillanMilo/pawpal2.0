@@ -241,7 +241,7 @@ class _MainShellState extends State<MainShell> {
             ? AppTheme.coloredShadow(Colors.black)
             : AppTheme.mediumShadow,
         border: Border.all(
-          color: isDark ? AppTheme.darkDivider : AppTheme.dividerColor,
+          color: isDark ? AppTheme.darkDivider : AppTheme.divider(context),
           width: 1.2,
         ),
       ),
@@ -322,9 +322,9 @@ class _MainShellState extends State<MainShell> {
                     width: 4,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.pets_rounded,
-                  color: Colors.white,
+                  color: AppTheme.foregroundOn(AppTheme.actionBlue),
                   size: 31,
                 ),
               ),
@@ -374,7 +374,7 @@ class _MainShellState extends State<MainShell> {
                       icon,
                       color: isSelected
                           ? AppTheme.primaryColor
-                          : AppTheme.textLight,
+                          : AppTheme.mutedText(context),
                       size: 23,
                     )
                     .animate(target: isSelected ? 1 : 0)
@@ -390,7 +390,7 @@ class _MainShellState extends State<MainShell> {
                   style: TextStyle(
                     color: isSelected
                         ? AppTheme.primaryColor
-                        : AppTheme.textLight,
+                        : AppTheme.mutedText(context),
                     fontSize: 9.5,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   ),

@@ -61,7 +61,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reminders'),
+        title: Text('Reminders'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -107,7 +107,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           // Reminders list
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : _filteredReminders.isEmpty
                 ? _buildEmptyState()
                 : RefreshIndicator(
@@ -166,12 +166,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tap + to add a reminder',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
             ),
           ],
         ),
@@ -186,18 +186,18 @@ class _RemindersScreenState extends State<RemindersScreen> {
       final viewPlans = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Keep every reminder with Plus'),
-          content: const Text(
+          title: Text('Keep every reminder with Plus'),
+          content: Text(
             'PawPal Base includes up to 5 active reminders. Complete or delete one to add another, or upgrade for unlimited reminders.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Not now'),
+              child: Text('Not now'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('View plans'),
+              child: Text('View plans'),
             ),
           ],
         ),
@@ -238,13 +238,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.dividerColor,
+                    color: AppTheme.divider(context),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'New Reminder',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -313,10 +313,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
               ),
               const SizedBox(height: 16),
               SwitchListTile(
-                title: const Text('Recurring'),
+                title: Text('Recurring'),
                 subtitle: canUseRecurring
                     ? null
-                    : const Text('Included with PawPal Plus'),
+                    : Text('Included with PawPal Plus'),
                 value: isRecurring,
                 onChanged: (value) async {
                   if (value && !canUseRecurring) {
@@ -403,7 +403,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     }
                   }
                 },
-                child: const Text('Create Reminder'),
+                child: Text('Create Reminder'),
               ),
             ],
           ),
@@ -438,17 +438,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Reminder?'),
+        title: Text('Delete Reminder?'),
         content: Text('Delete "${reminder.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -504,13 +504,15 @@ class _FilterChip extends StatelessWidget {
             color: isSelected ? chipColor : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? chipColor : AppTheme.dividerColor,
+              color: isSelected ? chipColor : AppTheme.divider(context),
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              color: isSelected
+                  ? AppTheme.foregroundOn(chipColor)
+                  : AppTheme.secondaryText(context),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -588,7 +590,7 @@ class _ReminderCard extends StatelessWidget {
                     children: [
                       Text(
                         reminder.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -599,7 +601,7 @@ class _ReminderCard extends StatelessWidget {
                           Icon(
                             Icons.access_time,
                             size: 14,
-                            color: AppTheme.textLight,
+                            color: AppTheme.mutedText(context),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -617,7 +619,7 @@ class _ReminderCard extends StatelessWidget {
                             Icon(
                               Icons.repeat,
                               size: 14,
-                              color: AppTheme.textLight,
+                              color: AppTheme.mutedText(context),
                             ),
                           ],
                         ],

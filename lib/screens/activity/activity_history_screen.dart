@@ -88,7 +88,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity History'),
+        title: Text('Activity History'),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
@@ -116,13 +116,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                   Expanded(
                     child: Text(
                       _getFilterText(),
-                      style: const TextStyle(fontSize: 13),
+                      style: TextStyle(fontSize: 13),
                     ),
                   ),
-                  TextButton(
-                    onPressed: _clearFilters,
-                    child: const Text('Clear'),
-                  ),
+                  TextButton(onPressed: _clearFilters, child: Text('Clear')),
                 ],
               ),
             ),
@@ -131,7 +128,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
           // Activity list
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : _filteredActivities.isEmpty
                 ? _buildEmptyState()
                 : RefreshIndicator(
@@ -198,10 +195,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             children: [
               Text(
                 dayLabel,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Container(
@@ -220,7 +214,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                     const SizedBox(width: 4),
                     Text(
                       '$dayPoints pts',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.primaryColor,
@@ -251,14 +245,14 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
               color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No activities found',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Start logging activities to see your history',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.secondaryText(context)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -309,7 +303,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Filter by Type',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -397,11 +391,14 @@ class _StatCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            color: AppTheme.secondaryText(context),
+          ),
         ),
       ],
     );
@@ -434,13 +431,17 @@ class _FilterChip extends StatelessWidget {
             color: isSelected ? AppTheme.primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : AppTheme.divider(context),
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              color: isSelected
+                  ? AppTheme.foregroundOn(AppTheme.primaryColor)
+                  : AppTheme.secondaryText(context),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -471,26 +472,23 @@ class _ActivityCard extends StatelessWidget {
                 children: [
                   Text(
                     activity.type,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       Text(
                         DateFormat('h:mm a').format(activity.startTime),
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
+                        style: TextStyle(
+                          color: AppTheme.secondaryText(context),
                           fontSize: 13,
                         ),
                       ),
-                      const Text(' • '),
+                      Text(' • '),
                       Text(
                         '${activity.calculatedDuration} min',
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
+                        style: TextStyle(
+                          color: AppTheme.secondaryText(context),
                           fontSize: 13,
                         ),
                       ),
@@ -515,7 +513,7 @@ class _ActivityCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '+${activity.points}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.successColor,

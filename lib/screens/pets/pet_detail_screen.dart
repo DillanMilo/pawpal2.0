@@ -136,7 +136,7 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.backgroundColor,
+                        color: AppTheme.pageBackground(context),
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(32),
                         ),
@@ -144,7 +144,7 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                       child: TabBar(
                         controller: _tabController,
                         labelColor: AppTheme.primaryColor,
-                        unselectedLabelColor: AppTheme.textLight,
+                        unselectedLabelColor: AppTheme.mutedText(context),
                         indicatorColor: AppTheme.primaryColor,
                         indicatorWeight: 4,
                         indicatorSize: TabBarIndicatorSize.label,
@@ -171,7 +171,7 @@ class _PetDetailScreenState extends State<PetDetailScreen>
               ];
             },
             body: Container(
-              color: AppTheme.backgroundColor,
+              color: AppTheme.pageBackground(context),
               child: TabBarView(
                 controller: _tabController,
                 children: [

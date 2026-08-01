@@ -90,16 +90,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Appointment'),
+        title: Text('Delete Appointment'),
         content: Text('Delete "${appointment.title}" from your calendar?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -147,7 +147,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
+        title: Text('Calendar'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -174,7 +174,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 _buildSelectedDayHeader(selectedAppointments.length),
                 const SizedBox(height: 12),
                 if (_isLoading)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 48),
                     child: Center(child: CircularProgressIndicator()),
                   )
@@ -242,37 +242,41 @@ class _CalendarScreenState extends State<CalendarScreen> {
             formatButtonVisible: true,
             titleCentered: true,
             formatButtonShowsNext: false,
-            titleTextStyle: const TextStyle(
+            titleTextStyle: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
             ),
             formatButtonDecoration: BoxDecoration(
-              color: AppTheme.softLavender,
+              color: AppTheme.softTint(context, AppTheme.primaryColor),
               borderRadius: BorderRadius.circular(14),
             ),
-            formatButtonTextStyle: const TextStyle(
+            formatButtonTextStyle: TextStyle(
               color: AppTheme.primaryColor,
               fontWeight: FontWeight.w700,
             ),
-            leftChevronIcon: const Icon(
+            leftChevronIcon: Icon(
               Icons.chevron_left,
-              color: AppTheme.inkColor,
+              color: AppTheme.primaryText(context),
             ),
-            rightChevronIcon: const Icon(
+            rightChevronIcon: Icon(
               Icons.chevron_right,
-              color: AppTheme.inkColor,
+              color: AppTheme.primaryText(context),
             ),
           ),
           calendarStyle: CalendarStyle(
             selectedDecoration: const BoxDecoration(
-              color: AppTheme.inkColor,
+              color: AppTheme.primaryColor,
               shape: BoxShape.circle,
+            ),
+            selectedTextStyle: TextStyle(
+              color: AppTheme.foregroundOn(AppTheme.primaryColor),
+              fontWeight: FontWeight.w700,
             ),
             todayDecoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.28),
               shape: BoxShape.circle,
             ),
-            markerDecoration: const BoxDecoration(
+            markerDecoration: BoxDecoration(
               color: AppTheme.accentLavender,
               shape: BoxShape.circle,
             ),
@@ -289,19 +293,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Expanded(
           child: Text(
             DateFormat('EEEE, MMMM d').format(_selectedDay),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: AppTheme.softLavender,
+            color: AppTheme.softTint(context, AppTheme.primaryColor),
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             '$count',
-            style: const TextStyle(
-              color: AppTheme.primaryColor,
+            style: TextStyle(
+              color: AppTheme.primaryAccentText(context),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -354,8 +358,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: appointment.isCompleted
-                                  ? AppTheme.textLight
-                                  : AppTheme.textPrimary,
+                                  ? AppTheme.mutedText(context)
+                                  : AppTheme.primaryText(context),
                               decoration: appointment.isCompleted
                                   ? TextDecoration.lineThrough
                                   : null,
@@ -379,8 +383,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         appointment.type,
                         if (pet != null) pet.name,
                       ].join(' • '),
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: AppTheme.secondaryText(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -390,7 +394,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         appointment.provider!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppTheme.textLight),
+                        style: TextStyle(color: AppTheme.mutedText(context)),
                       ),
                     ],
                     if (appointment.notes?.isNotEmpty == true) ...[
@@ -399,7 +403,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         appointment.notes!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(
+                          color: AppTheme.secondaryText(context),
+                        ),
                       ),
                     ],
                   ],
@@ -460,13 +466,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.textSecondary),
+            style: TextStyle(color: AppTheme.secondaryText(context)),
           ),
           const SizedBox(height: 18),
           OutlinedButton.icon(
@@ -645,8 +651,8 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
       ),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 720),
-        decoration: const BoxDecoration(
-          color: AppTheme.backgroundColor,
+        decoration: BoxDecoration(
+          color: AppTheme.pageBackground(context),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Form(
@@ -662,7 +668,7 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
                         width: 44,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: AppTheme.dividerColor,
+                          color: AppTheme.divider(context),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -672,7 +678,7 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
                       widget.appointment == null
                           ? 'New Appointment'
                           : 'Edit Appointment',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
@@ -818,9 +824,11 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
                 ),
               ),
               DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: AppTheme.backgroundColor,
-                  border: Border(top: BorderSide(color: AppTheme.dividerColor)),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceBackground(context),
+                  border: Border(
+                    top: BorderSide(color: AppTheme.divider(context)),
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),

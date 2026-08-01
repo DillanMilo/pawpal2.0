@@ -220,7 +220,9 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                               ),
                               Text(
                                 '${_pet!.species}${_pet!.breed != null ? ' • ${_pet!.breed}' : ''}',
-                                style: TextStyle(color: AppTheme.textSecondary),
+                                style: TextStyle(
+                                  color: AppTheme.secondaryText(context),
+                                ),
                               ),
                             ],
                           ),
@@ -239,7 +241,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.dividerColor),
+                          border: Border.all(color: AppTheme.divider(context)),
                         ),
                         child: SizedBox(
                           width: 200,
@@ -258,7 +260,7 @@ class _PetPassportScreenState extends State<PetPassportScreen> {
                     Text(
                       'Scan to view pet information',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.secondaryText(context),
                         fontSize: 14,
                       ),
                     ),

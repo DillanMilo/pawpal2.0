@@ -45,7 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.error ?? 'Registration failed'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -59,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.error ?? 'Sign up was cancelled'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -94,13 +94,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () => context.pop(),
                         ),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Create account',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryText(context),
                               height: 1.05,
                             ),
                           ),
@@ -108,12 +108,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Start free with 14 days of PawPal Plus—no payment required.',
                       style: TextStyle(
                         fontSize: 14,
                         height: 1.2,
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.secondaryText(context),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -123,13 +123,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         vertical: 9,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.07),
+                        color: AppTheme.softTint(
+                          context,
+                          AppTheme.primaryColor,
+                        ),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: AppTheme.primaryColor.withValues(alpha: 0.14),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
@@ -148,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   TextSpan(
                                     text: 'Care earns PawPoints • ',
                                     style: TextStyle(
-                                      color: AppTheme.textPrimary,
+                                      color: AppTheme.primaryText(context),
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -156,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     text:
                                         'Level up your pet and unlock badges, frames, and cute accessories.',
                                     style: TextStyle(
-                                      color: AppTheme.textSecondary,
+                                      color: AppTheme.secondaryText(context),
                                     ),
                                   ),
                                 ],
@@ -339,16 +342,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                             )
-                          : const Text('Sign Up Free'),
+                          : Text('Sign Up Free'),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
+                    Text(
                       'After 14 days, use PawPal Base or choose Plus (\$4.99/month or \$29.99/year). No automatic charge.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 10.5,
                         height: 1.2,
-                        color: AppTheme.textLight,
+                        color: AppTheme.mutedText(context),
                       ),
                     ),
                     if (AppConstants.enableGoogleAuthForCurrentPlatform ||
@@ -395,7 +398,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           'By signing up, you agree to PawPal\'s ',
                           style: TextStyle(
                             fontSize: 10.5,
-                            color: AppTheme.textLight,
+                            color: AppTheme.mutedText(context),
                           ),
                         ),
                         TextButton(
@@ -405,16 +408,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             minimumSize: const Size(0, 30),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
-                            'Terms',
-                            style: TextStyle(fontSize: 11),
-                          ),
+                          child: Text('Terms', style: TextStyle(fontSize: 11)),
                         ),
                         Text(
                           ' and ',
                           style: TextStyle(
                             fontSize: 10.5,
-                            color: AppTheme.textLight,
+                            color: AppTheme.mutedText(context),
                           ),
                         ),
                         TextButton(
@@ -424,12 +424,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             minimumSize: const Size(0, 30),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'Privacy Policy',
                             style: TextStyle(fontSize: 11),
                           ),
                         ),
-                        const Text('.'),
+                        Text('.'),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -438,10 +438,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'Already have an account? ',
                           style: TextStyle(
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.secondaryText(context),
                             fontSize: 12,
                           ),
                         ),
@@ -452,7 +452,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             minimumSize: const Size(0, 32),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'Sign In',
                             style: TextStyle(fontSize: 12),
                           ),

@@ -22,14 +22,17 @@ class ActivityChart extends StatelessWidget {
                 color: AppTheme.primaryColor.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'No activity data yet',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.secondaryText(context)),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Start logging activities to see your progress',
-                style: TextStyle(color: AppTheme.textLight, fontSize: 12),
+                style: TextStyle(
+                  color: AppTheme.mutedText(context),
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -62,7 +65,7 @@ class ActivityChart extends StatelessWidget {
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
                           return BarTooltipItem(
                             '${rod.toY.toInt()} pts',
-                            const TextStyle(
+                            TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
@@ -86,7 +89,7 @@ class ActivityChart extends StatelessWidget {
                               child: Text(
                                 DateFormat('E').format(date),
                                 style: TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: AppTheme.secondaryText(context),
                                   fontSize: 12,
                                 ),
                               ),
@@ -182,7 +185,10 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            color: AppTheme.secondaryText(context),
+          ),
         ),
       ],
     );

@@ -31,9 +31,9 @@ class PetAvatarPhotoPicker extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
+              color: AppTheme.pageBackground(context),
               shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.dividerColor, width: 2),
+              border: Border.all(color: AppTheme.divider(context), width: 2),
             ),
             child: ClipOval(
               child: _PickedOrNetworkImage(
@@ -214,9 +214,12 @@ class _ImagePlaceholder extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 32, color: AppTheme.textLight),
+        Icon(icon, size: 32, color: AppTheme.mutedText(context)),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(color: AppTheme.textLight, fontSize: 12)),
+        Text(
+          label,
+          style: TextStyle(color: AppTheme.mutedText(context), fontSize: 12),
+        ),
       ],
     );
   }

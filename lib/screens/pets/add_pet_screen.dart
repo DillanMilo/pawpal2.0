@@ -160,7 +160,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(petProvider.error ?? 'Failed to add pet'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }

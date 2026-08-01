@@ -512,7 +512,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                       height: 140,
                       color: AppTheme.isDark(context)
                           ? AppTheme.darkSurface
-                          : AppTheme.dividerColor,
+                          : AppTheme.divider(context),
                       child: const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primaryColor,
@@ -524,7 +524,7 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                       height: 140,
                       color: AppTheme.isDark(context)
                           ? AppTheme.darkSurface
-                          : AppTheme.dividerColor,
+                          : AppTheme.divider(context),
                       child: Icon(
                         _screenIcon,
                         size: 48,
@@ -648,9 +648,9 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
                               return Icon(
                                 Icons.star_outline_rounded,
                                 size: 18,
-                                color: AppTheme.textLight.withValues(
-                                  alpha: 0.5,
-                                ),
+                                color: AppTheme.mutedText(
+                                  context,
+                                ).withValues(alpha: 0.5),
                               );
                             }
                           }),

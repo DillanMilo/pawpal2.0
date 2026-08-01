@@ -359,12 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: AppTheme.softLavender,
+                color: AppTheme.softTint(context, AppTheme.primaryColor),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.pets_rounded,
-                color: AppTheme.primaryDark,
+                color: AppTheme.primaryAccentText(context),
                 size: 36,
               ),
             ),
@@ -396,12 +396,18 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppTheme.inkColor,
+                color: AppTheme.isDark(context)
+                    ? AppTheme.primaryColor
+                    : AppTheme.inkColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add_rounded,
-                color: Colors.white,
+                color: AppTheme.foregroundOn(
+                  AppTheme.isDark(context)
+                      ? AppTheme.primaryColor
+                      : AppTheme.inkColor,
+                ),
                 size: 28,
               ),
             ),
@@ -801,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
             border: Border.all(
               color: isActive
                   ? color.withValues(alpha: 0.42)
-                  : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+                  : (isDark ? AppTheme.darkDivider : AppTheme.divider(context)),
             ),
           ),
           child: Column(
@@ -823,7 +829,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? color
                       : (isDark
                             ? AppTheme.darkTextPrimary
-                            : AppTheme.textPrimary),
+                            : AppTheme.primaryText(context)),
                 ),
               ),
             ],
@@ -898,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   (group, groupIndex, rod, rodIndex) {
                                     return BarTooltipItem(
                                       '${rod.toY.toInt()} pts',
-                                      const TextStyle(
+                                      TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -962,20 +968,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : 25,
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 strokeWidth: 1,
                               );
                             },
                           ),
                           borderData: FlBorderData(
                             show: true,
-                            border: const Border(
+                            border: Border(
                               bottom: BorderSide(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 width: 1,
                               ),
                               left: BorderSide(
-                                color: AppTheme.dividerColor,
+                                color: AppTheme.divider(context),
                                 width: 1,
                               ),
                             ),
@@ -992,11 +998,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 BarChartRodData(
                                   toY: value.toDouble(),
                                   gradient: isToday
-                                      ? const LinearGradient(
+                                      ? LinearGradient(
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,
                                           colors: [
-                                            AppTheme.inkColor,
+                                            AppTheme.isDark(context)
+                                                ? AppTheme.primaryColor
+                                                : AppTheme.inkColor,
                                             AppTheme.primaryDark,
                                           ],
                                         )
@@ -1004,11 +1012,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           begin: Alignment.bottomCenter,
                                           end: Alignment.topCenter,
                                           colors: [
-                                            AppTheme.primaryLight.withValues(
-                                              alpha: 0.4,
+                                            AppTheme.primaryColor.withValues(
+                                              alpha: AppTheme.isDark(context)
+                                                  ? 0.35
+                                                  : 0.18,
                                             ),
-                                            AppTheme.primaryLight.withValues(
-                                              alpha: 0.7,
+                                            AppTheme.primaryColor.withValues(
+                                              alpha: AppTheme.isDark(context)
+                                                  ? 0.7
+                                                  : 0.42,
                                             ),
                                           ],
                                         ),
@@ -1196,7 +1208,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary;
+    final titleColor = isDark
+        ? AppTheme.darkTextPrimary
+        : AppTheme.primaryText(context);
     final actionColor = isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
 
     return Row(
@@ -1242,11 +1256,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return FloatingActionButton.extended(
       onPressed: () => context.push('/log-activity'),
       backgroundColor: AppTheme.actionBlueDark,
-      foregroundColor: Colors.white,
+      foregroundColor: AppTheme.foregroundOn(AppTheme.actionBlueDark),
       icon: const Icon(Icons.timer_rounded),
       label: Text(
         '${activityProvider.activeActivityType}: ${activityProvider.formattedTimer}',
-        style: const TextStyle(fontWeight: FontWeight.w700),
+        style: TextStyle(fontWeight: FontWeight.w700),
       ),
     ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds);
   }

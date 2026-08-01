@@ -192,18 +192,22 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
               runSpacing: 8,
               children: MedicalRecordType.values.map((type) {
                 final isSelected = type == _selectedType;
+                final typeColor = _getTypeColor(type);
+                final selectedForeground = AppTheme.foregroundOn(typeColor);
                 return FilterChip(
                   selected: isSelected,
                   label: Text(_getTypeName(type)),
                   avatar: Icon(
                     _getTypeIcon(type),
                     size: 18,
-                    color: isSelected ? Colors.white : _getTypeColor(type),
+                    color: isSelected ? selectedForeground : typeColor,
                   ),
-                  selectedColor: _getTypeColor(type),
-                  checkmarkColor: Colors.white,
+                  selectedColor: typeColor,
+                  checkmarkColor: selectedForeground,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppTheme.textPrimary,
+                    color: isSelected
+                        ? selectedForeground
+                        : AppTheme.primaryText(context),
                   ),
                   onSelected: (selected) {
                     setState(() => _selectedType = type);
@@ -300,8 +304,8 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         : 'Ongoing',
                     style: TextStyle(
                       color: _endDate != null
-                          ? AppTheme.textPrimary
-                          : AppTheme.textLight,
+                          ? AppTheme.primaryText(context)
+                          : AppTheme.mutedText(context),
                     ),
                   ),
                 ),
@@ -336,8 +340,8 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         : 'Not set',
                     style: TextStyle(
                       color: _nextDueDate != null
-                          ? AppTheme.textPrimary
-                          : AppTheme.textLight,
+                          ? AppTheme.primaryText(context)
+                          : AppTheme.mutedText(context),
                     ),
                   ),
                 ),

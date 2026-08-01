@@ -144,7 +144,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('+$earnedPoints PawPoints for ${pet.name}!'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: AppTheme.successSnackBackground,
         ),
       );
       Navigator.pop(context);
@@ -152,7 +152,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(activityProvider.error ?? 'Failed to log activity'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -185,18 +185,21 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
               final isSelected = type == _selectedType;
               final color =
                   AppTheme.activityColors[type] ?? AppTheme.primaryColor;
+              final selectedForeground = AppTheme.foregroundOn(color);
               return FilterChip(
                 selected: isSelected,
                 label: Text(type),
                 avatar: Icon(
                   _getActivityIcon(type),
                   size: 18,
-                  color: isSelected ? Colors.white : color,
+                  color: isSelected ? selectedForeground : color,
                 ),
                 selectedColor: color,
-                checkmarkColor: Colors.white,
+                checkmarkColor: selectedForeground,
                 labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                  color: isSelected
+                      ? selectedForeground
+                      : AppTheme.primaryText(context),
                 ),
                 onSelected: (selected) {
                   setState(() => _selectedType = type);
@@ -218,7 +221,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   'No pets found. Add a pet first.',
-                  style: TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.secondaryText(context)),
                 ),
               ),
             )
@@ -228,14 +231,19 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
               runSpacing: 8,
               children: petProvider.pets.map((pet) {
                 final isSelected = pet.id == _selectedPet?.id;
+                final selectedForeground = AppTheme.foregroundOn(
+                  AppTheme.primaryColor,
+                );
                 return FilterChip(
                   selected: isSelected,
                   label: Text(pet.name),
                   avatar: const Icon(Icons.pets, size: 18),
                   selectedColor: AppTheme.primaryColor,
-                  checkmarkColor: Colors.white,
+                  checkmarkColor: selectedForeground,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppTheme.textPrimary,
+                    color: isSelected
+                        ? selectedForeground
+                        : AppTheme.primaryText(context),
                   ),
                   onSelected: (selected) {
                     setState(() => _selectedPet = pet);
@@ -279,6 +287,9 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                             label: const Text('Pause'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.warningColor,
+                              foregroundColor: AppTheme.foregroundOn(
+                                AppTheme.warningColor,
+                              ),
                             ),
                           )
                         else
@@ -357,7 +368,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
 
           // Points preview
           Card(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+            color: AppTheme.softTint(context, AppTheme.primaryColor),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -376,24 +387,26 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'PawPoints you\'ll earn',
-                          style: TextStyle(color: AppTheme.textSecondary),
+                          style: TextStyle(
+                            color: AppTheme.secondaryText(context),
+                          ),
                         ),
                         Text(
                           '+$_previewPoints PawPoints',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
+                            color: AppTheme.primaryAccentText(context),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _pointsExplanation,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: AppTheme.textLight,
+                            color: AppTheme.mutedText(context),
                           ),
                         ),
                       ],
@@ -410,7 +423,7 @@ class _LogActivityScreenState extends State<LogActivityScreen> {
             onPressed: _isLoading ? null : _saveActivity,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.actionBlue,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.foregroundOn(AppTheme.actionBlue),
               elevation: 10,
               shadowColor: AppTheme.actionBlue.withValues(alpha: 0.28),
               padding: const EdgeInsets.symmetric(vertical: 18),

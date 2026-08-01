@@ -79,7 +79,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a pet'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -120,7 +120,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Vet visit recorded successfully!'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: AppTheme.successSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -134,7 +134,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppTheme.errorSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -386,7 +386,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
                             Icons.pets,
                             size: 16,
                             color: isSelected
-                                ? Colors.white
+                                ? AppTheme.foregroundOn(AppTheme.primaryColor)
                                 : AppTheme.primaryColor,
                           )
                         : null,
@@ -397,7 +397,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? Colors.white
+                          ? AppTheme.foregroundOn(AppTheme.primaryColor)
                           : AppTheme.primaryText(context),
                     ),
                   ),
@@ -435,7 +435,9 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
                 border: Border.all(
                   color: isSelected
                       ? AppTheme.primaryColor
-                      : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+                      : (isDark
+                            ? AppTheme.darkDivider
+                            : AppTheme.divider(context)),
                   width: 2,
                 ),
               ),
@@ -444,7 +446,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: isSelected
-                      ? Colors.white
+                      ? AppTheme.foregroundOn(AppTheme.primaryColor)
                       : AppTheme.primaryText(context),
                 ),
               ),

@@ -28,12 +28,14 @@ class AppTheme {
   static const Color accentRose = Color(0xFFE78DAE);
   static const Color actionBlue = Color(0xFF4FB8FF);
   static const Color actionBlueLight = Color(0xFFE7F6FF);
-  static const Color actionBlueDark = Color(0xFF1F7FD1);
+  static const Color actionBlueDark = Color(0xFF176DB5);
 
   // Status Colors
   static const Color errorColor = Color(0xFFFF5252);
   static const Color successColor = Color(0xFF2C9F7B);
   static const Color warningColor = Color(0xFFE9B949);
+  static const Color errorSnackBackground = Color(0xFF8C1D18);
+  static const Color successSnackBackground = Color(0xFF146C52);
 
   // Background - Soft & Clean
   static const Color backgroundColor = Color(0xFFF9F8FD);
@@ -47,7 +49,7 @@ class AppTheme {
   // Text Colors
   static const Color textPrimary = inkColor;
   static const Color textSecondary = Color(0xFF56525F);
-  static const Color textLight = Color(0xFF918C9E);
+  static const Color textLight = Color(0xFF6F6A7A);
 
   // Gradient Definitions
   static const LinearGradient primaryGradient = LinearGradient(
@@ -143,21 +145,38 @@ class AppTheme {
   ];
 
   static ThemeData get lightTheme {
+    final textTheme = GoogleFonts.outfitTextTheme().apply(
+      bodyColor: textPrimary,
+      displayColor: textPrimary,
+    );
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          primary: primaryColor,
+          secondary: secondaryColor,
+          tertiary: accentColor,
+          error: errorColor,
+          surface: surfaceColor,
+          surfaceContainerLowest: backgroundColor,
+        ).copyWith(
+          onPrimary: foregroundOn(primaryColor),
+          onSecondary: foregroundOn(secondaryColor),
+          onTertiary: foregroundOn(accentColor),
+          onSurface: textPrimary,
+          onSurfaceVariant: textSecondary,
+          outline: dividerColor,
+          outlineVariant: dividerColor,
+          surfaceContainer: surfaceColor,
+          surfaceContainerHigh: softLavender,
+          surfaceContainerHighest: primaryLight,
+        );
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
-      textTheme: GoogleFonts.outfitTextTheme(),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        tertiary: accentColor,
-        error: errorColor,
-        surface: surfaceColor,
-        surfaceContainerLowest: backgroundColor,
-      ),
+      textTheme: textTheme,
+      colorScheme: colorScheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: textPrimary,
@@ -228,6 +247,33 @@ class AppTheme {
         hintStyle: GoogleFonts.outfit(color: textLight, fontSize: 16),
         labelStyle: GoogleFonts.outfit(color: textSecondary, fontSize: 16),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: surfaceColor,
+        selectedColor: primaryColor,
+        disabledColor: dividerColor,
+        side: const BorderSide(color: dividerColor),
+        labelStyle: GoogleFonts.outfit(color: textPrimary),
+        secondaryLabelStyle: GoogleFonts.outfit(
+          color: foregroundOn(primaryColor),
+        ),
+        checkmarkColor: foregroundOn(primaryColor),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: surfaceColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: surfaceColor,
+        modalBackgroundColor: surfaceColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: inkColor,
+        contentTextStyle: GoogleFonts.outfit(color: Colors.white),
+        actionTextColor: primaryLight,
+      ),
+      dividerTheme: const DividerThemeData(color: dividerColor),
+      iconTheme: const IconThemeData(color: textSecondary),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -251,7 +297,7 @@ class AppTheme {
   static const Color darkDivider = Color(0xFF2E2E42);
   static const Color darkTextPrimary = Color(0xFFF1F1F3);
   static const Color darkTextSecondary = Color(0xFFB0B0C0);
-  static const Color darkTextLight = Color(0xFF8888A0);
+  static const Color darkTextLight = Color(0xFFA0A0B5);
 
   static bool isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
@@ -274,6 +320,33 @@ class AppTheme {
   static Color mutedText(BuildContext context) =>
       isDark(context) ? darkTextLight : textLight;
 
+  static Color primaryAccentText(BuildContext context) =>
+      isDark(context) ? const Color(0xFFCBBEFF) : primaryDark;
+
+  static Color divider(BuildContext context) =>
+      isDark(context) ? darkDivider : dividerColor;
+
+  /// Chooses whichever neutral foreground has the stronger WCAG contrast on
+  /// a solid color. Colored labels and buttons must not assume white is always
+  /// legible (yellow, mint, peach, and action blue all need dark ink).
+  static Color foregroundOn(Color background) {
+    final lightContrast = contrastRatio(Colors.white, background);
+    final darkContrast = contrastRatio(inkColor, background);
+    return lightContrast >= darkContrast ? Colors.white : inkColor;
+  }
+
+  static double contrastRatio(Color foreground, Color background) {
+    final foregroundLuminance = foreground.computeLuminance();
+    final backgroundLuminance = background.computeLuminance();
+    final lighter = foregroundLuminance >= backgroundLuminance
+        ? foregroundLuminance
+        : backgroundLuminance;
+    final darker = foregroundLuminance < backgroundLuminance
+        ? foregroundLuminance
+        : backgroundLuminance;
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
   static Border borderFor(BuildContext context) => Border.all(
     color: isDark(context) ? darkDivider : dividerColor,
     width: isDark(context) ? 1.4 : 1.2,
@@ -287,22 +360,38 @@ class AppTheme {
       : color.withValues(alpha: 0.1);
 
   static ThemeData get darkTheme {
+    final textTheme = GoogleFonts.outfitTextTheme(
+      ThemeData.dark().textTheme,
+    ).apply(bodyColor: darkTextPrimary, displayColor: darkTextPrimary);
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          brightness: Brightness.dark,
+          primary: primaryColor,
+          secondary: secondaryColor,
+          tertiary: accentColor,
+          error: errorColor,
+          surface: darkSurface,
+          surfaceContainerLowest: darkBackground,
+        ).copyWith(
+          onPrimary: foregroundOn(primaryColor),
+          onSecondary: foregroundOn(secondaryColor),
+          onTertiary: foregroundOn(accentColor),
+          onSurface: darkTextPrimary,
+          onSurfaceVariant: darkTextSecondary,
+          outline: darkDivider,
+          outlineVariant: darkDivider,
+          surfaceContainer: darkSurface,
+          surfaceContainerHigh: darkCard,
+          surfaceContainerHighest: const Color(0xFF303047),
+        );
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: darkBackground,
-      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.dark,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        tertiary: accentColor,
-        error: errorColor,
-        surface: darkSurface,
-        surfaceContainerLowest: darkBackground,
-      ),
+      textTheme: textTheme,
+      colorScheme: colorScheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: darkTextPrimary,
@@ -323,7 +412,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: foregroundOn(primaryColor),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
           shape: RoundedRectangleBorder(
@@ -373,6 +462,33 @@ class AppTheme {
         hintStyle: GoogleFonts.outfit(color: darkTextLight, fontSize: 16),
         labelStyle: GoogleFonts.outfit(color: darkTextSecondary, fontSize: 16),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkSurface,
+        selectedColor: primaryColor,
+        disabledColor: darkDivider,
+        side: const BorderSide(color: darkDivider),
+        labelStyle: GoogleFonts.outfit(color: darkTextPrimary),
+        secondaryLabelStyle: GoogleFonts.outfit(
+          color: foregroundOn(primaryColor),
+        ),
+        checkmarkColor: foregroundOn(primaryColor),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: darkCard,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: darkCard,
+        modalBackgroundColor: darkCard,
+        surfaceTintColor: Colors.transparent,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: darkCard,
+        contentTextStyle: GoogleFonts.outfit(color: Colors.white),
+        actionTextColor: primaryLight,
+      ),
+      dividerTheme: const DividerThemeData(color: darkDivider),
+      iconTheme: const IconThemeData(color: darkTextSecondary),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -382,7 +498,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: foregroundOn(primaryColor),
         elevation: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),

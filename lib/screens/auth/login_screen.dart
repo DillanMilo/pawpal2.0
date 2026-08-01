@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.error ?? 'Login failed'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.error ?? 'Sign in was cancelled'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }
@@ -80,22 +80,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const _PetMosaicHeader(),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Track your pet\'s care,\nhealth, and daily routine',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.textPrimary,
+                        color: AppTheme.primaryText(context),
                         height: 1.05,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Sign in to continue to PawPal',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.secondaryText(context),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -183,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () => context.push('/forgot-password'),
-                        child: const Text('Forgot Password?'),
+                        child: Text('Forgot Password?'),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             )
-                          : const Text('Log In'),
+                          : Text('Log In'),
                     ),
                     if (AppConstants.enableGoogleAuthForCurrentPlatform ||
                         AppConstants.enableAppleAuthForCurrentPlatform) ...[
@@ -242,9 +242,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           "Don't have an account? ",
-                          style: TextStyle(color: AppTheme.textSecondary),
+                          style: TextStyle(
+                            color: AppTheme.secondaryText(context),
+                          ),
                         ),
                         TextButton(
                           onPressed: () => context.push('/register'),
@@ -253,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             minimumSize: const Size(0, 36),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text('Sign Up'),
+                          child: Text('Sign Up'),
                         ),
                       ],
                     ),
@@ -264,15 +266,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                           onPressed: () => context.push('/privacy'),
-                          child: const Text('Privacy'),
+                          child: Text('Privacy'),
                         ),
                         TextButton(
                           onPressed: () => context.push('/terms'),
-                          child: const Text('Terms'),
+                          child: Text('Terms'),
                         ),
                         TextButton(
                           onPressed: () => context.push('/support'),
-                          child: const Text('Support'),
+                          child: Text('Support'),
                         ),
                       ],
                     ),
@@ -321,7 +323,7 @@ class _PetMosaicHeaderState extends State<_PetMosaicHeader> {
             top: 14,
             child: Container(
               decoration: BoxDecoration(
-                color: AppTheme.softMint,
+                color: AppTheme.softTint(context, AppTheme.secondaryColor),
                 borderRadius: BorderRadius.circular(32),
               ),
             ),
@@ -339,9 +341,12 @@ class _PetMosaicHeaderState extends State<_PetMosaicHeader> {
               final tile = _tiles[index];
               return Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.softLavender,
+                  color: AppTheme.softTint(context, AppTheme.primaryColor),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(
+                    color: AppTheme.surfaceBackground(context),
+                    width: 2,
+                  ),
                   boxShadow: AppTheme.softShadow,
                   image: DecorationImage(
                     image: AssetImage(tile.assetPath),
@@ -371,11 +376,11 @@ class _AuthBrandSignature extends StatelessWidget {
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 'PawPal',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.primaryText(context),
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                   height: 1,
@@ -385,7 +390,7 @@ class _AuthBrandSignature extends StatelessWidget {
               Text(
                 'Pet care tracker',
                 style: TextStyle(
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.secondaryText(context),
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),

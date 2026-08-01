@@ -258,9 +258,9 @@ class _LegalDocumentScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     'PawPal is a Creative Currents product.',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: AppTheme.textLight),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.mutedText(context),
+                    ),
                   ),
                 ],
               ),

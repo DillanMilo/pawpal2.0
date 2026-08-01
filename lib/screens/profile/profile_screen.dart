@@ -192,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text('Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -260,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -336,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               : subscriptionProvider.hasPlusAccess
                               ? 'Plus'
                               : 'Base',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.primaryColor,
                             fontWeight: FontWeight.w800,
                           ),
@@ -420,8 +420,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           themeProvider.label,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
+                          style: TextStyle(
+                            color: AppTheme.secondaryText(context),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -496,7 +496,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Center(
                 child: Text(
                   'PawPal v1.0.0',
-                  style: TextStyle(color: AppTheme.textLight, fontSize: 12),
+                  style: TextStyle(
+                    color: AppTheme.mutedText(context),
+                    fontSize: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -511,8 +514,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Export your PawPal data?'),
-        content: const Text(
+        title: Text('Export your PawPal data?'),
+        content: Text(
           'This creates a ZIP file containing your profile, pet-care records, '
           'and original uploaded documents. It may contain sensitive health '
           'information, so save or share it only somewhere you trust.',
@@ -520,12 +523,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.pop(dialogContext, true),
             icon: const Icon(Icons.download_outlined),
-            label: const Text('Create export'),
+            label: Text('Create export'),
           ),
         ],
       ),
@@ -550,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Could not create your data export: $error'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     } finally {
@@ -573,7 +576,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Text(
                     'Appearance',
@@ -609,12 +612,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: Text(
                     'Auto uses light mode during the day and dark mode in the evening.',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.secondaryText(context),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -680,14 +683,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(authProvider.error ?? 'Could not save profile'),
-                  backgroundColor: AppTheme.errorColor,
+                  backgroundColor: AppTheme.errorSnackBackground,
                 ),
               );
             }
           }
 
           return AlertDialog(
-            title: const Text('Edit Profile'),
+            title: Text('Edit Profile'),
             content: Form(
               key: formKey,
               child: SingleChildScrollView(
@@ -738,7 +741,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             actions: [
               TextButton(
                 onPressed: isSaving ? null : () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: isSaving ? null : saveProfile,
@@ -748,7 +751,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Save'),
+                    : Text('Save'),
               ),
             ],
           );
@@ -796,14 +799,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   content: Text(
                     authProvider.error ?? 'Could not change password',
                   ),
-                  backgroundColor: AppTheme.errorColor,
+                  backgroundColor: AppTheme.errorSnackBackground,
                 ),
               );
             }
           }
 
           return AlertDialog(
-            title: const Text('Change Password'),
+            title: Text('Change Password'),
             content: Form(
               key: formKey,
               child: Column(
@@ -858,7 +861,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             actions: [
               TextButton(
                 onPressed: isSaving ? null : () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: isSaving ? null : changePassword,
@@ -868,7 +871,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Change'),
+                    : Text('Change'),
               ),
             ],
           );
@@ -909,7 +912,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Achievements',
                       style: TextStyle(
@@ -1065,9 +1068,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: const Icon(Icons.pets, color: AppTheme.primaryColor, size: 30),
       ),
       children: [
-        const Text('Your all-in-one pet management companion.'),
+        Text('Your all-in-one pet management companion.'),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Made with love by Creative Currents LLC',
           style: TextStyle(fontSize: 12),
         ),
@@ -1083,14 +1086,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('Delete Account?'),
-          content: const Text(
+          title: Text('Delete Account?'),
+          content: Text(
             'This permanently deletes your PawPal account, pets, reminders, activities, appointments, and medical records. This cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: isDeleting ? null : () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: isDeleting
@@ -1126,7 +1129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               authProvider.error ??
                                   'Failed to delete account. Please try again.',
                             ),
-                            backgroundColor: AppTheme.errorColor,
+                            backgroundColor: AppTheme.errorSnackBackground,
                           ),
                         );
                       }
@@ -1138,7 +1141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Delete'),
+                  : Text('Delete'),
             ),
           ],
         ),
@@ -1150,12 +1153,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out?'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text('Sign Out?'),
+        content: Text('Are you sure you want to sign out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -1165,7 +1168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context.read<ActivityProvider>().reset();
             },
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Sign Out'),
+            child: Text('Sign Out'),
           ),
         ],
       ),
@@ -1197,11 +1200,14 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
               label,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -1339,7 +1345,7 @@ class _MenuSection extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.secondaryText(context),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -1373,7 +1379,7 @@ class _MenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? AppTheme.textSecondary),
+      leading: Icon(icon, color: iconColor ?? AppTheme.secondaryText(context)),
       title: Text(title, style: TextStyle(color: titleColor)),
       subtitle: subtitle == null ? null : Text(subtitle!),
       trailing: trailing ?? const Icon(Icons.chevron_right),
@@ -1434,7 +1440,7 @@ class _AchievementBadge extends StatelessWidget {
           border: Border.all(
             color: milestone.isUnlocked
                 ? milestone.color.withValues(alpha: 0.55)
-                : (isDark ? AppTheme.darkDivider : AppTheme.dividerColor),
+                : (isDark ? AppTheme.darkDivider : AppTheme.divider(context)),
             width: milestone.isUnlocked ? 1.8 : 1.2,
           ),
         ),
@@ -1496,7 +1502,7 @@ class _AchievementBadge extends StatelessWidget {
                       value: milestone.progress,
                       backgroundColor: isDark
                           ? AppTheme.darkSurface
-                          : AppTheme.backgroundColor,
+                          : AppTheme.pageBackground(context),
                       valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                     ),
                   ),

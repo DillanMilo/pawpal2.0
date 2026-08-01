@@ -53,7 +53,7 @@ class _PricingScreenState extends State<PricingScreen> {
         content: Text(
           auth.error ?? 'We could not finish setup. Please try again.',
         ),
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: AppTheme.errorSnackBackground,
       ),
     );
   }
@@ -87,7 +87,10 @@ class _PricingScreenState extends State<PricingScreen> {
     final error = subscription.error;
     if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: AppTheme.errorColor),
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppTheme.errorSnackBackground,
+        ),
       );
     }
   }
@@ -104,7 +107,7 @@ class _PricingScreenState extends State<PricingScreen> {
               ? 'Your PawPal Plus purchase was restored.'
               : subscription.error ?? 'No active purchase was found.',
         ),
-        backgroundColor: restored ? AppTheme.successColor : null,
+        backgroundColor: restored ? AppTheme.successSnackBackground : null,
       ),
     );
   }

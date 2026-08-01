@@ -168,7 +168,7 @@ class _EditPetScreenState extends State<EditPetScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(petProvider.error ?? 'Failed to update pet'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.errorSnackBackground,
         ),
       );
     }

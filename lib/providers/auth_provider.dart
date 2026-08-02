@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_profile.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
+import '../utils/auth_error_message.dart';
 
 enum AuthStatus { initial, authenticated, unauthenticated, loading }
 
@@ -74,13 +75,8 @@ class AuthProvider with ChangeNotifier {
 
       await _loadUserProfile();
       return true;
-    } on AuthException catch (e) {
-      _error = e.message;
-      _status = AuthStatus.unauthenticated;
-      notifyListeners();
-      return false;
     } catch (e) {
-      _error = e.toString();
+      _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
@@ -97,13 +93,8 @@ class AuthProvider with ChangeNotifier {
 
       await _loadUserProfile();
       return true;
-    } on AuthException catch (e) {
-      _error = e.message;
-      _status = AuthStatus.unauthenticated;
-      notifyListeners();
-      return false;
     } catch (e) {
-      _error = e.toString();
+      _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
@@ -123,7 +114,7 @@ class AuthProvider with ChangeNotifier {
       }
       return success;
     } catch (e) {
-      _error = e.toString();
+      _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
@@ -143,7 +134,7 @@ class AuthProvider with ChangeNotifier {
       }
       return success;
     } catch (e) {
-      _error = e.toString();
+      _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
@@ -168,7 +159,7 @@ class AuthProvider with ChangeNotifier {
       await _authService.resetPassword(email);
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = authErrorMessage(e);
       notifyListeners();
       return false;
     }

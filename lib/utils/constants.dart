@@ -3,8 +3,22 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppConstants {
   // Supabase Configuration (loaded from .env)
+  static const String productionSupabaseUrl =
+      'https://esrxaniydzgzxxxwzqca.supabase.co';
   static String get supabaseUrl => _env('SUPABASE_URL');
   static String get supabaseAnonKey => _env('SUPABASE_ANON_KEY');
+
+  static void validateBackendConfiguration() {
+    if (kReleaseMode && supabaseUrl != productionSupabaseUrl) {
+      throw StateError(
+        'Invalid release backend configuration. A production build must use '
+        'the PawPal production Supabase project.',
+      );
+    }
+    if (supabaseUrl.isEmpty || supabaseAnonKey.length < 20) {
+      throw StateError('Supabase configuration is missing or invalid.');
+    }
+  }
 
   // Optional auth providers. Keep disabled until configured in Supabase.
   static bool get enableGoogleAuth => _envBool('APP_ENABLE_GOOGLE_AUTH');

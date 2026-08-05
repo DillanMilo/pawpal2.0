@@ -90,3 +90,6 @@ jobs:
 
       - name: Build iOS (no codesign)
         run: flutter build ios --release --no-codesign
+
+      - name: Verify bundled production backend
+        run: ./scripts/verify_ios_release_artifact.sh build/ios/iphoneos/Runner.app

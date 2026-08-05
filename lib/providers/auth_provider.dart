@@ -49,16 +49,26 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _loadUserProfile() async {
+  Future<bool> _loadUserProfile() async {
     try {
       _userProfile = await _authService.ensureCurrentUserProfile();
+      if (_userProfile == null) {
+        _error = authUnexpectedErrorMessage;
+        _status = AuthStatus.unauthenticated;
+        notifyListeners();
+        return false;
+      }
       _status = AuthStatus.authenticated;
       _error = null;
+      notifyListeners();
+      return true;
     } catch (e) {
-      _error = e.toString();
+      _userProfile = null;
+      _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
+      notifyListeners();
+      return false;
     }
-    notifyListeners();
   }
 
   Future<bool> signUp({
@@ -73,8 +83,7 @@ class AuthProvider with ChangeNotifier {
 
       await _authService.signUp(email: email, password: password, name: name);
 
-      await _loadUserProfile();
-      return true;
+      return await _loadUserProfile();
     } catch (e) {
       _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;
@@ -91,8 +100,7 @@ class AuthProvider with ChangeNotifier {
 
       await _authService.signIn(email: email, password: password);
 
-      await _loadUserProfile();
-      return true;
+      return await _loadUserProfile();
     } catch (e) {
       _error = authErrorMessage(e);
       _status = AuthStatus.unauthenticated;

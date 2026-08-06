@@ -64,6 +64,12 @@ class AppTheme {
     colors: [Color(0xFFEAFBE6), Color(0xFFF2ECFF)],
   );
 
+  static const LinearGradient darkProgressionGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF31294D), Color(0xFF193B3A)],
+  );
+
   static const LinearGradient sunsetGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -322,6 +328,9 @@ class AppTheme {
 
   static Color primaryAccentText(BuildContext context) =>
       isDark(context) ? const Color(0xFFCBBEFF) : primaryDark;
+
+  static LinearGradient progressionGradient(BuildContext context) =>
+      isDark(context) ? darkProgressionGradient : playfulGradient;
 
   static Color divider(BuildContext context) =>
       isDark(context) ? darkDivider : dividerColor;

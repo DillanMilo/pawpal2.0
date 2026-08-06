@@ -343,14 +343,18 @@ class _PetDetailScreenState extends State<PetDetailScreen>
     final momentum = activityProvider.momentumForPet(_pet!.id);
     final progression = PetProgression(points);
     final unlockedBadges = progression.unlockedBadges;
+    final isDark = AppTheme.isDark(context);
 
     return Container(
+      key: const Key('pet-progression-card'),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.playfulGradient,
+        gradient: AppTheme.progressionGradient(context),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.16),
+          color: isDark
+              ? AppTheme.primaryLight.withValues(alpha: 0.28)
+              : AppTheme.primaryColor.withValues(alpha: 0.16),
         ),
         boxShadow: AppTheme.shadowFor(context),
       ),
@@ -362,12 +366,14 @@ class _PetDetailScreenState extends State<PetDetailScreen>
               Container(
                 padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.78),
+                  color: isDark
+                      ? AppTheme.primaryColor.withValues(alpha: 0.20)
+                      : Colors.white.withValues(alpha: 0.78),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome_rounded,
-                  color: AppTheme.primaryColor,
+                  color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                 ),
               ),
               const SizedBox(width: 14),
@@ -385,8 +391,8 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                     ),
                     Text(
                       'Level ${progression.level} • ${progression.title}',
-                      style: const TextStyle(
-                        color: AppTheme.primaryDark,
+                      style: TextStyle(
+                        color: AppTheme.primaryAccentText(context),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -395,10 +401,10 @@ class _PetDetailScreenState extends State<PetDetailScreen>
               ),
               Text(
                 '$points',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
-                  color: AppTheme.primaryDark,
+                  color: AppTheme.primaryAccentText(context),
                 ),
               ),
             ],
@@ -409,7 +415,9 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             child: LinearProgressIndicator(
               value: progression.progress,
               minHeight: 10,
-              backgroundColor: Colors.white.withValues(alpha: 0.72),
+              backgroundColor: Colors.white.withValues(
+                alpha: isDark ? 0.12 : 0.72,
+              ),
               valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
             ),
           ),
@@ -459,7 +467,9 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             child: LinearProgressIndicator(
               value: momentum.progress,
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.72),
+              backgroundColor: Colors.white.withValues(
+                alpha: isDark ? 0.12 : 0.72,
+              ),
               valueColor: const AlwaysStoppedAnimation(AppTheme.accentPeach),
             ),
           ),
@@ -480,7 +490,9 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                 Chip(
                   avatar: Text(badge.emoji ?? '🐾'),
                   label: Text(badge.name),
-                  backgroundColor: Colors.white.withValues(alpha: 0.78),
+                  backgroundColor: isDark
+                      ? AppTheme.darkSurface.withValues(alpha: 0.88)
+                      : Colors.white.withValues(alpha: 0.78),
                   side: BorderSide.none,
                 ),
             ],
@@ -528,16 +540,30 @@ class _PetDetailScreenState extends State<PetDetailScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Style ${_pet!.name}\'s profile',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      key: const Key('close-profile-rewards'),
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      tooltip: 'Back to pet profile',
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        'Style ${_pet!.name}\'s profile',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Keep earning PawPoints to unlock more. Cosmetics celebrate care and never affect health tracking.',
-                  style: TextStyle(color: AppTheme.secondaryText(context)),
+                Padding(
+                  padding: const EdgeInsets.only(left: 52),
+                  child: Text(
+                    'Keep earning PawPoints to unlock more. Cosmetics celebrate care and never affect health tracking.',
+                    style: TextStyle(color: AppTheme.secondaryText(context)),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 _rewardSection(

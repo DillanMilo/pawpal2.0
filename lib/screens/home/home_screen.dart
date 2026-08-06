@@ -437,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Padding(
           padding: const EdgeInsets.only(right: 12),
           child: _buildPetCard(pet, points, momentum, isSelected, () {
-            _activatePetCard(index, petProvider, activityProvider);
+            _openPetProfile(index, petProvider, activityProvider);
           }),
         );
       },
@@ -461,8 +461,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: 'Select ${pet.name}',
+      label: 'Open ${pet.name}\'s profile',
       child: GestureDetector(
+        key: ValueKey('home-pet-card-${pet.id}'),
         onTap: onTap,
         child: AnimatedScale(
           duration: 180.ms,
@@ -659,21 +660,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _activatePetCard(
+  Future<void> _openPetProfile(
     int index,
     PetProvider petProvider,
     ActivityProvider activityProvider,
   ) async {
+    if (index < 0 || index >= petProvider.pets.length) return;
+
     if (index != _petPageIndex && _petPageController.hasClients) {
       await _petPageController.animateToPage(
         index,
         duration: 420.ms,
         curve: Curves.easeOutCubic,
       );
-      return;
     }
 
-    _selectPetAtIndex(index, petProvider, activityProvider);
+    if (!mounted) return;
+    final pet = petProvider.pets[index];
+    if (petProvider.selectedPet?.id != pet.id) {
+      petProvider.selectPet(pet);
+      await activityProvider.loadActivities(pet.id, limit: 10);
+    }
+    if (!mounted) return;
+    await context.push('/pet/${pet.id}');
   }
 
   void _syncPetCarouselToSelectedPet(PetProvider petProvider) {
@@ -1216,13 +1225,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.w800,
-            color: titleColor,
-            letterSpacing: 0,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              color: titleColor,
+              letterSpacing: 0,
+            ),
           ),
         ),
         if (onSeeAll != null)

@@ -2,7 +2,7 @@ name: pawpal
 description: "PawPal - Your all-in-one pet management companion"
 publish_to: 'none'
 
-version: 1.0.0+9
+version: 1.0.0+10
 
 environment:
   sdk: ^3.10.7

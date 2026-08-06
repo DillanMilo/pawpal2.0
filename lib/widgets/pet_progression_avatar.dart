@@ -44,39 +44,49 @@ class PetProgressionAvatar extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              padding: EdgeInsets.all(borderWidth),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: frameColors(frameId),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: frameColors(frameId).last.withValues(alpha: 0.28),
-                    blurRadius: size * 0.16,
-                    offset: Offset(0, size * 0.07),
+            Positioned.fill(
+              child: Container(
+                padding: EdgeInsets.all(borderWidth),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: frameColors(frameId),
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: pet.photoUrl != null && pet.photoUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: pet.photoUrl!,
-                        fit: BoxFit.cover,
-                      )
-                    : ColoredBox(
-                        color:
-                            fallbackColor ??
-                            AppTheme.primaryColor.withValues(alpha: 0.24),
-                        child: Icon(
-                          Icons.pets_rounded,
-                          color: Colors.white,
-                          size: size * 0.42,
+                  boxShadow: [
+                    BoxShadow(
+                      color: frameColors(frameId).last.withValues(alpha: 0.28),
+                      blurRadius: size * 0.16,
+                      offset: Offset(0, size * 0.07),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: pet.photoUrl != null && pet.photoUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: pet.photoUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => _PhotoFallback(
+                            color:
+                                fallbackColor ??
+                                AppTheme.primaryColor.withValues(alpha: 0.24),
+                            iconSize: size * 0.42,
+                          ),
+                          errorWidget: (context, url, error) => _PhotoFallback(
+                            color:
+                                fallbackColor ??
+                                AppTheme.primaryColor.withValues(alpha: 0.24),
+                            iconSize: size * 0.42,
+                          ),
+                        )
+                      : _PhotoFallback(
+                          color:
+                              fallbackColor ??
+                              AppTheme.primaryColor.withValues(alpha: 0.24),
+                          iconSize: size * 0.42,
                         ),
-                      ),
+                ),
               ),
             ),
             if (accessory?.emoji != null)
@@ -106,5 +116,22 @@ class PetProgressionAvatar extends StatelessWidget {
 
     if (heroTag != null) avatar = Hero(tag: heroTag!, child: avatar);
     return avatar;
+  }
+}
+
+class _PhotoFallback extends StatelessWidget {
+  const _PhotoFallback({required this.color, required this.iconSize});
+
+  final Color color;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color,
+      child: Center(
+        child: Icon(Icons.pets_rounded, color: Colors.white, size: iconSize),
+      ),
+    );
   }
 }

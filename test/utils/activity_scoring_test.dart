@@ -45,6 +45,12 @@ void main() {
       );
     });
 
+    test('caps the total PawPoints awarded in one day', () {
+      expect(ActivityScoring.calculateAward('Walk', earnedToday: 95), 5);
+      expect(ActivityScoring.calculateAward('Vet Visit', earnedToday: 100), 0);
+      expect(ActivityScoring.remainingDailyPoints(125), 0);
+    });
+
     test(
       'uses a fast-early, progressively slower level curve capped at 50',
       () {

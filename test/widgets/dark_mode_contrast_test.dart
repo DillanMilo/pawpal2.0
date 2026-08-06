@@ -191,6 +191,8 @@ APP_ENABLE_APPLE_AUTH=true
       );
       final pointsLabel = tester.widget<Text>(pointsFinder);
       expect(pointsLabel.style?.color, AppTheme.secondaryText(screenContext));
+      await tester.fling(find.byType(ListView), const Offset(0, -900), 1800);
+      await tester.pumpAndSettle();
       expect(
         find.widgetWithText(ElevatedButton, 'Log Activity'),
         findsOneWidget,

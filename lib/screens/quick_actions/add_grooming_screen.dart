@@ -10,7 +10,9 @@ import '../../utils/theme.dart';
 import '../../widgets/activity_icon.dart';
 
 class AddGroomingScreen extends StatefulWidget {
-  const AddGroomingScreen({super.key});
+  final MedicalService? medicalService;
+
+  const AddGroomingScreen({super.key, this.medicalService});
 
   @override
   State<AddGroomingScreen> createState() => _AddGroomingScreenState();
@@ -21,12 +23,13 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
   final _groomerController = TextEditingController();
   final _costController = TextEditingController();
 
-  final MedicalService _medicalService = MedicalService();
+  late final MedicalService _medicalService;
 
   Pet? _selectedPet;
   DateTime _groomingDate = DateTime.now();
   DateTime? _nextAppointment;
   final Set<String> _selectedServices = {'Bath'};
+  String _location = 'Home';
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _groomingServices = [
@@ -39,6 +42,12 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
     {'name': 'Flea Treatment'},
     {'name': 'Full Groom'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _medicalService = widget.medicalService ?? MedicalService();
+  }
 
   @override
   void dispose() {
@@ -116,12 +125,15 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             : _notesController.text.trim(),
         date: _groomingDate,
         nextDueDate: _nextAppointment,
-        provider: _groomerController.text.trim().isEmpty
-            ? null
-            : _groomerController.text.trim(),
+        provider: _location == 'Home'
+            ? 'Home'
+            : (_groomerController.text.trim().isEmpty
+                  ? null
+                  : _groomerController.text.trim()),
         metadata: {
           'services': _selectedServices.toList(),
-          'cost': _costController.text.trim(),
+          'location': _location.toLowerCase(),
+          'cost': double.tryParse(_costController.text.trim()),
         },
         createdAt: now,
         updatedAt: now,
@@ -142,11 +154,13 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
         );
         Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: const Text(
+              'Could not save this grooming visit. Please try again.',
+            ),
             backgroundColor: AppTheme.errorSnackBackground,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -155,9 +169,9 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    setState(() => _isLoading = false);
   }
 
   @override
@@ -253,14 +267,35 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Groomer
-          _buildSectionLabel('Groomer / Salon (Optional)'),
+          _buildSectionLabel('Where was the grooming done?'),
           const SizedBox(height: 12),
-          _buildTextField(
-            controller: _groomerController,
-            hint: 'Where did you go?',
-            icon: Icons.store_rounded,
+          SegmentedButton<String>(
+            key: const Key('grooming-location'),
+            segments: const [
+              ButtonSegment(
+                value: 'Home',
+                label: Text('At home'),
+                icon: Icon(Icons.home_rounded),
+              ),
+              ButtonSegment(
+                value: 'Groomer',
+                label: Text('Groomer / salon'),
+                icon: Icon(Icons.store_rounded),
+              ),
+            ],
+            selected: {_location},
+            onSelectionChanged: (selection) {
+              setState(() => _location = selection.first);
+            },
           ),
+          if (_location == 'Groomer') ...[
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _groomerController,
+              hint: 'Groomer or salon name (optional)',
+              icon: Icons.store_rounded,
+            ),
+          ],
           const SizedBox(height: 24),
 
           // Cost
@@ -270,7 +305,7 @@ class _AddGroomingScreenState extends State<AddGroomingScreen> {
             controller: _costController,
             hint: '\$0.00',
             icon: Icons.attach_money_rounded,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 24),
 

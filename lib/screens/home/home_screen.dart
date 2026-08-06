@@ -472,7 +472,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: AnimatedContainer(
             duration: 220.ms,
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(18),
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: isSelected || hasCover
@@ -522,117 +521,122 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                Row(
-                  children: [
-                    PetProgressionAvatar(
-                      pet: pet,
-                      points: points,
-                      size: 72,
-                      fallbackColor: isSelected || hasCover
-                          ? Colors.white.withValues(alpha: 0.18)
-                          : color.withValues(alpha: 0.46),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            pet.name,
-                            style: TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected || hasCover
-                                  ? Colors.white
-                                  : AppTheme.primaryText(context),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected || hasCover
-                                      ? Colors.white.withValues(alpha: 0.14)
-                                      : color.withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                                child: Text(
-                                  'Level ${progression.level}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected || hasCover
-                                        ? Colors.white
-                                        : color,
-                                  ),
-                                ),
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      PetProgressionAvatar(
+                        pet: pet,
+                        points: points,
+                        size: 72,
+                        fallbackColor: isSelected || hasCover
+                            ? Colors.white.withValues(alpha: 0.18)
+                            : color.withValues(alpha: 0.46),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              pet.name,
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w800,
+                                color: isSelected || hasCover
+                                    ? Colors.white
+                                    : AppTheme.primaryText(context),
                               ),
-                              if (pet.breed != null) ...[
-                                const SizedBox(width: 8),
-                                Expanded(
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected || hasCover
+                                        ? Colors.white.withValues(alpha: 0.14)
+                                        : color.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
                                   child: Text(
-                                    pet.breed!,
+                                    'Level ${progression.level}',
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                       color: isSelected || hasCover
-                                          ? Colors.white.withValues(alpha: 0.74)
-                                          : AppTheme.secondaryText(context),
+                                          ? Colors.white
+                                          : color,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                if (pet.breed != null) ...[
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      pet.breed!,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isSelected || hasCover
+                                            ? Colors.white.withValues(
+                                                alpha: 0.74,
+                                              )
+                                            : AppTheme.secondaryText(context),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            '$points PawPoints • ${pet.species}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected || hasCover
-                                  ? Colors.white.withValues(alpha: 0.76)
-                                  : AppTheme.secondaryText(context),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Care Momentum: ${momentum.label} • ${momentum.activeDays}/7 days',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected || hasCover
-                                  ? Colors.white.withValues(alpha: 0.72)
-                                  : AppTheme.secondaryText(context),
+                            const SizedBox(height: 3),
+                            Text(
+                              '$points PawPoints • ${pet.species}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected || hasCover
+                                    ? Colors.white.withValues(alpha: 0.76)
+                                    : AppTheme.secondaryText(context),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isSelected)
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 18,
+                            const SizedBox(height: 2),
+                            Text(
+                              'Care Momentum: ${momentum.label} • ${momentum.activeDays}/7 days',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected || hasCover
+                                    ? Colors.white.withValues(alpha: 0.72)
+                                    : AppTheme.secondaryText(context),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
-                  ],
+                      if (isSelected)
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -6,7 +6,10 @@ import '../services/activity_service.dart';
 import '../utils/connectivity.dart';
 
 class ActivityProvider with ChangeNotifier {
-  final ActivityService _activityService = ActivityService();
+  final ActivityService _activityService;
+
+  ActivityProvider({ActivityService? activityService})
+    : _activityService = activityService ?? ActivityService();
 
   static const _cacheThreshold = Duration(minutes: 5);
   DateTime? _lastFetched;
@@ -17,11 +20,13 @@ class ActivityProvider with ChangeNotifier {
   Map<String, int> _weeklySummary = {};
   Map<String, int> _activityCountsByType = {};
   Map<String, int> _pointsByPet = {};
+  Map<String, int> _dailyPointsByPet = {};
   Map<String, CareMomentum> _careMomentumByPet = {};
   int _totalPoints = 0;
   int _currentStreak = 0;
   bool _isLoading = false;
   String? _error;
+  int? _lastAwardedPoints;
 
   // Timer state
   DateTime? _timerStartTime;
@@ -35,6 +40,10 @@ class ActivityProvider with ChangeNotifier {
   Map<String, int> get activityCountsByType => _activityCountsByType;
   Map<String, int> get pointsByPet => Map.unmodifiable(_pointsByPet);
   int pointsForPet(String petId) => _pointsByPet[petId] ?? 0;
+  int dailyPointsForPet(String petId) => _dailyPointsByPet[petId] ?? 0;
+  int get totalDailyPoints =>
+      _dailyPointsByPet.values.fold<int>(0, (sum, points) => sum + points);
+  int? get lastAwardedPoints => _lastAwardedPoints;
   CareMomentum momentumForPet(String petId) =>
       _careMomentumByPet[petId] ?? const CareMomentum.empty();
   int get totalActivities =>
@@ -111,6 +120,7 @@ class ActivityProvider with ChangeNotifier {
         _activityService.getRecentActivityTimestampsByPet(),
         _activityService.getCurrentStreak(),
         _activityService.getUserActivityCountsByType(),
+        _activityService.getDailyPointsByPet(),
       ]);
       _pointsByPet = results[0] as Map<String, int>;
       final now = DateTime.now();
@@ -124,6 +134,7 @@ class ActivityProvider with ChangeNotifier {
       );
       _currentStreak = results[2] as int;
       _activityCountsByType = results[3] as Map<String, int>;
+      _dailyPointsByPet = results[4] as Map<String, int>;
       _lastStatsFetched = DateTime.now();
       notifyListeners();
     } catch (e) {
@@ -136,9 +147,11 @@ class ActivityProvider with ChangeNotifier {
     try {
       _isLoading = true;
       _error = null;
+      _lastAwardedPoints = null;
       notifyListeners();
 
       final newActivity = await _activityService.logActivity(activity);
+      _lastAwardedPoints = newActivity.points;
       _lastFetched = null;
       _lastStatsFetched = null;
       _activities.insert(0, newActivity);
@@ -269,11 +282,13 @@ class ActivityProvider with ChangeNotifier {
     _weeklySummary = {};
     _activityCountsByType = {};
     _pointsByPet = {};
+    _dailyPointsByPet = {};
     _careMomentumByPet = {};
     _totalPoints = 0;
     _currentStreak = 0;
     _isLoading = false;
     _error = null;
+    _lastAwardedPoints = null;
     _lastFetched = null;
     _lastFetchedPetId = null;
     _lastStatsFetched = null;

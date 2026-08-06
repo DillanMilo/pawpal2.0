@@ -1,6 +1,7 @@
 import 'constants.dart';
 
 class ActivityScoring {
+  static const int dailyPointsLimit = 100;
   static const int initialLevelCost = 80;
   static const int levelCostGrowth = 10;
   static const int maxLevel = 50;
@@ -63,6 +64,21 @@ class ActivityScoring {
     final rawPoints = base + durationBonus;
     final cap = maxPointsPerActivity[type] ?? rawPoints;
     return rawPoints.clamp(base, cap).toInt();
+  }
+
+  static int remainingDailyPoints(int earnedToday) =>
+      (dailyPointsLimit - earnedToday).clamp(0, dailyPointsLimit);
+
+  static int calculateAward(
+    String type, {
+    int? durationMinutes,
+    int earnedToday = 0,
+  }) {
+    final activityPoints = calculatePoints(
+      type,
+      durationMinutes: durationMinutes,
+    );
+    return activityPoints.clamp(0, remainingDailyPoints(earnedToday));
   }
 
   static int levelForPoints(int totalPoints) {

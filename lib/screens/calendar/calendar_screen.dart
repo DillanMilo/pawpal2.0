@@ -9,15 +9,18 @@ import '../../utils/constants.dart';
 import '../../utils/theme.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  final AppointmentService? appointmentService;
+  final PetService? petService;
+
+  const CalendarScreen({super.key, this.appointmentService, this.petService});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final AppointmentService _appointmentService = AppointmentService();
-  final PetService _petService = PetService();
+  late final AppointmentService _appointmentService;
+  late final PetService _petService;
 
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
@@ -30,6 +33,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _appointmentService = widget.appointmentService ?? AppointmentService();
+    _petService = widget.petService ?? PetService();
     _loadCalendarData();
   }
 
@@ -638,6 +643,23 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  String get _providerLabel {
+    switch (_type.toLowerCase()) {
+      case 'vet':
+        return 'Veterinarian or clinic (optional)';
+      case 'grooming':
+        return 'Groomer, salon, or Home (optional)';
+      case 'training':
+        return 'Trainer or facility (optional)';
+      default:
+        return 'Provider (optional)';
+    }
+  }
+
+  String get _locationLabel => _type.toLowerCase() == 'grooming'
+      ? 'Address or At home (optional)'
+      : 'Location (optional)';
+
   @override
   Widget build(BuildContext context) {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
@@ -767,18 +789,18 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
                     TextFormField(
                       controller: _providerController,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Provider',
-                        prefixIcon: Icon(Icons.business_rounded),
+                      decoration: InputDecoration(
+                        labelText: _providerLabel,
+                        prefixIcon: const Icon(Icons.business_rounded),
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _addressController,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Location',
-                        prefixIcon: Icon(Icons.location_on_rounded),
+                      decoration: InputDecoration(
+                        labelText: _locationLabel,
+                        prefixIcon: const Icon(Icons.location_on_rounded),
                       ),
                     ),
                     const SizedBox(height: 14),

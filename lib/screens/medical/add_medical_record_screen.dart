@@ -8,12 +8,14 @@ class AddMedicalRecordScreen extends StatefulWidget {
   final String petId;
   final MedicalRecordType? initialType;
   final MedicalRecord? existingRecord;
+  final MedicalService? medicalService;
 
   const AddMedicalRecordScreen({
     super.key,
     required this.petId,
     this.initialType,
     this.existingRecord,
+    this.medicalService,
   });
 
   @override
@@ -28,7 +30,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   final _dosageController = TextEditingController();
   final _frequencyController = TextEditingController();
 
-  final MedicalService _medicalService = MedicalService();
+  late final MedicalService _medicalService;
 
   late MedicalRecordType _selectedType;
   DateTime _date = DateTime.now();
@@ -41,6 +43,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   @override
   void initState() {
     super.initState();
+    _medicalService = widget.medicalService ?? MedicalService();
     final record = widget.existingRecord;
     if (record != null) {
       _selectedType = record.type;
@@ -167,7 +170,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
       }
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override

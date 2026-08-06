@@ -159,6 +159,31 @@ class ActivityService {
     return totals;
   }
 
+  /// PawPoints awarded by entries created during the current UTC day,
+  /// matching the authoritative database anti-spam cap.
+  Future<Map<String, int>> getDailyPointsByPet({DateTime? now}) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return {};
+
+    final reference = (now ?? DateTime.now()).toUtc();
+    final start = DateTime.utc(reference.year, reference.month, reference.day);
+    final end = start.add(const Duration(days: 1));
+    final response = await _client
+        .from('activities')
+        .select('pet_id, points')
+        .eq('user_id', userId)
+        .gte('created_at', start.toIso8601String())
+        .lt('created_at', end.toIso8601String());
+
+    final totals = <String, int>{};
+    for (final row in response as List) {
+      final petId = row['pet_id'] as String?;
+      if (petId == null) continue;
+      totals[petId] = (totals[petId] ?? 0) + ((row['points'] as int?) ?? 0);
+    }
+    return totals;
+  }
+
   // Recent timestamps are enough to derive per-pet momentum. Nothing is
   // stored separately, so the indicator naturally softens as days pass.
   Future<Map<String, List<DateTime>>> getRecentActivityTimestampsByPet({

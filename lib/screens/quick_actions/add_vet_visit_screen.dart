@@ -10,7 +10,9 @@ import '../../utils/theme.dart';
 import '../../widgets/activity_icon.dart';
 
 class AddVetVisitScreen extends StatefulWidget {
-  const AddVetVisitScreen({super.key});
+  final MedicalService? medicalService;
+
+  const AddVetVisitScreen({super.key, this.medicalService});
 
   @override
   State<AddVetVisitScreen> createState() => _AddVetVisitScreenState();
@@ -23,7 +25,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
   final _diagnosisController = TextEditingController();
   final _notesController = TextEditingController();
 
-  final MedicalService _medicalService = MedicalService();
+  late final MedicalService _medicalService;
 
   Pet? _selectedPet;
   DateTime _visitDate = DateTime.now();
@@ -41,6 +43,12 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
     'Dental',
     'Other',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _medicalService = widget.medicalService ?? MedicalService();
+  }
 
   @override
   void dispose() {
@@ -144,7 +152,7 @@ class _AddVetVisitScreenState extends State<AddVetVisitScreen> {
       }
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override

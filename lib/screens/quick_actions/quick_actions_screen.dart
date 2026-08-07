@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/theme.dart';
 import '../../widgets/activity_icon.dart';
+import '../../widgets/contextual_tip_card.dart';
 
 class QuickActionsScreen extends StatefulWidget {
   const QuickActionsScreen({super.key});
@@ -12,8 +15,29 @@ class QuickActionsScreen extends StatefulWidget {
 }
 
 class _QuickActionsScreenState extends State<QuickActionsScreen> {
+  bool _savingTip = false;
+
+  Future<void> _dismissTip() async {
+    setState(() => _savingTip = true);
+    final saved = await context.read<AuthProvider>().completeQuickActionsTour();
+    if (!mounted) return;
+    setState(() => _savingTip = false);
+    if (!saved) _showTipSaveError();
+  }
+
+  void _showTipSaveError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('We couldn’t save that tip. Please try again.'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final showTip =
+        context.watch<AuthProvider>().userProfile?.needsQuickActionsTour ==
+        true;
     return Scaffold(
       backgroundColor: AppTheme.pageBackground(context),
       appBar: AppBar(
@@ -44,7 +68,19 @@ class _QuickActionsScreenState extends State<QuickActionsScreen> {
           ),
         ),
       ),
-      body: QuickActionsContent(onActionSelected: (route) => context.go(route)),
+      body: QuickActionsContent(
+        intro: showTip
+            ? ContextualTipCard(
+                title: 'Your pet-care shortcuts',
+                description:
+                    'Log everyday care, add medical details, scan a Pet Passport, or add another pet—all from this menu.',
+                icon: Icons.pets_rounded,
+                isSaving: _savingTip,
+                onDismiss: _dismissTip,
+              )
+            : null,
+        onActionSelected: (route) => context.go(route),
+      ),
     );
   }
 }
@@ -60,6 +96,7 @@ class QuickActionsSheet extends StatefulWidget {
 
 class _QuickActionsSheetState extends State<QuickActionsSheet> {
   bool _isSelecting = false;
+  bool _savingTip = false;
 
   void _handleActionSelected(String route) {
     if (_isSelecting) return;
@@ -67,11 +104,28 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
     widget.onActionSelected(route);
   }
 
+  Future<void> _dismissTip() async {
+    setState(() => _savingTip = true);
+    final saved = await context.read<AuthProvider>().completeQuickActionsTour();
+    if (!mounted) return;
+    setState(() => _savingTip = false);
+    if (!saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('We couldn’t save that tip. Please try again.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.of(context).size.height * 0.86;
     final bottomInset = MediaQuery.of(context).padding.bottom;
     final isDark = AppTheme.isDark(context);
+    final showTip =
+        context.watch<AuthProvider>().userProfile?.needsQuickActionsTour ==
+        true;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 12),
@@ -126,6 +180,16 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
                   Flexible(
                     child: QuickActionsContent(
                       compact: true,
+                      intro: showTip
+                          ? ContextualTipCard(
+                              title: 'Your pet-care shortcuts',
+                              description:
+                                  'Log everyday care, add medical details, scan a Pet Passport, or add another pet—all from this menu.',
+                              icon: Icons.pets_rounded,
+                              isSaving: _savingTip,
+                              onDismiss: _dismissTip,
+                            )
+                          : null,
                       onActionSelected: _handleActionSelected,
                     ),
                   ),
@@ -142,11 +206,13 @@ class _QuickActionsSheetState extends State<QuickActionsSheet> {
 class QuickActionsContent extends StatelessWidget {
   final ValueChanged<String> onActionSelected;
   final bool compact;
+  final Widget? intro;
 
   const QuickActionsContent({
     super.key,
     required this.onActionSelected,
     this.compact = false,
+    this.intro,
   });
 
   static final List<Map<String, dynamic>> _actionCards = [
@@ -238,6 +304,7 @@ class QuickActionsContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (intro != null) ...[intro!, const SizedBox(height: 14)],
                 if (!compact) ...[
                   Text(
                     'What would you like to do?',

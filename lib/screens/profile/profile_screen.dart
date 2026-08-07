@@ -438,6 +438,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: () => context.go('/home?tour=replay'),
                   ),
                   _MenuItem(
+                    icon: Icons.tips_and_updates_outlined,
+                    title: 'Replay contextual tips',
+                    subtitle: 'Show the Paw menu and pet-profile hints again',
+                    onTap: () => _resetContextualTips(context),
+                  ),
+                  _MenuItem(
                     icon: Icons.emoji_events_outlined,
                     title: 'Achievements',
                     onTap: () async {
@@ -559,6 +565,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } finally {
       if (mounted) setState(() => _isExportingData = false);
     }
+  }
+
+  Future<void> _resetContextualTips(BuildContext context) async {
+    final saved = await context.read<AuthProvider>().resetContextualTours();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          saved
+              ? 'Tips reset. Open the Paw menu or a pet profile to see them.'
+              : 'We couldn’t reset the tips. Please try again.',
+        ),
+      ),
+    );
   }
 
   void _showSettingsDialog(BuildContext context) {

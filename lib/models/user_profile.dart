@@ -12,7 +12,10 @@ class UserProfile {
   final DateTime? onboardingCompletedAt;
   final int appTourStep;
   final DateTime? appTourCompletedAt;
+  final DateTime? quickActionsTourCompletedAt;
+  final DateTime? petProfileTourCompletedAt;
   final bool supportsFirstRun;
+  final bool supportsContextualTours;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -30,7 +33,10 @@ class UserProfile {
     this.onboardingCompletedAt,
     this.appTourStep = 0,
     this.appTourCompletedAt,
+    this.quickActionsTourCompletedAt,
+    this.petProfileTourCompletedAt,
     this.supportsFirstRun = true,
+    this.supportsContextualTours = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -42,8 +48,17 @@ class UserProfile {
       onboardingCompletedAt != null &&
       appTourCompletedAt == null;
 
+  bool get needsQuickActionsTour =>
+      supportsContextualTours && quickActionsTourCompletedAt == null;
+
+  bool get needsPetProfileTour =>
+      supportsContextualTours && petProfileTourCompletedAt == null;
+
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final supportsFirstRun = json.containsKey('onboarding_completed_at');
+    final supportsContextualTours =
+        json.containsKey('quick_actions_tour_completed_at') &&
+        json.containsKey('pet_profile_tour_completed_at');
     return UserProfile(
       id: json['id'] as String,
       email: json['email'] as String,
@@ -66,7 +81,19 @@ class UserProfile {
       appTourCompletedAt: json['app_tour_completed_at'] != null
           ? DateTime.parse(json['app_tour_completed_at'] as String).toLocal()
           : null,
+      quickActionsTourCompletedAt:
+          json['quick_actions_tour_completed_at'] != null
+          ? DateTime.parse(
+              json['quick_actions_tour_completed_at'] as String,
+            ).toLocal()
+          : null,
+      petProfileTourCompletedAt: json['pet_profile_tour_completed_at'] != null
+          ? DateTime.parse(
+              json['pet_profile_tour_completed_at'] as String,
+            ).toLocal()
+          : null,
       supportsFirstRun: supportsFirstRun,
+      supportsContextualTours: supportsContextualTours,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
     );
@@ -96,6 +123,16 @@ class UserProfile {
         'app_tour_completed_at': appTourCompletedAt?.toUtc().toIso8601String(),
       });
     }
+    if (supportsContextualTours) {
+      json.addAll({
+        'quick_actions_tour_completed_at': quickActionsTourCompletedAt
+            ?.toUtc()
+            .toIso8601String(),
+        'pet_profile_tour_completed_at': petProfileTourCompletedAt
+            ?.toUtc()
+            .toIso8601String(),
+      });
+    }
     return json;
   }
 
@@ -113,7 +150,10 @@ class UserProfile {
     DateTime? onboardingCompletedAt,
     int? appTourStep,
     DateTime? appTourCompletedAt,
+    DateTime? quickActionsTourCompletedAt,
+    DateTime? petProfileTourCompletedAt,
     bool? supportsFirstRun,
+    bool? supportsContextualTours,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -132,7 +172,13 @@ class UserProfile {
           onboardingCompletedAt ?? this.onboardingCompletedAt,
       appTourStep: appTourStep ?? this.appTourStep,
       appTourCompletedAt: appTourCompletedAt ?? this.appTourCompletedAt,
+      quickActionsTourCompletedAt:
+          quickActionsTourCompletedAt ?? this.quickActionsTourCompletedAt,
+      petProfileTourCompletedAt:
+          petProfileTourCompletedAt ?? this.petProfileTourCompletedAt,
       supportsFirstRun: supportsFirstRun ?? this.supportsFirstRun,
+      supportsContextualTours:
+          supportsContextualTours ?? this.supportsContextualTours,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

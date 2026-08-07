@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pawpal/models/pet.dart';
+import 'package:pawpal/models/user_profile.dart';
 import 'package:pawpal/providers/activity_provider.dart';
 import 'package:pawpal/providers/auth_provider.dart';
 import 'package:pawpal/providers/pet_provider.dart';
@@ -107,6 +108,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ChangeNotifierProvider<AuthProvider>.value(value: FakeAuthProvider()),
           ChangeNotifierProvider<PetProvider>.value(
             value: _PetProviderWithBean(bean),
           ),
@@ -148,5 +150,59 @@ void main() {
     tester.widget<IconButton>(backButton).onPressed!();
     await tester.pump(const Duration(milliseconds: 500));
     expect(backButton, findsNothing);
+  });
+
+  testWidgets('pet profile explains care, health, and the shareable ID once', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final profile = UserProfile(
+      id: 'owner',
+      email: 'owner@example.com',
+      onboardingCompletedAt: now,
+      appTourCompletedAt: now,
+      quickActionsTourCompletedAt: now,
+      petProfileTourCompletedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AuthProvider>.value(
+            value: FakeAuthProvider(
+              status: AuthStatus.authenticated,
+              userProfile: profile,
+            ),
+          ),
+          ChangeNotifierProvider<PetProvider>.value(
+            value: _PetProviderWithBean(bean),
+          ),
+          ChangeNotifierProvider<ActivityProvider>.value(
+            value: _QuietActivityProvider(),
+          ),
+        ],
+        child: MaterialApp(home: PetDetailScreen(petId: bean.id)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(find.text('Their care hub'), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Health at a glance'), findsOneWidget);
+
+    await tester.tap(find.text('Next'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('A shareable Pet Passport'), findsOneWidget);
+
+    await tester.tap(find.text('Finish'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('A shareable Pet Passport'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
   });
 }

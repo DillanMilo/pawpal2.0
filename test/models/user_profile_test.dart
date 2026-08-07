@@ -18,6 +18,8 @@ void main() {
       expect(profile.supportsFirstRun, isFalse);
       expect(profile.needsOnboarding, isFalse);
       expect(profile.needsAppTour, isFalse);
+      expect(profile.needsQuickActionsTour, isFalse);
+      expect(profile.needsPetProfileTour, isFalse);
       expect(profile.toJson(), isNot(contains('onboarding_step')));
     });
 
@@ -34,6 +36,8 @@ void main() {
           'onboarding_completed_at': null,
           'app_tour_step': 0,
           'app_tour_completed_at': null,
+          'quick_actions_tour_completed_at': null,
+          'pet_profile_tour_completed_at': null,
         });
 
       final profile = UserProfile.fromJson(json);
@@ -42,6 +46,8 @@ void main() {
       expect(profile.onboardingStep, 1);
       expect(profile.onboardingDraft['pet_id'], 'pet-stable-id');
       expect(profile.needsAppTour, isFalse);
+      expect(profile.needsQuickActionsTour, isTrue);
+      expect(profile.needsPetProfileTour, isTrue);
     });
 
     test('completed setup starts resumable tour only once', () {
@@ -65,6 +71,21 @@ void main() {
         'app_tour_completed_at': '2026-07-31T12:15:00Z',
       });
       expect(completed.needsAppTour, isFalse);
+    });
+
+    test('contextual tours are independently completed', () {
+      final json = profileJson()
+        ..addAll({
+          'onboarding_completed_at': '2026-07-31T12:10:00Z',
+          'app_tour_completed_at': '2026-07-31T12:15:00Z',
+          'quick_actions_tour_completed_at': '2026-07-31T12:20:00Z',
+          'pet_profile_tour_completed_at': null,
+        });
+
+      final profile = UserProfile.fromJson(json);
+
+      expect(profile.needsQuickActionsTour, isFalse);
+      expect(profile.needsPetProfileTour, isTrue);
     });
   });
 }

@@ -8,8 +8,10 @@ import 'package:share_plus/share_plus.dart';
 import '../../models/pet.dart';
 import '../../models/pet_progression.dart';
 import '../../providers/activity_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/theme.dart';
+import '../../widgets/app_tour_overlay.dart';
 import '../../widgets/pet_progression_avatar.dart';
 import '../medical/medical_records_screen.dart';
 import 'pet_passport_screen.dart';
@@ -28,6 +30,32 @@ class _PetDetailScreenState extends State<PetDetailScreen>
   late TabController _tabController;
   Pet? _pet;
   bool _isLoading = true;
+  final _progressionTourKey = GlobalKey();
+  final _healthTourKey = GlobalKey();
+  final _passportTourKey = GlobalKey();
+  bool _tourVisible = false;
+  int _tourStep = 0;
+
+  static const _tourSteps = [
+    AppTourStep(
+      title: 'Their care hub',
+      description:
+          'Use the pencil to complete your pet’s details. Every saved care activity adds PawPoints here and unlocks profile rewards.',
+      icon: Icons.auto_awesome_rounded,
+    ),
+    AppTourStep(
+      title: 'Health at a glance',
+      description:
+          'Keep vaccinations, medications, allergies, and vet visits together under Health. Activity keeps their care history easy to review.',
+      icon: Icons.medical_services_rounded,
+    ),
+    AppTourStep(
+      title: 'A shareable Pet Passport',
+      description:
+          'Choose which details to include, then share a QR code or summary with a veterinarian or someone you trust.',
+      icon: Icons.badge_rounded,
+    ),
+  ];
 
   @override
   void initState() {
@@ -55,6 +83,47 @@ class _PetDetailScreenState extends State<PetDetailScreen>
       _pet = pet;
       _isLoading = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showTourIfNeeded());
+  }
+
+  void _showTourIfNeeded() {
+    if (!mounted || _tourVisible) return;
+    final profile = context.read<AuthProvider>().userProfile;
+    if (profile?.needsPetProfileTour == true) {
+      setState(() {
+        _tourStep = 0;
+        _tourVisible = true;
+      });
+    }
+  }
+
+  Future<void> _nextTourStep() async {
+    if (_tourStep == _tourSteps.length - 1) {
+      await _completeTour();
+      return;
+    }
+    if (mounted) setState(() => _tourStep++);
+  }
+
+  Future<void> _previousTourStep() async {
+    if (_tourStep == 0) return;
+    if (mounted) setState(() => _tourStep--);
+  }
+
+  Future<void> _completeTour() async {
+    final saved = await context.read<AuthProvider>().completePetProfileTour();
+    if (!mounted) return;
+    if (!saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'We couldn’t save your profile tips. Please try again.',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _tourVisible = false);
   }
 
   @override
@@ -157,11 +226,11 @@ class _PetDetailScreenState extends State<PetDetailScreen>
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
-                        tabs: const [
-                          Tab(text: 'Info'),
-                          Tab(text: 'Health'),
-                          Tab(text: 'Activity'),
-                          Tab(text: 'ID'),
+                        tabs: [
+                          const Tab(text: 'Info'),
+                          Tab(key: _healthTourKey, text: 'Health'),
+                          const Tab(text: 'Activity'),
+                          Tab(key: _passportTourKey, text: 'ID'),
                         ],
                       ),
                     ),
@@ -183,6 +252,19 @@ class _PetDetailScreenState extends State<PetDetailScreen>
               ),
             ),
           ),
+          if (_tourVisible)
+            AppTourOverlay(
+              steps: _tourSteps,
+              anchorKeys: [
+                _progressionTourKey,
+                _healthTourKey,
+                _passportTourKey,
+              ],
+              currentStep: _tourStep,
+              onNext: _nextTourStep,
+              onBack: _previousTourStep,
+              onSkip: _completeTour,
+            ),
         ],
       ),
     );
@@ -345,177 +427,182 @@ class _PetDetailScreenState extends State<PetDetailScreen>
     final unlockedBadges = progression.unlockedBadges;
     final isDark = AppTheme.isDark(context);
 
-    return Container(
-      key: const Key('pet-progression-card'),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppTheme.progressionGradient(context),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: isDark
-              ? AppTheme.primaryLight.withValues(alpha: 0.28)
-              : AppTheme.primaryColor.withValues(alpha: 0.16),
+    return KeyedSubtree(
+      key: _progressionTourKey,
+      child: Container(
+        key: const Key('pet-progression-card'),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: AppTheme.progressionGradient(context),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: isDark
+                ? AppTheme.primaryLight.withValues(alpha: 0.28)
+                : AppTheme.primaryColor.withValues(alpha: 0.16),
+          ),
+          boxShadow: AppTheme.shadowFor(context),
         ),
-        boxShadow: AppTheme.shadowFor(context),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(11),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppTheme.primaryColor.withValues(alpha: 0.20)
-                      : Colors.white.withValues(alpha: 0.78),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_pet!.name}\'s PawPoints',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.primaryText(context),
-                      ),
-                    ),
-                    Text(
-                      'Level ${progression.level} • ${progression.title}',
-                      style: TextStyle(
-                        color: AppTheme.primaryAccentText(context),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                '$points',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: AppTheme.primaryAccentText(context),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: progression.progress,
-              minHeight: 10,
-              backgroundColor: Colors.white.withValues(
-                alpha: isDark ? 0.12 : 0.72,
-              ),
-              valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            progression.isMaxLevel
-                ? 'Maximum pet level reached!'
-                : '${progression.pointsToNextLevel} PawPoints to the next level',
-            style: TextStyle(
-              color: AppTheme.secondaryText(context),
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              const Icon(
-                Icons.local_fire_department_rounded,
-                color: AppTheme.accentPeach,
-                size: 20,
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  'Care Momentum: ${momentum.label}',
-                  style: TextStyle(
-                    color: AppTheme.primaryText(context),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(11),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppTheme.primaryColor.withValues(alpha: 0.20)
+                        : Colors.white.withValues(alpha: 0.78),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    color: isDark
+                        ? AppTheme.primaryLight
+                        : AppTheme.primaryColor,
                   ),
                 ),
-              ),
-              Text(
-                '${momentum.activeDays}/${momentum.windowDays} active days',
-                style: TextStyle(
-                  color: AppTheme.secondaryText(context),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_pet!.name}\'s PawPoints',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.primaryText(context),
+                        ),
+                      ),
+                      Text(
+                        'Level ${progression.level} • ${progression.title}',
+                        style: TextStyle(
+                          color: AppTheme.primaryAccentText(context),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 7),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: momentum.progress,
-              minHeight: 6,
-              backgroundColor: Colors.white.withValues(
-                alpha: isDark ? 0.12 : 0.72,
-              ),
-              valueColor: const AlwaysStoppedAnimation(AppTheme.accentPeach),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'Badges earned',
-            style: TextStyle(
-              color: AppTheme.primaryText(context),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final badge in unlockedBadges)
-                Chip(
-                  avatar: Text(badge.emoji ?? '🐾'),
-                  label: Text(badge.name),
-                  backgroundColor: isDark
-                      ? AppTheme.darkSurface.withValues(alpha: 0.88)
-                      : Colors.white.withValues(alpha: 0.78),
-                  side: BorderSide.none,
+                Text(
+                  '$points',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.primaryAccentText(context),
+                  ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _showRewardPicker,
-              icon: const Icon(Icons.checkroom_rounded),
-              label: const Text('Choose profile rewards'),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Walks, play, meals, training, grooming, and wellness care all help ${_pet!.name} grow.',
-            style: TextStyle(
-              color: AppTheme.secondaryText(context),
-              fontSize: 12,
-              height: 1.35,
+            const SizedBox(height: 18),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: progression.progress,
+                minHeight: 10,
+                backgroundColor: Colors.white.withValues(
+                  alpha: isDark ? 0.12 : 0.72,
+                ),
+                valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              progression.isMaxLevel
+                  ? 'Maximum pet level reached!'
+                  : '${progression.pointsToNextLevel} PawPoints to the next level',
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Icon(
+                  Icons.local_fire_department_rounded,
+                  color: AppTheme.accentPeach,
+                  size: 20,
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    'Care Momentum: ${momentum.label}',
+                    style: TextStyle(
+                      color: AppTheme.primaryText(context),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${momentum.activeDays}/${momentum.windowDays} active days',
+                  style: TextStyle(
+                    color: AppTheme.secondaryText(context),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: momentum.progress,
+                minHeight: 6,
+                backgroundColor: Colors.white.withValues(
+                  alpha: isDark ? 0.12 : 0.72,
+                ),
+                valueColor: const AlwaysStoppedAnimation(AppTheme.accentPeach),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Badges earned',
+              style: TextStyle(
+                color: AppTheme.primaryText(context),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final badge in unlockedBadges)
+                  Chip(
+                    avatar: Text(badge.emoji ?? '🐾'),
+                    label: Text(badge.name),
+                    backgroundColor: isDark
+                        ? AppTheme.darkSurface.withValues(alpha: 0.88)
+                        : Colors.white.withValues(alpha: 0.78),
+                    side: BorderSide.none,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _showRewardPicker,
+                icon: const Icon(Icons.checkroom_rounded),
+                label: const Text('Choose profile rewards'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Walks, play, meals, training, grooming, and wellness care all help ${_pet!.name} grow.',
+              style: TextStyle(
+                color: AppTheme.secondaryText(context),
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       ),
     ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.08, end: 0);
   }

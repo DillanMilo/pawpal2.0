@@ -62,7 +62,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Home base'), findsOneWidget);
 
-    await tester.tap(find.text('Skip tour'));
+    await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     expect(skipped, isTrue);
   });

@@ -243,7 +243,7 @@ class _AppTourOverlayState extends State<AppTourOverlay> {
                                   onPressed: _working
                                       ? null
                                       : () => _run(widget.onSkip),
-                                  child: const Text('Skip tour'),
+                                  child: const Text('Skip'),
                                 ),
                                 const Spacer(),
                                 if (widget.currentStep > 0)

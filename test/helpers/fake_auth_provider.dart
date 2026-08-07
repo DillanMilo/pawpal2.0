@@ -105,6 +105,39 @@ class FakeAuthProvider with ChangeNotifier implements AuthProvider {
   Future<bool> completeAppTour() async => true;
 
   @override
+  Future<bool> completeQuickActionsTour() async {
+    final profile = _userProfile;
+    if (profile == null) return false;
+    _userProfile = profile.copyWith(
+      quickActionsTourCompletedAt: DateTime.now(),
+    );
+    notifyListeners();
+    return true;
+  }
+
+  @override
+  Future<bool> completePetProfileTour() async {
+    final profile = _userProfile;
+    if (profile == null) return false;
+    _userProfile = profile.copyWith(petProfileTourCompletedAt: DateTime.now());
+    notifyListeners();
+    return true;
+  }
+
+  @override
+  Future<bool> resetContextualTours() async {
+    final profile = _userProfile;
+    if (profile == null) return false;
+    _userProfile = UserProfile.fromJson({
+      ...profile.toJson(),
+      'quick_actions_tour_completed_at': null,
+      'pet_profile_tour_completed_at': null,
+    });
+    notifyListeners();
+    return true;
+  }
+
+  @override
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,

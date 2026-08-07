@@ -216,6 +216,42 @@ class AuthService {
     return UserProfile.fromJson(response);
   }
 
+  Future<UserProfile> completeQuickActionsTour(String userId) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final response = await _client
+        .from('users')
+        .update({'quick_actions_tour_completed_at': now, 'updated_at': now})
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
+  Future<UserProfile> completePetProfileTour(String userId) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final response = await _client
+        .from('users')
+        .update({'pet_profile_tour_completed_at': now, 'updated_at': now})
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
+  Future<UserProfile> resetContextualTours(String userId) async {
+    final response = await _client
+        .from('users')
+        .update({
+          'quick_actions_tour_completed_at': null,
+          'pet_profile_tour_completed_at': null,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+    return UserProfile.fromJson(response);
+  }
+
   // Upload a profile photo and return the public URL.
   Future<String> uploadProfilePhoto(XFile photo, {String? previousUrl}) async {
     final userId = SupabaseService.currentUserId;

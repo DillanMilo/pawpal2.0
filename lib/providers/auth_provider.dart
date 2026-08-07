@@ -344,6 +344,55 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> completeQuickActionsTour() async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.completeQuickActionsTour(
+        currentProfile.id,
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completePetProfileTour() async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.completePetProfileTour(
+        currentProfile.id,
+      );
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> resetContextualTours() async {
+    final currentProfile = _userProfile;
+    if (currentProfile == null) return false;
+    try {
+      _userProfile = await _authService.resetContextualTours(currentProfile.id);
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,

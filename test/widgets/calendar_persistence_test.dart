@@ -63,6 +63,14 @@ void main() {
 
     await tester.tap(find.byTooltip('Add appointment').first);
     await tester.pumpAndSettle();
+
+    final sheetRect = tester.getRect(
+      find.byKey(const Key('appointment-sheet-surface')),
+    );
+    final calendarRect = tester.getRect(find.byType(CalendarScreen));
+    expect(sheetRect.bottom, calendarRect.bottom);
+    expect(find.text('Save Appointment'), findsOneWidget);
+
     await tester.enterText(find.byType(TextFormField).first, 'Annual checkup');
     await tester.tap(find.text('Save Appointment'));
     await tester.pumpAndSettle();

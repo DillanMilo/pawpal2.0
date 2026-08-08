@@ -77,6 +77,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _AppointmentSheet(
         appointment: appointment,
@@ -668,10 +669,9 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
     final timeLabel = _time.format(context);
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: viewInsets > 0 ? viewInsets : 96 + bottomPadding,
-      ),
+      padding: EdgeInsets.only(bottom: viewInsets),
       child: Container(
+        key: const Key('appointment-sheet-surface'),
         constraints: const BoxConstraints(maxHeight: 720),
         decoration: BoxDecoration(
           color: AppTheme.pageBackground(context),
@@ -853,7 +853,7 @@ class _AppointmentSheetState extends State<_AppointmentSheet> {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
+                  padding: EdgeInsets.fromLTRB(20, 14, 20, 18 + bottomPadding),
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : _save,
                     child: _isSaving

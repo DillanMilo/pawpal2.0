@@ -1110,7 +1110,8 @@ Methods: `fromJson`, `toJson`, `copyWith`
 |-----------------|--------------|-------------------|
 | `petStore` | "pet store" | `pet_store` |
 | `veterinarian` | "veterinarian" | `veterinary_care` |
-| `grooming` | "pet grooming" | `pet_store` (no specific grooming type in Google) |
+| `grooming` | "pet groomer" | Text Search without the broad `pet_store` filter |
+| `boarding` | "pet boarding kennel pet hotel dog daycare" | Text Search |
 
 **Default search radius**: 10,000 meters (10 km)
 

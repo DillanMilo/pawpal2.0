@@ -18,7 +18,8 @@ void main() {
         expect(
           entry.value,
           greaterThan(0),
-          reason: 'Activity "${entry.key}" has non-positive points: ${entry.value}',
+          reason:
+              'Activity "${entry.key}" has non-positive points: ${entry.value}',
         );
       }
     });
@@ -28,7 +29,8 @@ void main() {
         expect(
           AppConstants.activityTypes.contains(key),
           true,
-          reason: 'activityPoints contains "$key" which is not in activityTypes',
+          reason:
+              'activityPoints contains "$key" which is not in activityTypes',
         );
       }
     });
@@ -40,7 +42,8 @@ void main() {
         expect(
           entry.value,
           greaterThan(0),
-          reason: 'Badge "${entry.key}" has non-positive threshold: ${entry.value}',
+          reason:
+              'Badge "${entry.key}" has non-positive threshold: ${entry.value}',
         );
         expect(
           entry.value,
@@ -79,6 +82,22 @@ void main() {
     test('reminder types has no duplicates', () {
       final unique = AppConstants.reminderTypes.toSet();
       expect(unique.length, AppConstants.reminderTypes.length);
+    });
+
+    test('preventive-care presets map to supported reminder types', () {
+      expect(AppConstants.preventiveCareReminderPresets, isNotEmpty);
+      for (final preset in AppConstants.preventiveCareReminderPresets.entries) {
+        expect(AppConstants.reminderTypes, contains(preset.key));
+        expect(preset.value.trim(), isNotEmpty);
+      }
+    });
+
+    test('includes beta-requested preventive-care reminder types', () {
+      expect(AppConstants.reminderTypes, contains('Tick & Flea'));
+      expect(AppConstants.reminderTypes, contains('Vaccination'));
+      expect(AppConstants.reminderTypes, contains('Medication Refill'));
+      expect(AppConstants.reminderTypes, contains('Medication Expiration'));
+      expect(AppConstants.reminderTypes, contains('Deworming'));
     });
   });
 

@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
-type ServiceType = 'petStore' | 'veterinarian' | 'grooming';
+type ServiceType = 'petStore' | 'veterinarian' | 'grooming' | 'boarding';
 
 type PlacesRequest = {
   action: 'nearby' | 'location' | 'text' | 'details';
@@ -57,7 +57,9 @@ function getSearchQuery(type: ServiceType) {
     case 'veterinarian':
       return 'veterinarian';
     case 'grooming':
-      return 'pet grooming';
+      return 'pet groomer';
+    case 'boarding':
+      return 'pet boarding kennel pet hotel dog daycare';
   }
 }
 
@@ -68,12 +70,17 @@ function getPlaceType(type: ServiceType) {
     case 'veterinarian':
       return 'veterinary_care';
     case 'grooming':
-      return 'pet_store';
+      return null;
+    case 'boarding':
+      return null;
   }
 }
 
 function requireServiceType(type: ServiceType | undefined): ServiceType {
-  if (!type || !['petStore', 'veterinarian', 'grooming'].includes(type)) {
+  if (
+    !type ||
+    !['petStore', 'veterinarian', 'grooming', 'boarding'].includes(type)
+  ) {
     throw new Error('A valid service type is required');
   }
   return type;
@@ -140,11 +147,24 @@ async function searchNearby(request: PlacesRequest, key: string) {
     throw new Error('Latitude and longitude are required');
   }
 
-  const url = new URL(`${placesBaseUrl}/nearbysearch/json`);
+  // Grooming has no dedicated legacy place type. Sending it as `pet_store`
+  // caused ordinary supply stores to leak into Grooming results. Text Search
+  // makes the requested service the primary query instead. Boarding uses the
+  // same path until the production key is moved to Places API (New), where
+  // `pet_boarding_service` is available as a strict type.
+  const usesServiceQuery = type === 'grooming' || type === 'boarding';
+  const url = new URL(
+    `${placesBaseUrl}/${usesServiceQuery ? 'textsearch' : 'nearbysearch'}/json`,
+  );
   url.searchParams.set('location', `${latitude},${longitude}`);
   url.searchParams.set('radius', String(radius));
-  url.searchParams.set('type', getPlaceType(type));
-  url.searchParams.set('keyword', getSearchQuery(type));
+  if (usesServiceQuery) {
+    url.searchParams.set('query', getSearchQuery(type));
+  } else {
+    const placeType = getPlaceType(type);
+    if (placeType) url.searchParams.set('type', placeType);
+    url.searchParams.set('keyword', getSearchQuery(type));
+  }
   url.searchParams.set('key', key);
 
   return await fetchGoogleJson(url);

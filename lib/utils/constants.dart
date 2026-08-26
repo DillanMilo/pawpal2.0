@@ -133,10 +133,24 @@ class AppConstants {
   static const List<String> reminderTypes = [
     'Medication',
     'Vaccination',
+    'Tick & Flea',
+    'Medication Refill',
+    'Medication Expiration',
+    'Deworming',
     'Appointment',
     'Grooming',
     'Custom',
   ];
+
+  // Presets make frequent care reminders faster to create without inferring
+  // medical schedules. Owners still choose the due date and recurrence.
+  static const Map<String, String> preventiveCareReminderPresets = {
+    'Tick & Flea': 'Tick & flea prevention',
+    'Vaccination': 'Vaccination or booster',
+    'Medication Refill': 'Medication refill',
+    'Medication Expiration': 'Medication expiration',
+    'Deworming': 'Deworming',
+  };
 
   // Appointment Types
   static const List<String> appointmentTypes = [

@@ -75,33 +75,36 @@ class _RemindersScreenState extends State<RemindersScreen> {
           // Filter chips
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                _FilterChip(
-                  label: 'All',
-                  isSelected: _filter == 'all',
-                  onTap: () => setState(() => _filter = 'all'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Today',
-                  isSelected: _filter == 'today',
-                  onTap: () => setState(() => _filter = 'today'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Upcoming',
-                  isSelected: _filter == 'upcoming',
-                  onTap: () => setState(() => _filter = 'upcoming'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Overdue',
-                  isSelected: _filter == 'overdue',
-                  color: AppTheme.errorColor,
-                  onTap: () => setState(() => _filter = 'overdue'),
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'All',
+                    isSelected: _filter == 'all',
+                    onTap: () => setState(() => _filter = 'all'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Today',
+                    isSelected: _filter == 'today',
+                    onTap: () => setState(() => _filter = 'today'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Upcoming',
+                    isSelected: _filter == 'upcoming',
+                    onTap: () => setState(() => _filter = 'upcoming'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Overdue',
+                    isSelected: _filter == 'overdue',
+                    color: AppTheme.errorColor,
+                    onTap: () => setState(() => _filter = 'overdue'),
+                  ),
+                ],
+              ),
             ),
           ),
           // Reminders list
@@ -222,7 +225,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => StatefulBuilder(
-        builder: (modalContext, setModalState) => Padding(
+        builder: (modalContext, setModalState) => SingleChildScrollView(
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
@@ -249,6 +252,43 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
+              Text(
+                'Quick care presets',
+                style: TextStyle(
+                  color: AppTheme.secondaryText(modalContext),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: AppConstants.preventiveCareReminderPresets.entries
+                    .map(
+                      (preset) => ActionChip(
+                        label: Text(preset.value),
+                        onPressed: () {
+                          setModalState(() {
+                            selectedType = preset.key;
+                            titleController.text = preset.value;
+                            titleController.selection = TextSelection.collapsed(
+                              offset: titleController.text.length,
+                            );
+                          });
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Choose the timing recommended by your veterinarian or product label.',
+                style: TextStyle(
+                  color: AppTheme.mutedText(modalContext),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 16),
               TextField(
                 controller: titleController,
                 textCapitalization: TextCapitalization.sentences,
@@ -260,6 +300,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: selectedType,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Type',
                   prefixIcon: Icon(Icons.category),
@@ -545,6 +586,14 @@ class _ReminderCard extends StatelessWidget {
         return Icons.medication;
       case 'Vaccination':
         return Icons.vaccines;
+      case 'Tick & Flea':
+        return Icons.bug_report;
+      case 'Medication Refill':
+        return Icons.medication_liquid;
+      case 'Medication Expiration':
+        return Icons.event_busy;
+      case 'Deworming':
+        return Icons.pets;
       case 'Appointment':
         return Icons.calendar_today;
       case 'Grooming':

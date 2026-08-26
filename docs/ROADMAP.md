@@ -1,6 +1,6 @@
 # PawPal 2.0 Roadmap
 
-> Last updated: 2026-04-04
+> Last updated: 2026-08-26
 
 ---
 
@@ -80,6 +80,8 @@ Small items deferred from completed phases:
 - [ ] Error logging service (Sentry or Firebase Crashlytics)
 - [ ] Expand test coverage toward 70%+ (foundation of 154 tests in place)
 - [x] Full account data export with original uploaded documents
+- [ ] Fix Grooming search results so ordinary pet shops are not shown as
+  groomers
 
 ---
 
@@ -94,6 +96,8 @@ Ideas for post-v2 development. Not yet scheduled or prioritized.
 
 ### Health & Analytics
 - [ ] Pet health insights dashboard (weight trends, activity patterns, medical timeline)
+- [ ] Preventive-care reminder presets for tick/flea prevention, vaccinations,
+  medication refills and expirations, and deworming
 - [ ] AI-powered health recommendations based on breed and activity data
 - [ ] Veterinary report generation (exportable health summary for vet visits)
 
@@ -107,6 +111,7 @@ Ideas for post-v2 development. Not yet scheduled or prioritized.
 - [ ] Wearable device support (FitBark, Whistle, Fi collar)
 - [ ] Smart feeder integration
 - [ ] Telehealth/virtual vet consultation booking
+- [ ] Boarding and daycare discovery for kennels, pet hotels, and doggy daycare
 
 ### Monetization
 - [x] Subscription/trial architecture and server-owned entitlements
@@ -115,6 +120,11 @@ Ideas for post-v2 development. Not yet scheduled or prioritized.
 - [ ] Premium tier with advanced analytics
 - [ ] In-app pet supply marketplace
 - [ ] Sponsored provider listings
+- [ ] Validate a provider booking/referral pilot before considering marketplace
+  payments and booking commissions
 
 See `PRODUCT_ROADMAP.md` for the reliability, household, AI, and integration
-sequence that should follow the initial Plus launch.
+sequence that should follow the initial Plus launch. See
+`FUTURE_ENDEAVORS.md` for the beta-feedback proposal covering grooming search
+quality, preventive-care reminders, boarding discovery, and a possible booking
+marketplace.

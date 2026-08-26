@@ -70,6 +70,16 @@ class ServicesScreen extends StatelessWidget {
                             serviceType: ServiceType.grooming,
                             delay: 80,
                           ),
+                          _buildServiceCard(
+                            context,
+                            title: 'Boarding & Daycare',
+                            subtitle: 'Kennels, pet hotels & daytime care',
+                            icon: Icons.night_shelter_rounded,
+                            tint: AppTheme.softMint,
+                            accent: AppTheme.secondaryColor,
+                            serviceType: ServiceType.boarding,
+                            delay: 120,
+                          ),
                         ];
 
                         if (!useTabletGrid) {
@@ -80,6 +90,8 @@ class ServicesScreen extends StatelessWidget {
                               cards[1],
                               const SizedBox(height: 16),
                               cards[2],
+                              const SizedBox(height: 16),
+                              cards[3],
                             ],
                           );
                         }

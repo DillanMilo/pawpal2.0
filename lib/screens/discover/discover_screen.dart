@@ -29,12 +29,13 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     ServiceType.veterinarian,
     ServiceType.grooming,
     ServiceType.petStore,
+    ServiceType.boarding,
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: _tabs.length, vsync: this);
     _initLocation();
   }
 
@@ -131,6 +132,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         title: Text('Discover'),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           labelColor: AppTheme.primaryColor,
           unselectedLabelColor: AppTheme.secondaryText(context),
           indicatorColor: AppTheme.primaryColor,
@@ -138,6 +140,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             Tab(icon: Icon(Icons.local_hospital), text: 'Vets'),
             Tab(icon: Icon(Icons.content_cut), text: 'Groomers'),
             Tab(icon: Icon(Icons.store), text: 'Stores'),
+            Tab(icon: Icon(Icons.night_shelter), text: 'Boarding'),
           ],
         ),
       ),
@@ -147,6 +150,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           _buildTab(ServiceType.veterinarian),
           _buildTab(ServiceType.grooming),
           _buildTab(ServiceType.petStore),
+          _buildTab(ServiceType.boarding),
         ],
       ),
     );

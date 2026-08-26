@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import '../utils/constants.dart';
 import 'supabase_service.dart';
 
-enum ServiceType { petStore, veterinarian, grooming }
+enum ServiceType { petStore, veterinarian, grooming, boarding }
 
 class PlaceResult {
   final String placeId;
@@ -84,6 +84,8 @@ class PlacesService {
         return 'veterinarian';
       case ServiceType.grooming:
         return 'grooming';
+      case ServiceType.boarding:
+        return 'boarding';
     }
   }
 

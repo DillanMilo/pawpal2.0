@@ -198,14 +198,15 @@ void main() {
   });
 
   group('ServiceType enum', () {
-    test('has exactly 3 values', () {
-      expect(ServiceType.values, hasLength(3));
+    test('has exactly 4 values', () {
+      expect(ServiceType.values, hasLength(4));
     });
 
     test('contains expected values', () {
       expect(ServiceType.values, contains(ServiceType.petStore));
       expect(ServiceType.values, contains(ServiceType.veterinarian));
       expect(ServiceType.values, contains(ServiceType.grooming));
+      expect(ServiceType.values, contains(ServiceType.boarding));
     });
   });
 }

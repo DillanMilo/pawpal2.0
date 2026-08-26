@@ -114,7 +114,8 @@
 | Feature | Details |
 |---------|---------|
 | Create reminder | Title, type, due date, pet selection, notes |
-| Reminder types | Medication, Vaccination, Appointment, Grooming, Custom |
+| Reminder types | Medication, Vaccination, Tick & Flea, Medication Refill, Medication Expiration, Deworming, Appointment, Grooming, Custom |
+| Preventive-care presets | One-tap titles and types for tick/flea prevention, vaccinations, medicine refills and expirations, and deworming; owners choose timing |
 | Recurring patterns | Daily, weekly, monthly auto-creation on completion |
 | Filter by status | All, Today, Upcoming, Overdue |
 | Mark complete | Complete reminders with automatic next-occurrence creation |
@@ -139,7 +140,7 @@
 
 | Feature | Details |
 |---------|---------|
-| Service types | Veterinarians, Groomers, Pet Stores (Pet Sitters coming soon) |
+| Service types | Veterinarians, Groomers, Pet Stores, Boarding & Daycare |
 | GPS search | Auto-detect location, search within 10km radius |
 | Zipcode search | Fallback search by zipcode when GPS denied |
 | Place details | Name, address, rating, open/closed status, phone, hours |

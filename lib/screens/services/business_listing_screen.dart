@@ -45,6 +45,8 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
         return 'Veterinarians';
       case ServiceType.grooming:
         return 'Grooming';
+      case ServiceType.boarding:
+        return 'Boarding & Daycare';
     }
   }
 
@@ -56,6 +58,8 @@ class _BusinessListingScreenState extends State<BusinessListingScreen> {
         return Icons.local_hospital_rounded;
       case ServiceType.grooming:
         return Icons.content_cut_rounded;
+      case ServiceType.boarding:
+        return Icons.night_shelter_rounded;
     }
   }
 
